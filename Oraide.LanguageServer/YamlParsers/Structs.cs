@@ -1,47 +1,8 @@
-﻿using System;
 using System.Collections.Generic;
 using Oraide.LanguageServer.CodeParsers;
-using YamlDotNet.Core;
-using YamlDotNet.Core.Events;
-using YamlDotNet.Serialization;
 
 namespace Oraide.LanguageServer.YamlParsers
 {
-	public class LoadScreenConverter : IYamlTypeConverter
-	{
-		public bool Accepts(Type type)
-		{
-			return true;
-		}
-
-		public object ReadYaml(IParser parser, Type type)
-		{
-			if (parser.TryConsume<Scalar>(out var scalar))
-			{
-				return new List<string> { scalar.Value };
-			}
-
-			if (parser.TryConsume<SequenceStart>(out var _))
-			{
-				var items = new List<string>();
-				while (parser.TryConsume<Scalar>(out var scalarItem))
-				{
-					items.Add(scalarItem.Value);
-				}
-
-				parser.Consume<SequenceEnd>();
-				return items;
-			}
-
-			return new List<string> { "kor" };
-		}
-
-		public void WriteYaml(IEmitter emitter, object value, Type type)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
 	public class MyModData
 	{
 		public MyLoadScreen LoadScreen { get; set; }

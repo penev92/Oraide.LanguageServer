@@ -14,7 +14,6 @@ namespace Oraide.LanguageServer
 		private static async Task TestLanguageServerAsync(string[] args)
 		{
 			await LanguageServerImplementations.Kaby76.Program.MainAsync(args);
-			// await LanguageServerImplementations.OmniSharpLS.Program.MainAsync(args);
 		}
 
 		static void TestParsers()
@@ -31,7 +30,6 @@ namespace Oraide.LanguageServer
 			stopwatch.Start();
 
 			var traitDictionary = RoslynCodeParser.Parse(oraFolderPath);
-			// var traitDictionary = ManualCodeParser.Parse(oraFolderPath);
 
 			Console.WriteLine(stopwatch.Elapsed);
 			Console.WriteLine(traitDictionary.Count);
@@ -40,7 +38,6 @@ namespace Oraide.LanguageServer
 		static void ParseYaml(in string oraFolderPath)
 		{
 			ManualYamlParser.Parse(oraFolderPath);
-			// YamlDotNetYamlParser.Parse(oraFolderPath);
 		}
 	}
 }
