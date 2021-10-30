@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Oraide.LanguageServer.CodeParsers;
 
 namespace Oraide.LanguageServer.YamlParsers
@@ -29,7 +29,7 @@ namespace Oraide.LanguageServer.YamlParsers
 
 		public MemberLocation Location { get; }
 
-		public List<TraitDefinition> Traits { get; }
+		public List<TraitDefinition> Traits { get; } // This is redundant for the navigatable definitions list.
 
 		public ActorDefinition(string name, MemberLocation location, List<TraitDefinition> traits)
 		{

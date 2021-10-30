@@ -24,8 +24,14 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 					}
 
 					var request = arg.ToObject<TextDocumentPositionParams>();
-					if (TryGetDefinitionLocations(request, out var definitionLocations))
-						return definitionLocations;
+					if (TryGetTargetNode(request, out var targetNode))
+					{
+						if (TryGetTargetCodeDefinitionLocations(targetNode, out var codeDefinitionLocations))
+							return codeDefinitionLocations;
+
+						if (TryGetTargetYamlDefinitionLocations(targetNode, out var yamlDefinitionLocations))
+							return yamlDefinitionLocations;
+					}
 				}
 				catch (Exception)
 				{
@@ -35,42 +41,15 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 			}
 		}
 
-		private bool TryGetDefinitionLocations(TextDocumentPositionParams request, out IEnumerable<Location> definitionLocations)
+		private bool TryGetTargetCodeDefinitionLocations(OpenRA.MiniYamlParser.MiniYamlNode targetNode, out IEnumerable<Location> definitionLocations)
 		{
-			var position = request.Position;
-			var targetLine = (int)position.Line;
-			var targetCharacter = (int)position.Character;
-			// var index = new LanguageServer.Module().GetIndex(line, character, document);
-			var fileIdentifier = new Uri(Uri.UnescapeDataString(request.TextDocument.Uri)).AbsolutePath;
-			var actorDefinitionsInDocument = actorDefinitionsPerFile[fileIdentifier].Values.ToArray();
-
-			Range range;
-			var traitName = "";
-			foreach (var actorDefinition in actorDefinitionsInDocument)
+			var traitName = targetNode.Key.Split('@')[0];
+			if (!TryGetTraitInfo(traitName, out var traitInfo))
 			{
-				foreach (var traitDefinition in actorDefinition.Traits)
-				{
-					if (traitDefinition.Location.LineNumber == targetLine)
-					{
-						range = new Range
-						{
-							Start = new Position((uint)traitDefinition.Location.LineNumber, (uint)traitDefinition.Location.CharacterPosition),
-							End = new Position((uint)traitDefinition.Location.LineNumber, (uint)traitDefinition.Location.CharacterPosition + 5)
-						};
-
-						traitName = traitDefinition.Name;
-					}
-				}
-			}
-
-			var traitInfoName = $"{traitName}Info";
-			if (!traitInfos.ContainsKey(traitInfoName))
-			{
-				definitionLocations = Enumerable.Empty<Location>();
+				definitionLocations = default;
 				return false;
 			}
 
-			var traitInfo = traitInfos[traitInfoName];
 			definitionLocations = new[]
 			{
 				new Location
@@ -83,6 +62,25 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 					}
 				}
 			};
+
+			return true;
+		}
+
+		private bool TryGetTargetYamlDefinitionLocations(OpenRA.MiniYamlParser.MiniYamlNode targetNode, out IEnumerable<Location> definitionLocations)
+		{
+			// Check targetNode node type - probably via IndentationLevel enum.
+			// If it is a top-level node *and this is an actor-definition or a weapon-definition file* it definitely is a definition.
+			// If it is indented once we need to check if the target is the key or the value - keys are traits, but values *could* reference actor/weapon definitions.
+
+			definitionLocations = actorDefinitions[targetNode.Key].Select(x => new Location
+			{
+				Uri = new Uri(x.Location.FilePath).ToString(),
+				Range = new Range
+				{
+					Start = new Position((uint)x.Location.LineNumber - 1, (uint)x.Location.CharacterPosition),
+					End = new Position((uint)x.Location.LineNumber - 1, (uint)x.Location.CharacterPosition + 5)
+				}
+			});
 
 			return true;
 		}

@@ -8,8 +8,8 @@ namespace Oraide.LanguageServer
 {
 	class Program
 	{
-		private static void Main(string[] args) => TestParsers();
-		// private static void Main(string[] args) => TestLanguageServerAsync(args).Wait();
+		// private static void Main(string[] args) => TestParsers();
+		private static void Main(string[] args) => TestLanguageServerAsync(args).Wait();
 
 		private static async Task TestLanguageServerAsync(string[] args)
 		{
@@ -20,8 +20,8 @@ namespace Oraide.LanguageServer
 		{
 			const string oraFolderPath = @"d:\Work.Personal\OpenRA\OpenRA\";
 
-			ParseCode(oraFolderPath);
-			// ParseYaml(oraFolderPath);
+			// ParseCode(oraFolderPath);
+			ParseYaml(oraFolderPath);
 		}
 
 		static void ParseCode(in string oraFolderPath)
@@ -37,7 +37,13 @@ namespace Oraide.LanguageServer
 
 		static void ParseYaml(in string oraFolderPath)
 		{
-			ManualYamlParser.Parse(oraFolderPath);
+			var stopwatch = new Stopwatch();
+			stopwatch.Start();
+
+			// ManualYamlParser.Parse(oraFolderPath);
+			OpenRAMiniYamlParser.Parse(oraFolderPath);
+
+			Console.WriteLine(stopwatch.Elapsed);
 		}
 	}
 }

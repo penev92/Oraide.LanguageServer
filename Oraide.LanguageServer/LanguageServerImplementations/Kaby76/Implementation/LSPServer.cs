@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -24,18 +25,29 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 		public event PropertyChangedEventHandler PropertyChanged;
 		public event EventHandler Disconnected;
 		private bool isDisposed;
-		private readonly Dictionary<string, Dictionary<string, ActorDefinition>> actorDefinitionsPerFile;
+
+		// With the addition of other collections dedicated to holding definitions and this being delegated to a lookup table for client cursor position,
+		// this is now redundant and should be replaced with on-demand parsing of the current file or with a cache that handles didOpen/didChange/didSave.
+		// No point in loading everything up-front and also it could get stale really fast.
+		private readonly IReadOnlyDictionary<string, ReadOnlyCollection<OpenRA.MiniYamlParser.MiniYamlNode>> parsedRulesPerFile;
+
+		// TODO: Change to ILookup (to match `actorDefinitions` and also there may be more than one trait with the same name across namespaces).
 		private readonly IDictionary<string, TraitInfo> traitInfos;
+
+		/// <summary>
+		/// A collection of all actor definitions in YAML (including abstract ones) grouped by they key/name.
+		/// </summary>
+		private readonly ILookup<string, ActorDefinition> actorDefinitions;
 
 		public LSPServer(Stream sender, Stream reader)
 		{
 			const string oraFolderPath = @"d:\Work.Personal\OpenRA\OpenRA";
-			var actorDefinitions = ManualYamlParser.ParseRules(Path.Combine(oraFolderPath, @"mods\d2k\rules"));
-			actorDefinitionsPerFile = actorDefinitions.GroupBy(x => x.Value.Location.FilePath)
-				.ToDictionary(x => x.Key.Replace('\\', '/'), y => y.ToDictionary(k => k.Value.Name, l => l.Value));
+
+			parsedRulesPerFile = OpenRAMiniYamlParser.GetParsedRulesPerFile(Path.Combine(oraFolderPath, @"mods\d2k\rules"))
+				.ToDictionary(x => x.Key.Replace('\\', '/'), y => y.Value);
 
 			traitInfos = RoslynCodeParser.Parse(oraFolderPath);
-
+			actorDefinitions = OpenRAMiniYamlParser.GetActorDefinitions(Path.Combine(oraFolderPath, @"mods\d2k\rules"));
 
 			rpc = JsonRpc.Attach(sender, reader, this);
 			rpc.Disconnected += OnRpcDisconnected;
@@ -228,6 +240,36 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 				{
 				}
 			}
+		}
+
+		private bool TryGetTargetNode(TextDocumentPositionParams request, out OpenRA.MiniYamlParser.MiniYamlNode targetNode)
+		{
+			var position = request.Position;
+			var targetLine = (int)position.Line;
+			var targetCharacter = (int)position.Character;
+			// var index = new LanguageServer.Module().GetIndex(line, character, document);
+			var fileIdentifier = new Uri(Uri.UnescapeDataString(request.TextDocument.Uri)).AbsolutePath;
+
+			if (parsedRulesPerFile.ContainsKey(fileIdentifier) && parsedRulesPerFile[fileIdentifier].Count >= targetLine)
+			{
+				targetNode = parsedRulesPerFile[fileIdentifier][targetLine];
+				return true;
+			}
+
+			targetNode = default;
+			return false;
+		}
+
+		private bool TryGetTraitInfo(string traitName, out TraitInfo traitInfo)
+		{
+			if (traitInfos.ContainsKey($"{traitName}Info"))
+			{
+				traitInfo = traitInfos[$"{traitName}Info"];
+				return true;
+			}
+
+			traitInfo = default;
+			return false;
 		}
 	}
 }

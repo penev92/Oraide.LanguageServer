@@ -20,7 +20,6 @@ namespace Oraide.LanguageServer.YamlParsers
 			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories);
 			foreach (var filePath in filePaths)
 			{
-
 				var fileLines = File.ReadAllLines(filePath);
 				for (var i = 0; i < fileLines.Length; i++)
 				{
