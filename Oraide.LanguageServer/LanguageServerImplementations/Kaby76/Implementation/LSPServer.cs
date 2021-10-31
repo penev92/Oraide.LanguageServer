@@ -49,12 +49,12 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 			var codeInformationProvider = new CodeInformationProvider(workspaceFolderPath, defaultOpenRaFolderPath);
 			traitInfos = codeInformationProvider.GetTraitInfos();
 
-			const string oraFolderPath = @"d:\Work.Personal\OpenRA\OpenRA";
+			var yamlInformationProvider = new YamlInformationProvider(workspaceFolderPath);
+			actorDefinitions = yamlInformationProvider.GetActorDefinitions();
 
+			const string oraFolderPath = @"d:\Work.Personal\OpenRA\OpenRA";
 			parsedRulesPerFile = OpenRAMiniYamlParser.GetParsedRulesPerFile(Path.Combine(oraFolderPath, @"mods"))
 				.ToDictionary(x => x.Key.Replace('\\', '/'), y => y.Value);
-
-			actorDefinitions = OpenRAMiniYamlParser.GetActorDefinitions(Path.Combine(oraFolderPath, @"mods\d2k\rules"));
 
 			rpc = JsonRpc.Attach(sender, reader, this);
 			rpc.Disconnected += OnRpcDisconnected;

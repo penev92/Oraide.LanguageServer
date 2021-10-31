@@ -8,12 +8,6 @@ namespace Oraide.LanguageServer.YamlParsers
 {
 	public static class OpenRAMiniYamlParser
 	{
-		public static void Parse(in string oraFolderPath)
-		{
-			// var actorDefinitions = ParseRules(Path.Combine(oraFolderPath, @"mods\d2k\rules"));
-			var actorDefinitions = GetActorDefinitions(Path.Combine(oraFolderPath, @"mods\d2k\rules"));
-		}
-
 		public static Dictionary<string, ActorDefinition> ParseRulesOld(in string modFolderPath)
 		{
 			var allStuff = new List<OpenRA.MiniYamlParser.MiniYamlNode>();
@@ -69,10 +63,7 @@ namespace Oraide.LanguageServer.YamlParsers
 
 		static IEnumerable<OpenRA.MiniYamlParser.MiniYamlNode> FlattenChildNodes(OpenRA.MiniYamlParser.MiniYamlNode rootNode)
 		{
-			var nodes = new List<OpenRA.MiniYamlParser.MiniYamlNode>
-			{
-				rootNode
-			};
+			var nodes = new List<OpenRA.MiniYamlParser.MiniYamlNode> { rootNode };
 
 			foreach (var childNode in rootNode.Value.Nodes)
 				nodes.AddRange(FlattenChildNodes(childNode));

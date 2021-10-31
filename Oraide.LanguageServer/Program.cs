@@ -41,7 +41,7 @@ namespace Oraide.LanguageServer
 			stopwatch.Start();
 
 			// ManualYamlParser.Parse(oraFolderPath);
-			OpenRAMiniYamlParser.Parse(oraFolderPath);
+			// OpenRAMiniYamlParser.Parse(oraFolderPath);
 
 			Console.WriteLine(stopwatch.Elapsed);
 		}
