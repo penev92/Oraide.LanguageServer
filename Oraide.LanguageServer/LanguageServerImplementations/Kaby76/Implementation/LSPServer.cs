@@ -39,14 +39,21 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 		/// </summary>
 		private readonly ILookup<string, ActorDefinition> actorDefinitions;
 
-		public LSPServer(Stream sender, Stream reader)
+		public LSPServer(Stream sender, Stream reader, string workspaceFolderPath, string defaultOpenRaFolderPath)
 		{
+			Console.Error.WriteLine("WORKSPACE FOLDER PATH:");
+			Console.Error.WriteLine(workspaceFolderPath);
+			Console.Error.WriteLine("OPENRA FOLDER PATH:");
+			Console.Error.WriteLine(defaultOpenRaFolderPath);
+
+			var codeInformationProvider = new CodeInformationProvider(workspaceFolderPath, defaultOpenRaFolderPath);
+			traitInfos = codeInformationProvider.GetTraitInfos();
+
 			const string oraFolderPath = @"d:\Work.Personal\OpenRA\OpenRA";
 
-			parsedRulesPerFile = OpenRAMiniYamlParser.GetParsedRulesPerFile(Path.Combine(oraFolderPath, @"mods\d2k\rules"))
+			parsedRulesPerFile = OpenRAMiniYamlParser.GetParsedRulesPerFile(Path.Combine(oraFolderPath, @"mods"))
 				.ToDictionary(x => x.Key.Replace('\\', '/'), y => y.Value);
 
-			traitInfos = RoslynCodeParser.Parse(oraFolderPath);
 			actorDefinitions = OpenRAMiniYamlParser.GetActorDefinitions(Path.Combine(oraFolderPath, @"mods\d2k\rules"));
 
 			rpc = JsonRpc.Attach(sender, reader, this);
