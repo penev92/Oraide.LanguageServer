@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Oraide.LanguageServer.CodeParsers;
+using Oraide.Core.Entities;
+using Oraide.Core.Entities.MiniYaml;
 
-namespace Oraide.LanguageServer.YamlParsers
+namespace Oraide.MiniYaml.YamlParsers
 {
 	public static class ManualYamlParser
 	{

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using Oraide.LanguageServer.CodeParsers;
+using Oraide.Core;
+using Oraide.Core.Entities.Csharp;
 
-namespace Oraide.LanguageServer
+namespace Oraide.Csharp
 {
 	// The currently planned/supported use-cases for code information are:
 	//  - Generating symbols to navigate to.
@@ -54,19 +55,19 @@ namespace Oraide.LanguageServer
 				oraFolderPath = workspaceFolderPath;
 			else if (OpenRaFolderUtils.IsModsFolder(workspaceFolderPath))
 			{
-				var parentFolder = Directory.GetParent(workspaceFolderPath).FullName;
+				var parentFolder = Directory.GetParent(workspaceFolderPath)?.FullName;
 				if (OpenRaFolderUtils.IsOpenRaFolder(parentFolder))
 					oraFolderPath = parentFolder;
 			}
 			else if (OpenRaFolderUtils.IsModFolder(workspaceFolderPath))
 			{
-				var parentFolder = Directory.GetParent(workspaceFolderPath).Parent?.FullName;
+				var parentFolder = Directory.GetParent(workspaceFolderPath)?.Parent?.FullName;
 				if (OpenRaFolderUtils.IsOpenRaFolder(parentFolder))
 					oraFolderPath = parentFolder;
 			}
 			else if (OpenRaFolderUtils.IsModSubfolder(workspaceFolderPath))
 			{
-				var parentFolder = Directory.GetParent(workspaceFolderPath).Parent?.Parent?.FullName;
+				var parentFolder = Directory.GetParent(workspaceFolderPath)?.Parent?.Parent?.FullName;
 				if (OpenRaFolderUtils.IsOpenRaFolder(parentFolder))
 					oraFolderPath = parentFolder;
 			}

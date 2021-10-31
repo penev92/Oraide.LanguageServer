@@ -1,21 +1,5 @@
-﻿namespace Oraide.LanguageServer.CodeParsers
+﻿namespace Oraide.Core.Entities.Csharp
 {
-	public readonly struct MemberLocation
-	{
-		public string FilePath { get; }
-
-		public int LineNumber { get; }
-
-		public int CharacterPosition { get; }
-
-		public MemberLocation(string filePath, int lineNumber, int characterPosition)
-		{
-			FilePath = filePath;
-			LineNumber = lineNumber;
-			CharacterPosition = characterPosition;
-		}
-	}
-
 	public readonly struct TraitPropertyInfo
 	{
 		public string PropertyName { get; }
@@ -49,12 +33,5 @@
 			InheritedTypes = inheritedTypes;
 			TraitPropertyInfos = traitPropertyInfos;
 		}
-	}
-
-	public enum CodeMemberType
-	{
-		Class = 1,
-		Trait = 2,
-		Property = 3
 	}
 }

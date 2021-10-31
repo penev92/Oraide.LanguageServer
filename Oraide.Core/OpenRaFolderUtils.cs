@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Linq;
 
-namespace Oraide.LanguageServer
+namespace Oraide.Core
 {
-	class OpenRaFolderUtils
+	public static class OpenRaFolderUtils
 	{
 		const string ModFile = "mod.yaml";
 		const string IconFile = "icon.png";
@@ -14,7 +14,7 @@ namespace Oraide.LanguageServer
 
 		public static bool IsModSubfolder(string folderPath)
 		{
-			return IsModFolder(Directory.GetParent(folderPath).FullName);
+			return IsModFolder(Directory.GetParent(folderPath)?.FullName);
 		}
 
 		public static bool IsModFolder(string folderPath)

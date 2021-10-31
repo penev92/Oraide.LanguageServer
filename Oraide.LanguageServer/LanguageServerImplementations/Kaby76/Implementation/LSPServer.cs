@@ -7,8 +7,11 @@ using System.Linq;
 using System.Threading;
 using LspTypes;
 using Newtonsoft.Json.Linq;
-using Oraide.LanguageServer.CodeParsers;
-using Oraide.LanguageServer.YamlParsers;
+using Oraide.Core.Entities.Csharp;
+using Oraide.Core.Entities.MiniYaml;
+using Oraide.Csharp;
+using Oraide.MiniYaml;
+using Oraide.MiniYaml.YamlParsers;
 using StreamJsonRpc;
 
 namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementation

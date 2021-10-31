@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Oraide.LanguageServer.CodeParsers;
+using Oraide.Core.Entities.Csharp;
+using Oraide.Csharp.CodeParsers;
 
-namespace Oraide.LanguageServer
+namespace Oraide.Csharp
 {
 	abstract class CodeSymbolGenerationStrategy
 	{

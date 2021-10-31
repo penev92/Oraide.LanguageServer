@@ -1,28 +1,7 @@
 ﻿using System.Collections.Generic;
-using Oraide.LanguageServer.CodeParsers;
 
-namespace Oraide.LanguageServer.YamlParsers
+namespace Oraide.Core.Entities.MiniYaml
 {
-	public class MyModData
-	{
-		public MyLoadScreen LoadScreen { get; set; }
-
-		public List<string> Packages { get; set; }
-	}
-
-	public class MyLoadScreen
-	{
-		public string Image { get; set; }
-
-		public string Image2x { get; set; }
-
-		public string Image3x { get; set; }
-
-		public string Text { get; set; }
-
-		public string Type { get; set; }
-	}
-
 	public struct ActorDefinition
 	{
 		public string Name { get; set; }

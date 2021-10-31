@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Oraide.Core.Entities;
+using Oraide.Core.Entities.Csharp;
 
-namespace Oraide.LanguageServer.CodeParsers
+namespace Oraide.Csharp.CodeParsers
 {
 	public static class RoslynCodeParser
 	{
@@ -13,7 +15,7 @@ namespace Oraide.LanguageServer.CodeParsers
 			var traitDictionary = new Dictionary<string, TraitInfo>();
 
 			var filePaths = Directory.EnumerateFiles(oraFolderPath, "*.cs", SearchOption.AllDirectories);
-			foreach (var filePath in filePaths/*.Where(x => x.Contains("Disguise"))*/)
+			foreach (var filePath in filePaths)
 			{
 				var text = File.ReadAllText(filePath);
 				var fileName = Path.GetFileName(filePath).Split('.')[0];

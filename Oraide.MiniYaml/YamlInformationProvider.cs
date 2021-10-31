@@ -1,11 +1,12 @@
 ﻿using System.Linq;
-using Oraide.LanguageServer.YamlParsers;
+using Oraide.Core.Entities.MiniYaml;
+using Oraide.MiniYaml.YamlParsers;
 
-namespace Oraide.LanguageServer
+namespace Oraide.MiniYaml
 {
 	// The currently planned/supported use-cases for MiniYAML information are:
 	//  - Generating symbols to navigate to.
-	class YamlInformationProvider
+	public class YamlInformationProvider
 	{
 		readonly string yamlFolder;
 

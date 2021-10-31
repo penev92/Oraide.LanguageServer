@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Oraide.LanguageServer.CodeParsers;
-using Oraide.LanguageServer.YamlParsers;
 
 namespace Oraide.LanguageServer
 {
@@ -29,10 +27,9 @@ namespace Oraide.LanguageServer
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 
-			var traitDictionary = RoslynCodeParser.Parse(oraFolderPath);
+			// var traitDictionary = RoslynCodeParser.Parse(oraFolderPath);
 
 			Console.WriteLine(stopwatch.Elapsed);
-			Console.WriteLine(traitDictionary.Count);
 		}
 
 		static void ParseYaml(in string oraFolderPath)
