@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Oraide.LanguageServer": {
+      "commandName": "Project",
+      "commandLineArgs": "d:\\Work.Personal\\OpenRA\\OpenRA\\mods\\d2k\\rules d:\\Work.Personal\\OpenRA\\OpenRA\\"
+    }
+  }
+}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using LspTypes;
 using Newtonsoft.Json.Linq;
+using Oraide.Core.Entities.MiniYaml;
 using StreamJsonRpc;
 using Range = LspTypes.Range;
 
@@ -41,7 +42,7 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 			}
 		}
 
-		private bool TryGetTargetCodeDefinitionLocations(OpenRA.MiniYamlParser.MiniYamlNode targetNode, out IEnumerable<Location> definitionLocations)
+		private bool TryGetTargetCodeDefinitionLocations(YamlNode targetNode, out IEnumerable<Location> definitionLocations)
 		{
 			var traitName = targetNode.Key.Split('@')[0];
 			if (!TryGetTraitInfo(traitName, out var traitInfo))
@@ -66,7 +67,7 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 			return true;
 		}
 
-		private bool TryGetTargetYamlDefinitionLocations(OpenRA.MiniYamlParser.MiniYamlNode targetNode, out IEnumerable<Location> definitionLocations)
+		private bool TryGetTargetYamlDefinitionLocations(YamlNode targetNode, out IEnumerable<Location> definitionLocations)
 		{
 			// Check targetNode node type - probably via IndentationLevel enum.
 			// If it is a top-level node *and this is an actor-definition or a weapon-definition file* it definitely is a definition.

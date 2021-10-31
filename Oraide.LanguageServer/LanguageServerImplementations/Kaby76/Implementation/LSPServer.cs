@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,7 +12,6 @@ using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.Csharp;
 using Oraide.MiniYaml;
-using Oraide.MiniYaml.YamlParsers;
 using StreamJsonRpc;
 
 namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementation
@@ -32,7 +32,7 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 		// With the addition of other collections dedicated to holding definitions and this being delegated to a lookup table for client cursor position,
 		// this is now redundant and should be replaced with on-demand parsing of the current file or with a cache that handles didOpen/didChange/didSave.
 		// No point in loading everything up-front and also it could get stale really fast.
-		private readonly IReadOnlyDictionary<string, ReadOnlyCollection<OpenRA.MiniYamlParser.MiniYamlNode>> parsedRulesPerFile;
+		private readonly IReadOnlyDictionary<string, ReadOnlyCollection<YamlNode>> parsedRulesPerFile;
 
 		// TODO: Change to ILookup (to match `actorDefinitions` and also there may be more than one trait with the same name across namespaces).
 		private readonly IDictionary<string, TraitInfo> traitInfos;
@@ -48,16 +48,21 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 			Console.Error.WriteLine(workspaceFolderPath);
 			Console.Error.WriteLine("OPENRA FOLDER PATH:");
 			Console.Error.WriteLine(defaultOpenRaFolderPath);
+			var stopwatch = new Stopwatch();
+			stopwatch.Start();
 
 			var codeInformationProvider = new CodeInformationProvider(workspaceFolderPath, defaultOpenRaFolderPath);
 			traitInfos = codeInformationProvider.GetTraitInfos();
 
+			var elapsed = stopwatch.Elapsed;
+			Console.Error.WriteLine($"Loaded {traitInfos.Count} traitInfos in {elapsed}.");
+
 			var yamlInformationProvider = new YamlInformationProvider(workspaceFolderPath);
 			actorDefinitions = yamlInformationProvider.GetActorDefinitions();
+			parsedRulesPerFile = yamlInformationProvider.GetParsedRulesPerFile();
 
-			const string oraFolderPath = @"d:\Work.Personal\OpenRA\OpenRA";
-			parsedRulesPerFile = OpenRAMiniYamlParser.GetParsedRulesPerFile(Path.Combine(oraFolderPath, @"mods"))
-				.ToDictionary(x => x.Key.Replace('\\', '/'), y => y.Value);
+			elapsed = stopwatch.Elapsed;
+			Console.Error.WriteLine($"Loaded everything in {elapsed}.");
 
 			rpc = JsonRpc.Attach(sender, reader, this);
 			rpc.Disconnected += OnRpcDisconnected;
@@ -252,7 +257,7 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 			}
 		}
 
-		private bool TryGetTargetNode(TextDocumentPositionParams request, out OpenRA.MiniYamlParser.MiniYamlNode targetNode)
+		private bool TryGetTargetNode(TextDocumentPositionParams request, out YamlNode targetNode)
 		{
 			var position = request.Position;
 			var targetLine = (int)position.Line;

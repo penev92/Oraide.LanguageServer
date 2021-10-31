@@ -1,6 +1,7 @@
 ﻿using System;
 using LspTypes;
 using Newtonsoft.Json.Linq;
+using Oraide.Core.Entities.MiniYaml;
 using StreamJsonRpc;
 using Range = LspTypes.Range;
 
@@ -39,7 +40,7 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 			}
 		}
 
-		private bool TryGetTargetCodeHoverInfo(OpenRA.MiniYamlParser.MiniYamlNode targetNode, out (string Content, Range Range) hoverInfo)
+		private bool TryGetTargetCodeHoverInfo(YamlNode targetNode, out (string Content, Range Range) hoverInfo)
 		{
 			var traitName = targetNode.Key.Split('@')[0];
 			if (!TryGetTraitInfo(traitName, out var traitInfo))
@@ -59,7 +60,7 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 			return true;
 		}
 
-		private bool TryGetTargetYamlHoverInfo(OpenRA.MiniYamlParser.MiniYamlNode targetNode, out (string Content, Range Range) hoverInfo)
+		private bool TryGetTargetYamlHoverInfo(YamlNode targetNode, out (string Content, Range Range) hoverInfo)
 		{
 			// TODO:
 			hoverInfo = (null, null);

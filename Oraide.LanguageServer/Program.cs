@@ -27,7 +27,6 @@ namespace Oraide.LanguageServer
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 
-			// var traitDictionary = RoslynCodeParser.Parse(oraFolderPath);
 
 			Console.WriteLine(stopwatch.Elapsed);
 		}
@@ -37,8 +36,6 @@ namespace Oraide.LanguageServer
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 
-			// ManualYamlParser.Parse(oraFolderPath);
-			// OpenRAMiniYamlParser.Parse(oraFolderPath);
 
 			Console.WriteLine(stopwatch.Elapsed);
 		}

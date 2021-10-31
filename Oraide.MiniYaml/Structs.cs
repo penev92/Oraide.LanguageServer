@@ -2,6 +2,15 @@
 
 namespace Oraide.MiniYaml.YamlParsers
 {
+	public class Mod
+	{
+		// public string Name { get; set; }
+		//
+		// public string FullName { get; set; }
+
+		public string RootDirectory { get; set; }
+	}
+
 	public class MyModData
 	{
 		public MyLoadScreen LoadScreen { get; set; }
