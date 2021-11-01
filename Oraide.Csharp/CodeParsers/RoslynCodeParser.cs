@@ -63,7 +63,44 @@ namespace Oraide.Csharp.CodeParsers
 									foreach (var member in classElement.Members)
 										if (member is FieldDeclarationSyntax fieldMember)
 											foreach (var variableDeclaratorSyntax in fieldMember.Declaration.Variables)
-												traitProperties.Add(new TraitPropertyInfo(variableDeclaratorSyntax.Identifier.ValueText, new MemberLocation(filePath, 0, 0))); // TODO:
+											{
+												var fieldDesc = "";
+												var loadUsing = "";
+												foreach (var attributeList in fieldMember.AttributeLists)
+												foreach (var attribute in attributeList.Attributes)
+													if (attribute.Name.GetText().ToString() == "Desc")
+														fieldDesc = attribute.ArgumentList.Arguments.ToString();
+													else if (attribute.Name.GetText().ToString() == "FieldLoader.LoadUsing")
+													{
+														loadUsing = attribute.ArgumentList.Arguments.ToString();
+													}
+													else
+													{
+														// Full set of attributes on trait properties for future reference.
+														if (attribute.Name.GetText().ToString() != "FieldLoader.Require"
+															&& attribute.Name.GetText().ToString() != "FieldLoader.Ignore"
+															&& attribute.Name.GetText().ToString() != "ActorReference"
+														    && attribute.Name.GetText().ToString() != "VoiceReference"
+														    && attribute.Name.GetText().ToString() != "VoiceSetReference"
+															&& attribute.Name.GetText().ToString() != "CursorReference"
+														    && attribute.Name.GetText().ToString() != "WeaponReference"
+														    && attribute.Name.GetText().ToString() != "PaletteReference"
+														    && attribute.Name.GetText().ToString() != "PaletteDefinition"
+															&& attribute.Name.GetText().ToString() != "SequenceReference"
+															&& attribute.Name.GetText().ToString() != "NotificationReference"
+															&& attribute.Name.GetText().ToString() != "GrantedConditionReference"
+															&& attribute.Name.GetText().ToString() != "ConsumedConditionReference"
+															&& attribute.Name.GetText().ToString() != "LocomotorReference")
+															fieldDesc = fieldDesc;
+													}
+
+												traitProperties.Add(
+													new TraitPropertyInfo(
+														variableDeclaratorSyntax.Identifier.ValueText,
+														new MemberLocation(filePath, 0, 0), // TODO:
+														fieldDesc,
+														loadUsing));
+											}
 
 									// Finally, add the TraitInfo to the list of loaded TraitInfos.
 									var location = new MemberLocation(filePath, 0, 0); // TODO:

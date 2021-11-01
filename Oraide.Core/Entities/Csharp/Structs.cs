@@ -6,10 +6,16 @@
 
 		public MemberLocation Location { get; }
 
-		public TraitPropertyInfo(string propertyName, MemberLocation location)
+		public string Description { get; }
+
+		public string OtherAttribute { get; }
+
+		public TraitPropertyInfo(string propertyName, MemberLocation location, string description, string otherAttribute)
 		{
 			PropertyName = propertyName;
 			Location = location;
+			Description = description;
+			OtherAttribute = otherAttribute;
 		}
 	}
 
