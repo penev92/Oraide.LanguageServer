@@ -46,6 +46,26 @@ namespace Oraide.MiniYaml.YamlParsers
 			return actorDefinitions.ToLookup(x => x.Name, y => y);
 		}
 
+		public static ILookup<string, MemberLocation> GetConditionDefinitions(in string modFolderPath)
+		{
+			var result = new List<KeyValuePair<string, MemberLocation>>();
+
+			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories);
+			foreach (var filePath in filePaths)
+			{
+				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
+				var yamlNodes = nodes.Select(x => x.ToYamlNode());
+				var flattenedNodes = yamlNodes.SelectMany(FlattenChildNodes);
+				var conditions = flattenedNodes
+					.Where(x => x.Key.EndsWith("Condition") && !string.IsNullOrWhiteSpace(x.Value))
+					.Select(x => new KeyValuePair<string, MemberLocation>(x.Value.TrimStart('!'), x.Location));
+
+				result.AddRange(conditions);
+			}
+
+			return result.ToLookup(x => x.Key, y => y.Value);
+		}
+
 		static IEnumerable<YamlNode> FlattenChildNodes(YamlNode rootNode)
 		{
 			var nodes = new List<YamlNode> { rootNode };

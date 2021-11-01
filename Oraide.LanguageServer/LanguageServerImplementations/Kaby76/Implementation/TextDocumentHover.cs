@@ -19,11 +19,11 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 					if (trace)
 					{
 						Console.Error.WriteLine("<-- TextDocument-Hover");
-						Console.Error.WriteLine(arg.ToString());
+						// Console.Error.WriteLine(arg.ToString());
 					}
 
 					var request = arg.ToObject<TextDocumentPositionParams>();
-					if (TryGetTargetNode(request, out var targetNode))
+					if (TryGetTargetNode(request, out var targetNode, out var targetType, out var targetString))
 					{
 						if (TryGetTargetCodeHoverInfo(targetNode, out var codeHoverInfo))
 							return HoverFromHoverInfo(codeHoverInfo.Content, codeHoverInfo.Range);

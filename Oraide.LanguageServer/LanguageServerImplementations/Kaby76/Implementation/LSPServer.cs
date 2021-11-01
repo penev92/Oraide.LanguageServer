@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using LspTypes;
 using Newtonsoft.Json.Linq;
+using Oraide.Core.Entities;
 using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.Csharp;
@@ -38,9 +39,14 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 		private readonly IDictionary<string, TraitInfo> traitInfos;
 
 		/// <summary>
-		/// A collection of all actor definitions in YAML (including abstract ones) grouped by they key/name.
+		/// A collection of all actor definitions in YAML (including abstract ones) grouped by their key/name.
 		/// </summary>
 		private readonly ILookup<string, ActorDefinition> actorDefinitions;
+
+		/// <summary>
+		/// A collection of all granted and consumed conditions and their usages in YAML grouped by their name.
+		/// </summary>
+		private readonly ILookup<string, MemberLocation> conditionDefinitions;
 
 		public LSPServer(Stream sender, Stream reader, string workspaceFolderPath, string defaultOpenRaFolderPath)
 		{
@@ -58,8 +64,9 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 			Console.Error.WriteLine($"Loaded {traitInfos.Count} traitInfos in {elapsed}.");
 
 			var yamlInformationProvider = new YamlInformationProvider(workspaceFolderPath);
-			actorDefinitions = yamlInformationProvider.GetActorDefinitions();
 			parsedRulesPerFile = yamlInformationProvider.GetParsedRulesPerFile();
+			actorDefinitions = yamlInformationProvider.GetActorDefinitions();
+			conditionDefinitions = yamlInformationProvider.GetConditionDefinitions();
 
 			elapsed = stopwatch.Elapsed;
 			Console.Error.WriteLine($"Loaded everything in {elapsed}.");
@@ -208,7 +215,7 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 					if (trace)
 					{
 						System.Console.Error.WriteLine("<-- Initialized");
-						System.Console.Error.WriteLine(arg.ToString());
+						// System.Console.Error.WriteLine(arg.ToString());
 					}
 				}
 				catch (Exception)
@@ -257,7 +264,7 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 			}
 		}
 
-		private bool TryGetTargetNode(TextDocumentPositionParams request, out YamlNode targetNode)
+		private bool TryGetTargetNode(TextDocumentPositionParams request, out YamlNode targetNode, out string targetType, out string targetString)
 		{
 			var position = request.Position;
 			var targetLine = (int)position.Line;
@@ -267,19 +274,70 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 
 			if (parsedRulesPerFile.ContainsKey(fileIdentifier) && parsedRulesPerFile[fileIdentifier].Count >= targetLine)
 			{
+				var file = new Uri(request.TextDocument.Uri).LocalPath.Substring(1);
+				var lines = File.ReadAllLines(file);	// TODO: Cache these.
+				var line = lines[request.Position.Line];
+				var pre = line.Substring(0, (int)request.Position.Character);
+				var post = line.Substring((int)request.Position.Character);
+
+				if ((string.IsNullOrWhiteSpace(pre) && (post[0] == '\t' || post[0] == ' '))
+				    || string.IsNullOrWhiteSpace(post))
+				{
+					targetNode = default;
+					targetType = "";
+					targetString = ""; // TODO: Change to enum?
+					return false;
+				}
+
 				targetNode = parsedRulesPerFile[fileIdentifier][targetLine];
+				targetString = "";
+				if (pre.Contains(':'))
+				{
+					targetType = "value";
+					var startIndex = 0;
+					var endIndex = 1;
+					var hasReached = false;
+					while (endIndex < targetNode.Value.Length)
+					{
+						if (endIndex == request.Position.Character - line.LastIndexOf(targetNode.Value))
+							hasReached = true;
+
+						if (targetNode.Value[endIndex] == ',' || endIndex == targetNode.Value.Length - 1)
+						{
+							if (!hasReached)
+								startIndex = endIndex;
+							else
+							{
+								targetString = targetNode.Value.Substring(startIndex, endIndex - startIndex + 1).Trim(' ', '\t', ',');
+								Console.Error.WriteLine(targetString);
+								break;
+							}
+						}
+
+						endIndex++;
+					}
+				}
+				else
+				{
+					targetType = "key";
+					targetString = targetNode.Key;
+				}
+
 				return true;
 			}
 
 			targetNode = default;
+			targetType = "";
+			targetString = ""; // TODO: Change to enum?
 			return false;
 		}
 
-		private bool TryGetTraitInfo(string traitName, out TraitInfo traitInfo)
+		private bool TryGetTraitInfo(string traitName, out TraitInfo traitInfo, bool addInfoSuffix = true)
 		{
-			if (traitInfos.ContainsKey($"{traitName}Info"))
+			var searchString = addInfoSuffix ? $"{traitName}Info" : traitName;
+			if (traitInfos.ContainsKey(searchString))
 			{
-				traitInfo = traitInfos[$"{traitName}Info"];
+				traitInfo = traitInfos[searchString];
 				return true;
 			}
 

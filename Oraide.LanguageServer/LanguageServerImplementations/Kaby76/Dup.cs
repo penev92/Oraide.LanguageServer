@@ -53,7 +53,7 @@
 
 			var str = Encoding.Default.GetString(truncatedArray);
 			sb.AppendLine("data (length " + str.Length + ")= '" + str + "'");
-			System.Console.Error.WriteLine(sb.ToString());
+			// System.Console.Error.WriteLine(sb.ToString());
 		}
 	}
 }

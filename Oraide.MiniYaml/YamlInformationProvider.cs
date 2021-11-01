@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Oraide.Core.Entities;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.MiniYaml.YamlParsers;
 
@@ -26,6 +27,11 @@ namespace Oraide.MiniYaml
 		{
 			return OpenRAMiniYamlParser.GetParsedRulesPerFile(yamlFolder)
 				.ToDictionary(x => x.Key.Replace('\\', '/'), y => y.Value);
+		}
+
+		public ILookup<string, MemberLocation> GetConditionDefinitions()
+		{
+			return OpenRAMiniYamlParser.GetConditionDefinitions(yamlFolder);
 		}
 	}
 }
