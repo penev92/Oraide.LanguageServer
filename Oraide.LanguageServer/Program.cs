@@ -1,43 +1,27 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Oraide.LanguageServer.LanguageServerProtocolHandlers;
+using Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument;
 
 namespace Oraide.LanguageServer
 {
 	class Program
 	{
-		// private static void Main(string[] args) => TestParsers();
-		private static void Main(string[] args) => TestLanguageServerAsync(args).Wait();
-
-		private static async Task TestLanguageServerAsync(string[] args)
+		private static async Task Main(string[] args)
 		{
-			await LanguageServerImplementations.Kaby76.Program.MainAsync(args);
-		}
+			// Add argument validation, maybe parsing, or maybe even an overkill NuGet package for handling them.
 
-		static void TestParsers()
-		{
-			const string oraFolderPath = @"d:\Work.Personal\OpenRA\OpenRA\";
+			await using var serviceProvider = new ServiceCollection()
+				.AddSingleton<ILanguageServer, OpenRaLanguageServer>()
+				.AddSingleton<IRpcMessageHandler, InitializeHandler>()
+				.AddSingleton<IRpcMessageHandler, ShutdownHandler>()
+				.AddSingleton<IRpcMessageHandler, TextDocumentDefinitionHandler>()
+				.AddSingleton<IRpcMessageHandler, TextDocumentHoverHandler>()
+				.BuildServiceProvider();
 
-			// ParseCode(oraFolderPath);
-			ParseYaml(oraFolderPath);
-		}
-
-		static void ParseCode(in string oraFolderPath)
-		{
-			var stopwatch = new Stopwatch();
-			stopwatch.Start();
-
-
-			Console.WriteLine(stopwatch.Elapsed);
-		}
-
-		static void ParseYaml(in string oraFolderPath)
-		{
-			var stopwatch = new Stopwatch();
-			stopwatch.Start();
-
-
-			Console.WriteLine(stopwatch.Elapsed);
+			await serviceProvider
+				.GetService<ILanguageServer>()
+				.RunAsync();
 		}
 	}
 }

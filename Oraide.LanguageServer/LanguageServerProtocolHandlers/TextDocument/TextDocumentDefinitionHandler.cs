@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using LspTypes;
-using Newtonsoft.Json.Linq;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
-using StreamJsonRpc;
 using Range = LspTypes.Range;
 
-namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementation
+namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
-	public partial class LSPServer
+	public class TextDocumentDefinitionHandler : BaseRpcMessageHandler
 	{
-		[JsonRpcMethod(Methods.TextDocumentDefinitionName)]
-		public IEnumerable<Location> Definition(JToken arg)
+		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentDefinitionName)]
+		public IEnumerable<Location> Definition(TextDocumentPositionParams positionParams)
 		{
 			lock (_object)
 			{
@@ -27,27 +24,29 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 						// Console.Error.WriteLine(arg.ToString());
 					}
 
-					var request = arg.ToObject<TextDocumentPositionParams>();
-					if (TryGetTargetNode(request, out var targetNode, out var targetType, out var targetString))
+					if (TryGetTargetNode(positionParams, out var targetNode, out var targetType, out var targetString))
 					{
-						if (TryGetTargetCodeDefinitionLocations(targetNode, targetType, targetString, out var codeDefinitionLocations))
+						if (TryGetTargetCodeDefinitionLocations(targetNode, targetType, targetString,
+							out var codeDefinitionLocations))
 							return codeDefinitionLocations;
 
-						if (TryGetTargetYamlDefinitionLocations(targetNode, targetType, targetString, out var yamlDefinitionLocations))
+						if (TryGetTargetYamlDefinitionLocations(targetNode, targetType, targetString,
+							out var yamlDefinitionLocations))
 							return yamlDefinitionLocations;
 					}
 				}
 				catch (Exception e)
 				{
-						Console.Error.WriteLine("EXCEPTION!!!");
-						Console.Error.WriteLine(e.ToString());
+					Console.Error.WriteLine("EXCEPTION!!!");
+					Console.Error.WriteLine(e.ToString());
 				}
 
 				return Enumerable.Empty<Location>();
 			}
 		}
 
-		private bool TryGetTargetCodeDefinitionLocations(YamlNode targetNode, string targetType, string targetString, out IEnumerable<Location> definitionLocations)
+		private bool TryGetTargetCodeDefinitionLocations(YamlNode targetNode, string targetType, string targetString,
+			out IEnumerable<Location> definitionLocations)
 		{
 			MemberLocation? location = null;
 
@@ -82,8 +81,9 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 					Uri = new Uri(location.Value.FilePath).ToString(),
 					Range = new Range
 					{
-						Start = new Position((uint)location.Value.LineNumber, (uint)location.Value.CharacterPosition),
-						End = new Position((uint)location.Value.LineNumber, (uint)location.Value.CharacterPosition + 5)
+						Start = new Position((uint) location.Value.LineNumber, (uint) location.Value.CharacterPosition),
+						End = new Position((uint) location.Value.LineNumber,
+							(uint) location.Value.CharacterPosition + 5)
 					}
 				}
 			};
@@ -91,30 +91,32 @@ namespace Oraide.LanguageServer.LanguageServerImplementations.Kaby76.Implementat
 			return true;
 		}
 
-		private bool TryGetTargetYamlDefinitionLocations(YamlNode targetNode, string targetType, string targetString, out IEnumerable<Location> definitionLocations)
+		private bool TryGetTargetYamlDefinitionLocations(YamlNode targetNode, string targetType, string targetString,
+			out IEnumerable<Location> definitionLocations)
 		{
 			// Check targetNode node type - probably via IndentationLevel enum.
 			// If it is a top-level node *and this is an actor-definition or a weapon-definition file* it definitely is a definition.
 			// If it is indented once we need to check if the target is the key or the value - keys are traits, but values *could* reference actor/weapon definitions.
 
-			definitionLocations = actorDefinitions[targetString].Select(x => new Location
-				{
-					Uri = new Uri(x.Location.FilePath).ToString(),
-					Range = new Range
-					{
-						Start = new Position((uint) x.Location.LineNumber - 1, (uint) x.Location.CharacterPosition),
-						End = new Position((uint) x.Location.LineNumber - 1, (uint) x.Location.CharacterPosition + 5)
-					}
-				})
-				.Union(conditionDefinitions[targetString].Select(x => new Location
-				{
-					Uri = new Uri(x.FilePath).ToString(),
-					Range = new Range
-					{
-						Start = new Position((uint) x.LineNumber - 1, (uint) x.CharacterPosition),
-						End = new Position((uint) x.LineNumber - 1, (uint) x.CharacterPosition + 5)
-					}
-				}));
+			definitionLocations = new List<Location>();
+			// definitionLocations = symbolCache.ActorDefinitions[targetString].Select(x => new Location
+			// 	{
+			// 		Uri = new Uri(x.Location.FilePath).ToString(),
+			// 		Range = new Range
+			// 		{
+			// 			Start = new Position((uint) x.Location.LineNumber - 1, (uint) x.Location.CharacterPosition),
+			// 			End = new Position((uint) x.Location.LineNumber - 1, (uint) x.Location.CharacterPosition + 5)
+			// 		}
+			// 	})
+			// 	.Union(symbolCache.ConditionDefinitions[targetString].Select(x => new Location
+			// 	{
+			// 		Uri = new Uri(x.FilePath).ToString(),
+			// 		Range = new Range
+			// 		{
+			// 			Start = new Position((uint) x.LineNumber - 1, (uint) x.CharacterPosition),
+			// 			End = new Position((uint) x.LineNumber - 1, (uint) x.CharacterPosition + 5)
+			// 		}
+			// 	}));
 
 			return true;
 		}
