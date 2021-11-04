@@ -7,11 +7,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Oraide.LanguageServer", "Or
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenRA.MiniYamlParser", "OpenRA.MiniYamlParser\OpenRA.MiniYamlParser.csproj", "{567B8C5A-0CAD-474C-B826-0D89F03269FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oraide.Csharp", "Oraide.Csharp\Oraide.Csharp.csproj", "{7A470288-68E7-489C-AFE6-D1E0F8A879AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Oraide.Csharp", "Oraide.Csharp\Oraide.Csharp.csproj", "{7A470288-68E7-489C-AFE6-D1E0F8A879AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oraide.MiniYaml", "Oraide.MiniYaml\Oraide.MiniYaml.csproj", "{4E9C5672-9C60-4EEC-AF68-91CF64B6D2A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Oraide.MiniYaml", "Oraide.MiniYaml\Oraide.MiniYaml.csproj", "{4E9C5672-9C60-4EEC-AF68-91CF64B6D2A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oraide.Core", "Oraide.Core\Oraide.Core.csproj", "{DD1E2767-6522-4A30-9FE6-950295909066}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Oraide.Core", "Oraide.Core\Oraide.Core.csproj", "{DD1E2767-6522-4A30-9FE6-950295909066}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{610C3B7B-F73A-47F5-95E6-71FEE10104B7}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Oraide.ruleset = Oraide.ruleset
+		stylecop.json = stylecop.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
