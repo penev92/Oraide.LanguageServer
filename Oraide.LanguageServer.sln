@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Oraide.LanguageServer", "Oraide.LanguageServer\Oraide.LanguageServer.csproj", "{D77DC251-C72F-4833-A843-DB57308F1D6A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenRA.MiniYamlParser", "..\..\OpenRA.MiniYamlParser\OpenRA.MiniYamlParser\OpenRA.MiniYamlParser.csproj", "{567B8C5A-0CAD-474C-B826-0D89F03269FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenRA.MiniYamlParser", "OpenRA.MiniYamlParser\OpenRA.MiniYamlParser.csproj", "{567B8C5A-0CAD-474C-B826-0D89F03269FA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oraide.Csharp", "Oraide.Csharp\Oraide.Csharp.csproj", "{7A470288-68E7-489C-AFE6-D1E0F8A879AC}"
 EndProject
