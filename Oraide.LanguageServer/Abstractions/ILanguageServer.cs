@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Oraide.LanguageServer
+namespace Oraide.LanguageServer.Abstractions
 {
 	public interface ILanguageServer
 	{

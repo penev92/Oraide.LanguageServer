@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Oraide.LanguageServer.LanguageServerProtocolHandlers;
-using Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument;
+using Oraide.LanguageServer.Abstractions;
+using Oraide.LanguageServer.Extensions;
 
 namespace Oraide.LanguageServer
 {
@@ -12,11 +12,10 @@ namespace Oraide.LanguageServer
 			// Add argument validation, maybe parsing, or maybe even an overkill NuGet package for handling them.
 
 			await using var serviceProvider = new ServiceCollection()
-				.AddSingleton<ILanguageServer, OpenRaLanguageServer>()
-				.AddSingleton<IRpcMessageHandler, InitializeHandler>()
-				.AddSingleton<IRpcMessageHandler, ShutdownHandler>()
-				.AddSingleton<IRpcMessageHandler, TextDocumentDefinitionHandler>()
-				.AddSingleton<IRpcMessageHandler, TextDocumentHoverHandler>()
+				.AddSymbolCache(args[0], args[1])
+				.AddLanguageServer()
+				.AddCoreLspMessageHandlers()
+				.AddTextDocumentLspMessageHandlers()
 				.BuildServiceProvider();
 
 			await serviceProvider

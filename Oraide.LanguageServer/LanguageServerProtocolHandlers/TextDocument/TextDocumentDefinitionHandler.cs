@@ -5,12 +5,16 @@ using LspTypes;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
+using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Range = LspTypes.Range;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
 	public class TextDocumentDefinitionHandler : BaseRpcMessageHandler
 	{
+		public TextDocumentDefinitionHandler(SymbolCache symbolCache)
+			: base(symbolCache) { }
+
 		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentDefinitionName)]
 		public IEnumerable<Location> Definition(TextDocumentPositionParams positionParams)
 		{
@@ -59,13 +63,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				// Assuming we are targeting a trait property, search for a trait based on the parent node.
 				traitName = targetNode.ParentNode?.Key.Split('@')[0];
 				if (TryGetTraitInfo(traitName, out traitInfo))
-				{
 					if (CheckTraitInheritanceTree(traitInfo, targetString, out var propertyLocation))
-					{
 						location = propertyLocation;
-						var a = 1;
-					}
-				}
 			}
 
 			if (location == null)
@@ -99,24 +98,24 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			// If it is indented once we need to check if the target is the key or the value - keys are traits, but values *could* reference actor/weapon definitions.
 
 			definitionLocations = new List<Location>();
-			// definitionLocations = symbolCache.ActorDefinitions[targetString].Select(x => new Location
-			// 	{
-			// 		Uri = new Uri(x.Location.FilePath).ToString(),
-			// 		Range = new Range
-			// 		{
-			// 			Start = new Position((uint) x.Location.LineNumber - 1, (uint) x.Location.CharacterPosition),
-			// 			End = new Position((uint) x.Location.LineNumber - 1, (uint) x.Location.CharacterPosition + 5)
-			// 		}
-			// 	})
-			// 	.Union(symbolCache.ConditionDefinitions[targetString].Select(x => new Location
-			// 	{
-			// 		Uri = new Uri(x.FilePath).ToString(),
-			// 		Range = new Range
-			// 		{
-			// 			Start = new Position((uint) x.LineNumber - 1, (uint) x.CharacterPosition),
-			// 			End = new Position((uint) x.LineNumber - 1, (uint) x.CharacterPosition + 5)
-			// 		}
-			// 	}));
+			definitionLocations = symbolCache.ActorDefinitions[targetString].Select(x => new Location
+				{
+					Uri = new Uri(x.Location.FilePath).ToString(),
+					Range = new Range
+					{
+						Start = new Position((uint) x.Location.LineNumber - 1, (uint) x.Location.CharacterPosition),
+						End = new Position((uint) x.Location.LineNumber - 1, (uint) x.Location.CharacterPosition + 5)
+					}
+				})
+				.Union(symbolCache.ConditionDefinitions[targetString].Select(x => new Location
+				{
+					Uri = new Uri(x.FilePath).ToString(),
+					Range = new Range
+					{
+						Start = new Position((uint) x.LineNumber - 1, (uint) x.CharacterPosition),
+						End = new Position((uint) x.LineNumber - 1, (uint) x.CharacterPosition + 5)
+					}
+				}));
 
 			return true;
 		}

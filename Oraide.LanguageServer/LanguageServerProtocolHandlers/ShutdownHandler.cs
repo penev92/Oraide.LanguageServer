@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using LspTypes;
 using Newtonsoft.Json.Linq;
-using StreamJsonRpc;
+using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 {
 	public class ShutdownHandler : BaseRpcMessageHandler
 	{
+		public ShutdownHandler(SymbolCache symbolCache)
+			: base(symbolCache) { }
+
 		[OraideCustomJsonRpcMethodTag(Methods.ShutdownName)]
 		public JToken ShutdownName()
 		{
