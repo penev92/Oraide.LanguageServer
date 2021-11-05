@@ -13,7 +13,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 		[OraideCustomJsonRpcMethodTag(Methods.ShutdownName)]
 		public JToken ShutdownName()
 		{
-			lock (_object)
+			lock (LockObject)
 			{
 				try
 				{
@@ -33,7 +33,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 		[OraideCustomJsonRpcMethodTag(Methods.ExitName)]
 		public void ExitName()
 		{
-			lock (_object)
+			lock (LockObject)
 			{
 				try
 				{

@@ -43,7 +43,7 @@ namespace Oraide.Csharp
 			}
 		}
 
-		public IDictionary<string, TraitInfo> GetTraitInfos()
+		public IReadOnlyDictionary<string, TraitInfo> GetTraitInfos()
 		{
 			return symbolGenerator.GetTraitInfos(openRaFolder);
 		}

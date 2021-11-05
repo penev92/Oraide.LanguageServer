@@ -10,7 +10,7 @@ namespace Oraide.Csharp.CodeParsers
 {
 	public static class RoslynCodeParser
 	{
-		public static IDictionary<string, TraitInfo> Parse(in string oraFolderPath)
+		public static IReadOnlyDictionary<string, TraitInfo> Parse(in string oraFolderPath)
 		{
 			var traitDictionary = new Dictionary<string, TraitInfo>();
 

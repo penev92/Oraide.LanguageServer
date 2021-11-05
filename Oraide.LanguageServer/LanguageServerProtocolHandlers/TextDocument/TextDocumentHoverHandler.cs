@@ -14,7 +14,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentHoverName)]
 		public Hover Hover(TextDocumentPositionParams positionParams)
 		{
-			lock (_object)
+			lock (LockObject)
 			{
 				try
 				{
@@ -28,7 +28,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					{
 						if (TryGetTargetCodeHoverInfo(targetNode, out var codeHoverInfo))
 							return HoverFromHoverInfo(codeHoverInfo.Content, codeHoverInfo.Range);
-					
+
 						if (TryGetTargetYamlHoverInfo(targetNode, out var yamlHoverInfo))
 							return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
 					}

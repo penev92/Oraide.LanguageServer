@@ -18,7 +18,7 @@ namespace Oraide.LanguageServer.Extensions
 			return serviceCollection.AddSingleton<ILanguageServer, OpenRaLanguageServer>();
 		}
 
-		public static IServiceCollection AddCoreLspMessageHandlers(this IServiceCollection serviceCollection)
+		public static IServiceCollection AddGeneralLspMessageHandlers(this IServiceCollection serviceCollection)
 		{
 			return serviceCollection
 				.AddSingleton<IRpcMessageHandler, InitializeHandler>()

@@ -40,7 +40,9 @@ namespace Oraide.LanguageServer
 			Environment.Exit(0);
 		}
 
-		#region LanguageServerProtocol messagehandlers
+		#region LanguageServerProtocol message handlers
+
+		#region General messages
 
 		[JsonRpcMethod(Methods.InitializeName)]
 		public InitializeResult Initialize(JToken arg)
@@ -69,6 +71,8 @@ namespace Oraide.LanguageServer
 			var (messageHandlerClass, methodInfo) = rpcMessageHandlers[Methods.ExitName];
 			methodInfo.Invoke(messageHandlerClass, null);
 		}
+
+		#endregion
 
 		[JsonRpcMethod(Methods.TextDocumentDefinitionName)]
 		public IEnumerable<Location> Definition(JToken arg)

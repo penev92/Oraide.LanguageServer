@@ -12,7 +12,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 		[OraideCustomJsonRpcMethodTag(Methods.InitializeName)]
 		public InitializeResult Initialize(InitializeParams initializeParams)
 		{
-			lock (_object)
+			lock (LockObject)
 			{
 				if (trace)
 				{
@@ -20,8 +20,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 					Console.Error.WriteLine("<-- AAAAAAAAAAAAAAAAAAAAAAAAAAAAAASDASDASDASDASd");
 					//Console.Error.WriteLine(arg.ToString());
 				}
-
-				// var init_params = arg.ToObject<InitializeParams>();
 
 				var capabilities = new ServerCapabilities
 				{
@@ -48,17 +46,16 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 					DocumentFormattingProvider = false,
 					DocumentRangeFormattingProvider = false,
 					RenameProvider = false,
-					FoldingRangeProvider =
-						new SumType<bool, FoldingRangeOptions, FoldingRangeRegistrationOptions>(false),
+					FoldingRangeProvider = false,
 					ExecuteCommandProvider = null,
 					WorkspaceSymbolProvider = false,
-					SemanticTokensProvider = new SemanticTokensOptions()
+					SemanticTokensProvider = new SemanticTokensOptions
 					{
 						Full = true,
 						Range = false,
-						Legend = new SemanticTokensLegend()
+						Legend = new SemanticTokensLegend
 						{
-							tokenTypes = new string[]
+							tokenTypes = new[]
 							{
 								"class",
 								"variable",
@@ -67,7 +64,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 								"string",
 								"keyword",
 							},
-							tokenModifiers = new string[]
+							tokenModifiers = new[]
 							{
 								"declaration",
 								"documentation",
@@ -95,16 +92,13 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 		[OraideCustomJsonRpcMethodTag(Methods.InitializedName)]
 		public void InitializedName(InitializedParams initializedParams)
 		{
-			lock (_object)
+			lock (LockObject)
 			{
 				try
 				{
-					// var init_params = arg.ToObject<InitializedParams>();
-
 					if (trace)
 					{
-						System.Console.Error.WriteLine("<-- Initialized");
-						// System.Console.Error.WriteLine(arg.ToString());
+						Console.Error.WriteLine("<-- Initialized");
 					}
 				}
 				catch (Exception)

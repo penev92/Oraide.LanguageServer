@@ -18,7 +18,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentDefinitionName)]
 		public IEnumerable<Location> Definition(TextDocumentPositionParams positionParams)
 		{
-			lock (_object)
+			lock (LockObject)
 			{
 				try
 				{

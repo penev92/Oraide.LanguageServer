@@ -3,14 +3,14 @@ using System.IO;
 using LspTypes;
 using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
-using Oraide.LanguageServer.LanguageServerProtocolHandlers;
 
 namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 {
 	public abstract class BaseRpcMessageHandler : IRpcMessageHandler
 	{
+		protected static readonly object LockObject = new object();
+
 		protected readonly bool trace = true;
-		protected static readonly object _object = new object();
 		protected readonly SymbolCache symbolCache;
 
 		protected BaseRpcMessageHandler(SymbolCache symbolCache)
@@ -33,7 +33,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				var line = lines[request.Position.Line];
 				var pre = line.Substring(0, (int)request.Position.Character);
 				var post = line.Substring((int)request.Position.Character);
-			
+
 				if ((string.IsNullOrWhiteSpace(pre) && (post[0] == '\t' || post[0] == ' '))
 				    || string.IsNullOrWhiteSpace(post))
 				{
@@ -42,7 +42,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 					targetString = ""; // TODO: Change to enum?
 					return false;
 				}
-			
+
 				targetNode = symbolCache.ParsedRulesPerFile[fileIdentifier][targetLine];
 				targetString = "";
 				if (pre.Contains(':'))
@@ -53,9 +53,9 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 					var hasReached = false;
 					while (endIndex < targetNode.Value.Length)
 					{
-						if (endIndex == request.Position.Character - line.LastIndexOf(targetNode.Value))
+						if (endIndex == request.Position.Character - line.LastIndexOf(targetNode.Value, StringComparison.InvariantCulture))
 							hasReached = true;
-			
+
 						if (targetNode.Value[endIndex] == ',' || endIndex == targetNode.Value.Length - 1)
 						{
 							if (!hasReached)
@@ -67,7 +67,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 								break;
 							}
 						}
-			
+
 						endIndex++;
 					}
 				}
@@ -76,7 +76,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 					targetType = "key";
 					targetString = targetNode.Key;
 				}
-			
+
 				return true;
 			}
 

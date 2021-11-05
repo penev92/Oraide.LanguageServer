@@ -7,12 +7,12 @@ namespace Oraide.Csharp
 {
 	abstract class CodeSymbolGenerationStrategy
 	{
-		public abstract IDictionary<string, TraitInfo> GetTraitInfos(string openRaFolder);
+		public abstract IReadOnlyDictionary<string, TraitInfo> GetTraitInfos(string openRaFolder);
 	}
 
 	class CodeParsingSymbolGenerationStrategy : CodeSymbolGenerationStrategy
 	{
-		public override IDictionary<string, TraitInfo> GetTraitInfos(string openRaFolder)
+		public override IReadOnlyDictionary<string, TraitInfo> GetTraitInfos(string openRaFolder)
 		{
 			return RoslynCodeParser.Parse(openRaFolder);
 		}
@@ -20,7 +20,7 @@ namespace Oraide.Csharp
 
 	class ReflectionSymbolGenerationStrategy : CodeSymbolGenerationStrategy
 	{
-		public override IDictionary<string, TraitInfo> GetTraitInfos(string openRaFolder)
+		public override IReadOnlyDictionary<string, TraitInfo> GetTraitInfos(string openRaFolder)
 		{
 			throw new NotImplementedException();
 		}
@@ -28,7 +28,7 @@ namespace Oraide.Csharp
 
 	class FromStaticFileSymbolGenerationStrategy : CodeSymbolGenerationStrategy
 	{
-		public override IDictionary<string, TraitInfo> GetTraitInfos(string openRaFolder)
+		public override IReadOnlyDictionary<string, TraitInfo> GetTraitInfos(string openRaFolder)
 		{
 			throw new NotImplementedException();
 		}

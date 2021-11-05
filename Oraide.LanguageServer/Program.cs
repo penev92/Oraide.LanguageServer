@@ -14,7 +14,7 @@ namespace Oraide.LanguageServer
 			await using var serviceProvider = new ServiceCollection()
 				.AddSymbolCache(args[0], args[1])
 				.AddLanguageServer()
-				.AddCoreLspMessageHandlers()
+				.AddGeneralLspMessageHandlers()
 				.AddTextDocumentLspMessageHandlers()
 				.BuildServiceProvider();
 

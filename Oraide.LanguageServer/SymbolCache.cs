@@ -20,17 +20,20 @@ namespace Oraide.LanguageServer
 
 		// TODO: Change to ILookup (to match `actorDefinitions` and also there may be more than one trait with the same name across namespaces).
 		// TODO: Populate this asynchronously from a separate thread because it can be very, very slow.
-		public readonly IDictionary<string, TraitInfo> TraitInfos;
+		public IReadOnlyDictionary<string, TraitInfo> TraitInfos { get; private set; }
 
 		/// <summary>
 		/// A collection of all actor definitions in YAML (including abstract ones) grouped by their key/name.
 		/// </summary>
-		public readonly ILookup<string, ActorDefinition> ActorDefinitions;
+		public ILookup<string, ActorDefinition> ActorDefinitions { get; private set; }
 
 		/// <summary>
 		/// A collection of all granted and consumed conditions and their usages in YAML grouped by their name.
 		/// </summary>
-		public readonly ILookup<string, MemberLocation> ConditionDefinitions;
+		public ILookup<string, MemberLocation> ConditionDefinitions { get; private set; }
+
+		private readonly CodeInformationProvider codeInformationProvider;
+		private readonly YamlInformationProvider yamlInformationProvider;
 
 		public SymbolCache(string workspaceFolderPath, string defaultOpenRaFolderPath)
 		{
@@ -41,19 +44,35 @@ namespace Oraide.LanguageServer
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 
-			var codeInformationProvider = new CodeInformationProvider(workspaceFolderPath, defaultOpenRaFolderPath);
-			TraitInfos = codeInformationProvider.GetTraitInfos();
+			// TODO: Get this via DI:
+			codeInformationProvider = new CodeInformationProvider(workspaceFolderPath, defaultOpenRaFolderPath);
+			UpdateCodeSymbols();
 
 			var elapsed = stopwatch.Elapsed;
 			Console.Error.WriteLine($"Loaded {TraitInfos.Count} traitInfos in {elapsed}.");
 
-			var yamlInformationProvider = new YamlInformationProvider(workspaceFolderPath);
+			// TODO: Get this via DI:
+			yamlInformationProvider = new YamlInformationProvider(workspaceFolderPath);
 			ParsedRulesPerFile = yamlInformationProvider.GetParsedRulesPerFile();
-			ActorDefinitions = yamlInformationProvider.GetActorDefinitions();
-			ConditionDefinitions = yamlInformationProvider.GetConditionDefinitions();
+			UpdateYamlSymbols();
 
 			elapsed = stopwatch.Elapsed;
 			Console.Error.WriteLine($"Loaded everything in {elapsed}.");
+		}
+
+		// Intentionally synchronous code so the client can't continue working with a stale cache while we work on the update.
+		// TODO: The way I see code symbol update happening is by the user manually triggering an update via an IDE command
+		// that prompts the extension/client to notify the server to update, because neither the server nor the text editor can guarantee
+		// that they would be watching the code files for changes.
+		public void UpdateCodeSymbols()
+		{
+			TraitInfos = codeInformationProvider.GetTraitInfos();
+		}
+
+		public void UpdateYamlSymbols()
+		{
+			ActorDefinitions = yamlInformationProvider.GetActorDefinitions();
+			ConditionDefinitions = yamlInformationProvider.GetConditionDefinitions();
 		}
 	}
 }
