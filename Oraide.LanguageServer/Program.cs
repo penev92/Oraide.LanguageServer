@@ -16,6 +16,7 @@ namespace Oraide.LanguageServer
 				.AddLanguageServer()
 				.AddGeneralLspMessageHandlers()
 				.AddTextDocumentLspMessageHandlers()
+				.AddWorkspaceLspMessageHandlers()
 				.BuildServiceProvider();
 
 			await serviceProvider

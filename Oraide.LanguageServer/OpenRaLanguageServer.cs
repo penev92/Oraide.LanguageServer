@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using Oraide.LanguageServer.Abstractions;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using StreamJsonRpc;
+using Trash;
 
 namespace Oraide.LanguageServer
 {
@@ -29,6 +30,10 @@ namespace Oraide.LanguageServer
 		{
 			var sendingStream = Console.OpenStandardOutput();
 			var receivingStream = Console.OpenStandardInput();
+
+			// Comment out to disable verbose editor-server message logging.
+			receivingStream = new Tee(receivingStream, new Dup("EDITOR"), Tee.StreamOwnership.OwnNone);
+			sendingStream = new Tee(sendingStream, new Dup("SERVER"), Tee.StreamOwnership.OwnNone);
 
 			using var rpc = JsonRpc.Attach(sendingStream, receivingStream, this);
 			rpc.Disconnected += OnRpcDisconnected;
@@ -74,6 +79,8 @@ namespace Oraide.LanguageServer
 
 		#endregion
 
+		#region TextDocument messages
+
 		[JsonRpcMethod(Methods.TextDocumentDefinitionName)]
 		public IEnumerable<Location> Definition(JToken arg)
 		{
@@ -87,6 +94,33 @@ namespace Oraide.LanguageServer
 			var (messageHandlerClass, methodInfo) = rpcMessageHandlers[Methods.TextDocumentHoverName];
 			return (Hover)methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<TextDocumentPositionParams>() });
 		}
+
+		[JsonRpcMethod(Methods.TextDocumentDidOpenName)]
+		public void DidOpenTextDocument(JToken arg)
+		{
+			var (messageHandlerClass, methodInfo) = rpcMessageHandlers[Methods.TextDocumentDidOpenName];
+			methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<DidOpenTextDocumentParams>() });
+		}
+
+		[JsonRpcMethod(Methods.TextDocumentDidChangeName)]
+		public void DidChangeTextDocument(JToken arg)
+		{
+			var (messageHandlerClass, methodInfo) = rpcMessageHandlers[Methods.TextDocumentDidChangeName];
+			methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<DidChangeTextDocumentParams>() });
+		}
+
+		#endregion
+
+		#region Workspace messages
+
+		[JsonRpcMethod(Methods.WorkspaceDidChangeWatchedFilesName)]
+		public void DidChangeWatchedFiles(JToken arg)
+		{
+			var (messageHandlerClass, methodInfo) = rpcMessageHandlers[Methods.WorkspaceDidChangeWatchedFilesName];
+			methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<DidChangeWatchedFilesParams>() });
+		}
+
+		#endregion
 
 		#endregion
 	}
