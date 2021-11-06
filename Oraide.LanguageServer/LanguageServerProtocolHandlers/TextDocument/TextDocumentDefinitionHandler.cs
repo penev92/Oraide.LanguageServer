@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using LspTypes;
-using Oraide.Core.Entities;
-using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
@@ -29,14 +27,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(positionParams));
 					}
 
-					if (TryGetTargetNode(positionParams, out var targetNode, out var targetType, out var targetString))
+					if (TryGetCursorTarget(positionParams, out var target))
 					{
-						if (TryGetTargetCodeDefinitionLocations(targetNode, targetType, targetString,
-							out var codeDefinitionLocations))
+						if (TryGetTargetCodeDefinitionLocations(target.TargetNode, target.TargetType, target.TargetString, out var codeDefinitionLocations))
 							return codeDefinitionLocations;
 
-						if (TryGetTargetYamlDefinitionLocations(targetNode, targetType, targetString,
-							out var yamlDefinitionLocations))
+						if (TryGetTargetYamlDefinitionLocations(target.TargetNode, target.TargetType, target.TargetString, out var yamlDefinitionLocations))
 							return yamlDefinitionLocations;
 					}
 				}
@@ -50,25 +46,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			}
 		}
 
-		private bool TryGetTargetCodeDefinitionLocations(YamlNode targetNode, string targetType, string targetString,
-			out IEnumerable<Location> definitionLocations)
+		private bool TryGetTargetCodeDefinitionLocations(YamlNode targetNode, string targetType, string targetString, out IEnumerable<Location> definitionLocations)
 		{
-			MemberLocation? location = null;
-
-			// Try treating the target string as a trait name.
-			var traitName = targetString.Split('@')[0];
-			if (TryGetTraitInfo(traitName, out var traitInfo))
-				location = traitInfo.Location;
-			else
-			{
-				// Assuming we are targeting a trait property, search for a trait based on the parent node.
-				traitName = targetNode.ParentNode?.Key.Split('@')[0];
-				if (TryGetTraitInfo(traitName, out traitInfo))
-					if (CheckTraitInheritanceTree(traitInfo, targetString, out var propertyLocation))
-						location = propertyLocation;
-			}
-
-			if (location == null)
+			if (!TryGetCodeMemberLocation(targetNode, targetString, out var traitInfo, out var location))
 			{
 				definitionLocations = default;
 				return false;
@@ -78,12 +58,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			{
 				new Location
 				{
-					Uri = new Uri(location.Value.FilePath).ToString(),
+					Uri = new Uri(location.FilePath).ToString(),
 					Range = new Range
 					{
-						Start = new Position((uint) location.Value.LineNumber, (uint) location.Value.CharacterPosition),
-						End = new Position((uint) location.Value.LineNumber,
-							(uint) location.Value.CharacterPosition + 5)
+						Start = new Position((uint) location.LineNumber - 1, (uint) location.CharacterPosition),
+						End = new Position((uint) location.LineNumber - 1, (uint) location.CharacterPosition + (uint)targetString.Length)
 					}
 				}
 			};
@@ -118,35 +97,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					}
 				}));
 
-			return true;
-		}
-
-		bool CheckTraitInheritanceTree(TraitInfo traitInfo, string propertyName, out MemberLocation location)
-		{
-			MemberLocation? result = null;
-
-			// The property may be a field of the TraitInfo...
-			if (traitInfo.TraitPropertyInfos.Any(x => x.PropertyName == propertyName))
-			{
-				var property = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.PropertyName == propertyName);
-				result = property.Location;
-			}
-			else
-			{
-				// ... or it could be inherited.
-				foreach (var inheritedType in traitInfo.InheritedTypes)
-					if (TryGetTraitInfo(inheritedType, out var inheritedTraitInfo, false))
-						if (CheckTraitInheritanceTree(inheritedTraitInfo, propertyName, out var inheritedLocation))
-							result = inheritedLocation;
-			}
-
-			if (result == null)
-			{
-				location = default;
-				return false;
-			}
-
-			location = result.Value;
 			return true;
 		}
 	}

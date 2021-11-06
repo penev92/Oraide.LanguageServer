@@ -30,4 +30,27 @@ namespace Oraide.Core.Entities.MiniYaml
 			Location = location;
 		}
 	}
+
+	public readonly struct CursorTarget
+	{
+		public YamlNode TargetNode { get; }
+
+		// TODO: Change to enum.
+		public string TargetType { get; }
+
+		public string TargetString { get; }
+
+		public MemberLocation TargetStart { get; }
+
+		public MemberLocation TargetEnd { get; }
+
+		public CursorTarget(YamlNode targetNode, string targetType, string targetString, MemberLocation targetStart, MemberLocation targetEnd)
+		{
+			TargetNode = targetNode;
+			TargetType = targetType;
+			TargetString = targetString;
+			TargetStart = targetStart;
+			TargetEnd = targetEnd;
+		}
+	}
 }

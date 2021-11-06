@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using LspTypes;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
@@ -25,12 +26,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(positionParams));
 					}
 
-					if (TryGetTargetNode(positionParams, out var targetNode, out var targetType, out var targetString))
+					if (TryGetCursorTarget(positionParams, out var target))
 					{
-						if (TryGetTargetCodeHoverInfo(targetNode, out var codeHoverInfo))
+						if (TryGetTargetCodeHoverInfo(target, out var codeHoverInfo))
 							return HoverFromHoverInfo(codeHoverInfo.Content, codeHoverInfo.Range);
 
-						if (TryGetTargetYamlHoverInfo(targetNode, out var yamlHoverInfo))
+						if (TryGetTargetYamlHoverInfo(target.TargetNode, out var yamlHoverInfo))
 							return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
 					}
 				}
@@ -42,21 +43,37 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			}
 		}
 
-		private bool TryGetTargetCodeHoverInfo(YamlNode targetNode, out (string Content, Range Range) hoverInfo)
+		private bool TryGetTargetCodeHoverInfo(CursorTarget target, out (string Content, Range Range) hoverInfo)
 		{
-			var traitName = targetNode.Key.Split('@')[0];
-			if (!TryGetTraitInfo(traitName, out var traitInfo))
+			if (!TryGetCodeMemberLocation(target.TargetNode, target.TargetString, out var traitInfo, out _))
+			{
+				hoverInfo = (null, null);
+				return false;
+			}
+
+			string content;
+			if (traitInfo.TraitName == target.TargetString)
+			{
+				content = $"{traitInfo.TraitInfoName}\n{traitInfo.Location.FilePath}\n{traitInfo.TraitDescription}";
+			}
+			else
+			{
+				var prop = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
+				content = $"{prop.PropertyName}\n{prop.Description}";
+			}
+
+			if (string.IsNullOrWhiteSpace(content))
 			{
 				hoverInfo = (null, null);
 				return false;
 			}
 
 			hoverInfo = (
-				$"{traitInfo.TraitInfoName}\n{traitInfo.Location.FilePath}\n{traitInfo.TraitDescription}",
+				content,
 				new Range
 				{
-					Start = new Position((uint)traitInfo.Location.LineNumber, (uint)traitInfo.Location.CharacterPosition),
-					End = new Position((uint)traitInfo.Location.LineNumber, (uint)traitInfo.Location.CharacterPosition + 5)
+					Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
+					End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
 				});
 
 			return true;

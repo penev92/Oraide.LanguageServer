@@ -1,6 +1,7 @@
 ﻿using System;
-using System.IO;
+using System.Linq;
 using LspTypes;
+using Oraide.Core.Entities;
 using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Caching;
@@ -21,17 +22,15 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			this.openFileCache = openFileCache;
 		}
 
-		protected bool TryGetTargetNode(TextDocumentPositionParams request, out YamlNode targetNode, out string targetType, out string targetString)
+		protected bool TryGetCursorTarget(TextDocumentPositionParams positionParams, out CursorTarget target)
 		{
-			var filePath = request.TextDocument.Uri;
-			var targetLineIndex = (int)request.Position.Line;
-			var targetCharacterIndex = (int)request.Position.Character;
+			var filePath = positionParams.TextDocument.Uri;
+			var targetLineIndex = (int)positionParams.Position.Line;
+			var targetCharacterIndex = (int)positionParams.Position.Character;
 
 			if (!openFileCache.ContainsFile(filePath))
 			{
-				targetNode = default;
-				targetType = "";
-				targetString = ""; // TODO: Change to enum?
+				target = default;
 				return false;
 			}
 
@@ -44,47 +43,73 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			if ((string.IsNullOrWhiteSpace(pre) && (post[0] == '\t' || post[0] == ' '))
 			    || string.IsNullOrWhiteSpace(post))
 			{
-				targetNode = default;
-				targetType = "";
-				targetString = ""; // TODO: Change to enum?
+				target = default;
 				return false;
 			}
 
-			targetNode = fileNodes[targetLineIndex];
-			targetString = "";
+			var targetNode = fileNodes[targetLineIndex];
+
+			string sourceString;
+			string targetType;
+
 			if (pre.Contains(':'))
 			{
 				targetType = "value";
-				var startIndex = 0;
-				var endIndex = 1;
-				var hasReached = false;
-				while (endIndex < targetNode.Value.Length)
-				{
-					if (endIndex == targetCharacterIndex - targetLine.LastIndexOf(targetNode.Value, StringComparison.InvariantCulture))
-						hasReached = true;
+				sourceString = targetNode.Value;
 
-					if (targetNode.Value[endIndex] == ',' || endIndex == targetNode.Value.Length - 1)
-					{
-						if (!hasReached)
-							startIndex = endIndex;
-						else
-						{
-							targetString = targetNode.Value.Substring(startIndex, endIndex - startIndex + 1).Trim(' ', '\t', ',');
-							Console.Error.WriteLine(targetString);
-							break;
-						}
-					}
-
-					endIndex++;
-				}
 			}
 			else
 			{
-				targetType = "key";
-				targetString = targetNode.Key;
+				if (pre.Contains('@'))
+				{
+					targetType = "keyIdentifier";
+					sourceString = targetNode.Key.Split('@')[1];
+				}
+				else
+				{
+					targetType = "key";
+					sourceString = targetNode.Key.Split('@')[0];
+				}
+				// TODO: Calculate startIndex and endIndex.
 			}
 
+			if (!TryGetTargetString(targetLine, targetCharacterIndex, sourceString, out var targetString, out var startIndex, out var endIndex))
+			{
+				target = default;
+				return false;
+			}
+
+			target = new CursorTarget(targetNode, targetType, targetString,
+				new MemberLocation(filePath, targetLineIndex, startIndex),
+				new MemberLocation(filePath, targetLineIndex, endIndex));
+
 			return true;
+		}
+
+		protected bool TryGetCodeMemberLocation(YamlNode targetNode, string targetString, out TraitInfo traitInfo, out MemberLocation location)
+		{
+			// Try treating the target string as a trait name.
+			var traitName = targetString.Split('@')[0];
+			if (TryGetTraitInfo(traitName, out traitInfo))
+			{
+				location = traitInfo.Location;
+				return trace;
+			}
+
+			// Assuming we are targeting a trait property, search for a trait based on the parent node.
+			traitName = targetNode.ParentNode?.Key.Split('@')[0];
+			if (TryGetTraitInfo(traitName, out traitInfo))
+			{
+				if (CheckTraitInheritanceTree(traitInfo, targetString, out var inheritedTraitInfo, out var propertyLocation))
+				{
+					traitInfo = inheritedTraitInfo;
+					location = propertyLocation;
+					return true;
+				}
+			}
+
+			location = default;
+			return false;
 		}
 
 		protected bool TryGetTraitInfo(string traitName, out TraitInfo traitInfo, bool addInfoSuffix = true)
@@ -98,6 +123,74 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 
 			traitInfo = default;
 			return false;
+		}
+
+		bool TryGetTargetString(string targetLine, int targetCharacterIndex, string sourceString, out string targetString, out int startIndex, out int endIndex)
+		{
+			targetString = string.Empty;
+			startIndex = 0;
+			endIndex = 1;
+
+			var hasReached = false;
+			while (endIndex < sourceString.Length)
+			{
+				if (endIndex == targetCharacterIndex - targetLine.LastIndexOf(sourceString, StringComparison.InvariantCulture))
+					hasReached = true;
+
+				if (sourceString[endIndex] == ',' || endIndex == sourceString.Length - 1)
+				{
+					if (!hasReached)
+						startIndex = endIndex;
+					else
+					{
+						targetString = sourceString.Substring(startIndex, endIndex - startIndex + 1).Trim(' ', '\t', ',');
+						Console.Error.WriteLine(targetString);
+						break;
+					}
+				}
+
+				endIndex++;
+			}
+
+			startIndex = targetLine.IndexOf(targetString, StringComparison.InvariantCulture);
+			endIndex = startIndex + targetString.Length;
+			return true;
+		}
+
+		bool CheckTraitInheritanceTree(TraitInfo traitInfo, string propertyName, out TraitInfo targetTrait, out MemberLocation location)
+		{
+			TraitInfo? resultTrait = null;
+			MemberLocation? resultLocation = null;
+
+			// The property may be a field of the TraitInfo...
+			if (traitInfo.TraitPropertyInfos.Any(x => x.PropertyName == propertyName))
+			{
+				var property = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.PropertyName == propertyName);
+				resultTrait = traitInfo;
+				resultLocation = property.Location;
+			}
+			else
+			{
+				// ... or it could be inherited.
+				foreach (var inheritedType in traitInfo.InheritedTypes)
+					if (TryGetTraitInfo(inheritedType, out var inheritedTraitInfo, false))
+						if (CheckTraitInheritanceTree(inheritedTraitInfo, propertyName, out targetTrait, out var inheritedLocation))
+						{
+							resultTrait = targetTrait;
+							resultLocation = inheritedLocation;
+						}
+			}
+
+			if (resultLocation == null)
+			{
+				targetTrait = default;
+				location = default;
+				return false;
+			}
+
+			targetTrait = resultTrait.Value;
+			location = resultLocation.Value;
+			return true;
 		}
 	}
 }
