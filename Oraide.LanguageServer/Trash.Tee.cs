@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace Trash
+namespace Oraide.LanguageServer
 {
 	class Tee : Stream
 	{

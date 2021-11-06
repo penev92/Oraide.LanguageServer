@@ -6,13 +6,13 @@ using Oraide.LanguageServer.Caching;
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
 	// This event is only triggered when a file is opened or a tab is switched to for the first time. Subsequent switching to an already opened tab will not trigger it.
-	public class TextDocumentDidOpenHandler : BaseRpcMessageHandler
+	public class TextDocumentDidCloseHandler : BaseRpcMessageHandler
 	{
-		public TextDocumentDidOpenHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
+		public TextDocumentDidCloseHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
 			: base(symbolCache, openFileCache) { }
 
-		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentDidOpenName)]
-		public void DidOpenTextDocument(DidOpenTextDocumentParams request)
+		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentDidCloseName)]
+		public void DidCloseTextDocument(DidCloseTextDocumentParams request)
 		{
 			lock (LockObject)
 			{
@@ -20,11 +20,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				{
 					if (trace)
 					{
-						Console.Error.WriteLine("<-- TextDocument-DidOpen");
+						Console.Error.WriteLine("<-- TextDocument-DidClose");
 						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(request));
 					}
 
-					openFileCache.AddOrUpdateOpenFile(request.TextDocument.Uri, request.TextDocument.Text);
+					openFileCache.RemoveOpenFile(request.TextDocument.Uri);
 				}
 				catch (Exception e)
 				{

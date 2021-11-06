@@ -23,15 +23,14 @@ namespace Oraide.MiniYaml
 			return OpenRAMiniYamlParser.GetActorDefinitions(yamlFolder);
 		}
 
-		public IReadOnlyDictionary<string, ReadOnlyCollection<YamlNode>> GetParsedRulesPerFile()
-		{
-			return OpenRAMiniYamlParser.GetParsedRulesPerFile(yamlFolder)
-				.ToDictionary(x => x.Key.Replace('\\', '/'), y => y.Value);
-		}
-
 		public ILookup<string, MemberLocation> GetConditionDefinitions()
 		{
 			return OpenRAMiniYamlParser.GetConditionDefinitions(yamlFolder);
+		}
+
+		public IEnumerable<YamlNode> ParseText(string text, bool flatten = false)
+		{
+			return OpenRAMiniYamlParser.ParseText(text, flatten);
 		}
 	}
 }

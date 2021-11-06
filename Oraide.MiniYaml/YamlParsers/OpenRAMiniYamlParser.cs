@@ -9,21 +9,6 @@ namespace Oraide.MiniYaml.YamlParsers
 {
 	public static class OpenRAMiniYamlParser
 	{
-		public static IReadOnlyDictionary<string, ReadOnlyCollection<YamlNode>> GetParsedRulesPerFile(in string modFolderPath)
-		{
-			var result = new Dictionary<string, ReadOnlyCollection<YamlNode>>();
-			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories);
-			foreach (var filePath in filePaths)
-			{
-				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath, false);
-				var yamlNodes = nodes.Select(x => x.ToYamlNode());
-				var flattenedNodes = yamlNodes.SelectMany(FlattenChildNodes);
-				result[filePath] = new ReadOnlyCollection<YamlNode>(flattenedNodes.ToList());
-			}
-
-			return result;
-		}
-
 		public static ILookup<string, ActorDefinition> GetActorDefinitions(in string modFolderPath)
 		{
 			var result = new List<YamlNode>();
@@ -64,6 +49,12 @@ namespace Oraide.MiniYaml.YamlParsers
 			}
 
 			return result.ToLookup(x => x.Key, y => y.Value);
+		}
+
+		public static IEnumerable<YamlNode> ParseText(string text, bool flatten = false)
+		{
+			var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromString(text, discardCommentsAndWhitespace: false).Select(x => x.ToYamlNode());
+			return flatten ? nodes.SelectMany(FlattenChildNodes) : nodes;
 		}
 
 		static IEnumerable<YamlNode> FlattenChildNodes(YamlNode rootNode)

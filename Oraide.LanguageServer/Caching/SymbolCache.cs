@@ -9,15 +9,10 @@ using Oraide.Core.Entities.MiniYaml;
 using Oraide.Csharp;
 using Oraide.MiniYaml;
 
-namespace Oraide.LanguageServer
+namespace Oraide.LanguageServer.Caching
 {
 	public class SymbolCache
 	{
-		// With the addition of other collections dedicated to holding definitions and this being delegated to a lookup table for client cursor position,
-		// this is now redundant and should be replaced with on-demand parsing of the current file or with a cache that handles didOpen/didChange/didSave.
-		// No point in loading everything up-front and also it could get stale really fast.
-		public readonly IReadOnlyDictionary<string, ReadOnlyCollection<YamlNode>> ParsedRulesPerFile;
-
 		// TODO: Change to ILookup (to match `actorDefinitions` and also there may be more than one trait with the same name across namespaces).
 		// TODO: Populate this asynchronously from a separate thread because it can be very, very slow.
 		public IReadOnlyDictionary<string, TraitInfo> TraitInfos { get; private set; }
@@ -53,7 +48,6 @@ namespace Oraide.LanguageServer
 
 			// TODO: Get this via DI:
 			yamlInformationProvider = new YamlInformationProvider(workspaceFolderPath);
-			ParsedRulesPerFile = yamlInformationProvider.GetParsedRulesPerFile();
 			UpdateYamlSymbols();
 
 			elapsed = stopwatch.Elapsed;

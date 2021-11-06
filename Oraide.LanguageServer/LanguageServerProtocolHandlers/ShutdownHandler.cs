@@ -2,13 +2,14 @@
 using LspTypes;
 using Newtonsoft.Json.Linq;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
+using Oraide.LanguageServer.Caching;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 {
 	public class ShutdownHandler : BaseRpcMessageHandler
 	{
-		public ShutdownHandler(SymbolCache symbolCache)
-			: base(symbolCache) { }
+		public ShutdownHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
+			: base(symbolCache, openFileCache) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.ShutdownName)]
 		public JToken ShutdownName()
@@ -39,7 +40,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 				{
 					if (trace)
 					{
-						System.Console.Error.WriteLine("<-- Exit");
+						Console.Error.WriteLine("<-- Exit");
 					}
 
 					// TODO:

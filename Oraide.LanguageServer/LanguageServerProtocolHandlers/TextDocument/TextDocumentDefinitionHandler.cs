@@ -6,14 +6,15 @@ using Oraide.Core.Entities;
 using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
+using Oraide.LanguageServer.Caching;
 using Range = LspTypes.Range;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
 	public class TextDocumentDefinitionHandler : BaseRpcMessageHandler
 	{
-		public TextDocumentDefinitionHandler(SymbolCache symbolCache)
-			: base(symbolCache) { }
+		public TextDocumentDefinitionHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
+			: base(symbolCache, openFileCache) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentDefinitionName)]
 		public IEnumerable<Location> Definition(TextDocumentPositionParams positionParams)
@@ -25,7 +26,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					if (trace)
 					{
 						Console.Error.WriteLine("<-- TextDocument-Definition");
-						// Console.Error.WriteLine(arg.ToString());
+						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(positionParams));
 					}
 
 					if (TryGetTargetNode(positionParams, out var targetNode, out var targetType, out var targetString))

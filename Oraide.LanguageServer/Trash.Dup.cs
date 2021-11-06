@@ -1,9 +1,9 @@
-﻿namespace Trash
-{
-	using System;
-	using System.IO;
-	using System.Text;
+﻿using System;
+using System.IO;
+using System.Text;
 
+namespace Oraide.LanguageServer
+{
 	class Dup : Stream
 	{
 		string _name;

@@ -8,7 +8,6 @@ using Newtonsoft.Json.Linq;
 using Oraide.LanguageServer.Abstractions;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using StreamJsonRpc;
-using Trash;
 
 namespace Oraide.LanguageServer
 {
@@ -107,6 +106,13 @@ namespace Oraide.LanguageServer
 		{
 			var (messageHandlerClass, methodInfo) = rpcMessageHandlers[Methods.TextDocumentDidChangeName];
 			methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<DidChangeTextDocumentParams>() });
+		}
+
+		[JsonRpcMethod(Methods.TextDocumentDidCloseName)]
+		public void DidCloseTextDocument(JToken arg)
+		{
+			var (messageHandlerClass, methodInfo) = rpcMessageHandlers[Methods.TextDocumentDidCloseName];
+			methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<DidCloseTextDocumentParams>() });
 		}
 
 		#endregion

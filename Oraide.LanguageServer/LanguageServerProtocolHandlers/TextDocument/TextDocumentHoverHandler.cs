@@ -2,14 +2,15 @@
 using LspTypes;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
+using Oraide.LanguageServer.Caching;
 using Range = LspTypes.Range;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
 	public class TextDocumentHoverHandler : BaseRpcMessageHandler
 	{
-		public TextDocumentHoverHandler(SymbolCache symbolCache)
-			: base(symbolCache) { }
+		public TextDocumentHoverHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
+			: base(symbolCache, openFileCache) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentHoverName)]
 		public Hover Hover(TextDocumentPositionParams positionParams)
@@ -21,7 +22,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					if (trace)
 					{
 						Console.Error.WriteLine("<-- TextDocument-Hover");
-						// Console.Error.WriteLine(arg.ToString());
+						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(positionParams));
 					}
 
 					if (TryGetTargetNode(positionParams, out var targetNode, out var targetType, out var targetString))
