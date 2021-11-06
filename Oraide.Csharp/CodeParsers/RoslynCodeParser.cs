@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Oraide.Core.Entities;
@@ -94,23 +95,42 @@ namespace Oraide.Csharp.CodeParsers
 															fieldDesc = fieldDesc;
 													}
 
-												traitProperties.Add(
-													new TraitPropertyInfo(
-														variableDeclaratorSyntax.Identifier.ValueText,
-														new MemberLocation(filePath, 0, 0), // TODO:
-														fieldDesc,
-														loadUsing));
+												var propertyName = variableDeclaratorSyntax.Identifier.ValueText;
+												var location = FindPropertyLocationInText(filePath, text, variableDeclaratorSyntax.GetLocation().SourceSpan.Start);
+												traitProperties.Add(new TraitPropertyInfo(propertyName, location, fieldDesc, loadUsing));
 											}
 
+									// Some manual string nonsense to determine trait name location inside the file.
+									var classStart = classElement.GetLocation().SourceSpan.Start;
+									var classLocation = FindClassLocationInText(filePath, text, traitInfoName, classStart);
+
 									// Finally, add the TraitInfo to the list of loaded TraitInfos.
-									var location = new MemberLocation(filePath, 0, 0); // TODO:
-									var traitInfo = new TraitInfo(traitInfoName.Substring(0, traitInfoName.Length - 4), traitInfoName, traitDesc, location, baseTypes.ToArray(), traitProperties.ToArray());
+									var traitInfo = new TraitInfo(traitInfoName.Substring(0, traitInfoName.Length - 4), traitInfoName, traitDesc, classLocation, baseTypes.ToArray(), traitProperties.ToArray());
 									traitDictionary.Add(traitInfoName, traitInfo);
 								}
 				}
 			}
 
 			return traitDictionary;
+		}
+
+		static MemberLocation FindClassLocationInText(string filePath, string text, string traitInfoName, int definitionStartIndex)
+		{
+			var subtext = text.Substring(0, definitionStartIndex);
+			subtext += text.Substring(definitionStartIndex, text.IndexOf($"class {traitInfoName}", definitionStartIndex, StringComparison.InvariantCulture) - definitionStartIndex);
+			var lines = subtext.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+			var lineNumber = lines.Length;
+			var characterNumber = lines.Last().Length + 6;
+			return new MemberLocation(filePath, lineNumber, characterNumber);
+		}
+
+		static MemberLocation FindPropertyLocationInText(string filePath, string text, int definitionStartIndex)
+		{
+			var subtext = text.Substring(0, definitionStartIndex);
+			var lines = subtext.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+			var lineNumber = lines.Length;
+			var characterNumber = lines.Last().Replace('\t', ' ').Length;
+			return new MemberLocation(filePath, lineNumber, characterNumber);
 		}
 	}
 }
