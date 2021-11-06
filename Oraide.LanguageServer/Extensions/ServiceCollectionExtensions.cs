@@ -32,6 +32,7 @@ namespace Oraide.LanguageServer.Extensions
 		public static IServiceCollection AddTextDocumentLspMessageHandlers(this IServiceCollection serviceCollection)
 		{
 			return serviceCollection
+				.AddSingleton<IRpcMessageHandler, TextDocumentCompletionHandler>()
 				.AddSingleton<IRpcMessageHandler, TextDocumentDidOpenHandler>()
 				.AddSingleton<IRpcMessageHandler, TextDocumentDidChangeHandler>()
 				.AddSingleton<IRpcMessageHandler, TextDocumentDidCloseHandler>()

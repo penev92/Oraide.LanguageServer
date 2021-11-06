@@ -52,7 +52,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			}
 
 			hoverInfo = (
-				$"{traitInfo.TraitName}\n{traitInfo.Location.FilePath}\n{traitInfo.TraitDescription}",
+				$"{traitInfo.TraitInfoName}\n{traitInfo.Location.FilePath}\n{traitInfo.TraitDescription}",
 				new Range
 				{
 					Start = new Position((uint)traitInfo.Location.LineNumber, (uint)traitInfo.Location.CharacterPosition),

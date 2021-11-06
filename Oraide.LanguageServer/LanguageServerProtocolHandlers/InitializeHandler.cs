@@ -29,7 +29,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 						Change = TextDocumentSyncKind.Full,
 						Save = null
 					},
-					CompletionProvider = null, // The server provides completion support.
+					CompletionProvider = new CompletionOptions // This enables basic completion with any extras disabled.
+					{
+						TriggerCharacters = null,
+						AllCommitCharacters = null,
+						ResolveProvider = false
+					},
 					HoverProvider = true, // The server provides hover support.
 					SignatureHelpProvider = null,
 

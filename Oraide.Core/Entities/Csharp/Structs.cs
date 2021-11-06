@@ -23,6 +23,8 @@
 	{
 		public string TraitName { get; }
 
+		public string TraitInfoName { get; }
+
 		public string TraitDescription { get; }
 
 		public MemberLocation Location { get; }
@@ -31,9 +33,10 @@
 
 		public TraitPropertyInfo[] TraitPropertyInfos { get; }
 
-		public TraitInfo(string traitName, string traitDescription, MemberLocation location, string[] inheritedTypes, TraitPropertyInfo[] traitPropertyInfos)
+		public TraitInfo(string traitName, string traitInfoName, string traitDescription, MemberLocation location, string[] inheritedTypes, TraitPropertyInfo[] traitPropertyInfos)
 		{
 			TraitName = traitName;
+			TraitInfoName = traitInfoName;
 			TraitDescription = traitDescription;
 			Location = location;
 			InheritedTypes = inheritedTypes;

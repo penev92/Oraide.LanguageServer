@@ -33,10 +33,10 @@ namespace Oraide.Csharp.CodeParsers
 								{
 									var baseTypes = new List<string>();
 									var traitProperties = new List<TraitPropertyInfo>();
-									var traitName = classElement.Identifier.ValueText;
+									var traitInfoName = classElement.Identifier.ValueText;
 
 									// Skip classes that are not TraitInfos.
-									if (!traitName.EndsWith("Info"))
+									if (!traitInfoName.EndsWith("Info"))
 										continue;
 
 									// Get trait's DescAttribute.
@@ -104,8 +104,8 @@ namespace Oraide.Csharp.CodeParsers
 
 									// Finally, add the TraitInfo to the list of loaded TraitInfos.
 									var location = new MemberLocation(filePath, 0, 0); // TODO:
-									var traitInfo = new TraitInfo(traitName, traitDesc, location, baseTypes.ToArray(), traitProperties.ToArray());
-									traitDictionary.Add(traitName, traitInfo);
+									var traitInfo = new TraitInfo(traitInfoName.Substring(0, traitInfoName.Length - 4), traitInfoName, traitDesc, location, baseTypes.ToArray(), traitProperties.ToArray());
+									traitDictionary.Add(traitInfoName, traitInfo);
 								}
 				}
 			}

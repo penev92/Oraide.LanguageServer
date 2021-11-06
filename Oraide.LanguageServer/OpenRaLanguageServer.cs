@@ -80,6 +80,13 @@ namespace Oraide.LanguageServer
 
 		#region TextDocument messages
 
+		[JsonRpcMethod(Methods.TextDocumentCompletionName)]
+		public CompletionList CompletionTextDocument(JToken arg)
+		{
+			var (messageHandlerClass, methodInfo) = rpcMessageHandlers[Methods.TextDocumentCompletionName];
+			return (CompletionList)methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<CompletionParams>() });
+		}
+
 		[JsonRpcMethod(Methods.TextDocumentDefinitionName)]
 		public IEnumerable<Location> Definition(JToken arg)
 		{
