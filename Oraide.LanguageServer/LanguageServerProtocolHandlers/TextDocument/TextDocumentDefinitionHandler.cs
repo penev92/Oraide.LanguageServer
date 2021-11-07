@@ -29,10 +29,10 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					if (TryGetCursorTarget(positionParams, out var target))
 					{
-						if (TryGetTargetCodeDefinitionLocations(target.TargetNode, target.TargetType, target.TargetString, out var codeDefinitionLocations))
+						if (TryGetTargetCodeDefinitionLocations(target, out var codeDefinitionLocations))
 							return codeDefinitionLocations;
 
-						if (TryGetTargetYamlDefinitionLocations(target.TargetNode, target.TargetType, target.TargetString, out var yamlDefinitionLocations))
+						if (TryGetTargetYamlDefinitionLocations(target, out var yamlDefinitionLocations))
 							return yamlDefinitionLocations;
 					}
 				}
@@ -46,9 +46,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			}
 		}
 
-		private bool TryGetTargetCodeDefinitionLocations(YamlNode targetNode, string targetType, string targetString, out IEnumerable<Location> definitionLocations)
+		private bool TryGetTargetCodeDefinitionLocations(CursorTarget target, out IEnumerable<Location> definitionLocations)
 		{
-			if (!TryGetCodeMemberLocation(targetNode, targetString, out var traitInfo, out var location))
+			if (!TryGetCodeMemberLocation(target.TargetNode, target.TargetString, out var traitInfo, out var location))
 			{
 				definitionLocations = default;
 				return false;
@@ -62,7 +62,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					Range = new Range
 					{
 						Start = new Position((uint) location.LineNumber - 1, (uint) location.CharacterPosition),
-						End = new Position((uint) location.LineNumber - 1, (uint) location.CharacterPosition + (uint)targetString.Length)
+						End = new Position((uint) location.LineNumber - 1, (uint) location.CharacterPosition + (uint)target.TargetString.Length)
 					}
 				}
 			};
@@ -70,30 +70,28 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			return true;
 		}
 
-		private bool TryGetTargetYamlDefinitionLocations(YamlNode targetNode, string targetType, string targetString,
-			out IEnumerable<Location> definitionLocations)
+		private bool TryGetTargetYamlDefinitionLocations(CursorTarget target, out IEnumerable<Location> definitionLocations)
 		{
 			// Check targetNode node type - probably via IndentationLevel enum.
 			// If it is a top-level node *and this is an actor-definition or a weapon-definition file* it definitely is a definition.
 			// If it is indented once we need to check if the target is the key or the value - keys are traits, but values *could* reference actor/weapon definitions.
 
-			definitionLocations = new List<Location>();
-			definitionLocations = symbolCache.ActorDefinitions[targetString].Select(x => new Location
+			definitionLocations = symbolCache.ActorDefinitions[target.TargetString].Select(x => new Location
 				{
 					Uri = new Uri(x.Location.FilePath).ToString(),
 					Range = new Range
 					{
-						Start = new Position((uint) x.Location.LineNumber - 1, (uint) x.Location.CharacterPosition),
-						End = new Position((uint) x.Location.LineNumber - 1, (uint) x.Location.CharacterPosition + 5)
+						Start = new Position((uint)x.Location.LineNumber - 1, (uint)x.Location.CharacterPosition),
+						End = new Position((uint)x.Location.LineNumber - 1, (uint)(x.Location.CharacterPosition + target.TargetString.Length))
 					}
 				})
-				.Union(symbolCache.ConditionDefinitions[targetString].Select(x => new Location
+				.Union(symbolCache.ConditionDefinitions[target.TargetString].Select(x => new Location
 				{
 					Uri = new Uri(x.FilePath).ToString(),
 					Range = new Range
 					{
-						Start = new Position((uint) x.LineNumber - 1, (uint) x.CharacterPosition),
-						End = new Position((uint) x.LineNumber - 1, (uint) x.CharacterPosition + 5)
+						Start = new Position((uint)x.LineNumber - 1, (uint) x.CharacterPosition),
+						End = new Position((uint)x.LineNumber - 1, (uint)(x.CharacterPosition + target.TargetString.Length))
 					}
 				}));
 

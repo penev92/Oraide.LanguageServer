@@ -31,7 +31,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						if (TryGetTargetCodeHoverInfo(target, out var codeHoverInfo))
 							return HoverFromHoverInfo(codeHoverInfo.Content, codeHoverInfo.Range);
 
-						if (TryGetTargetYamlHoverInfo(target.TargetNode, out var yamlHoverInfo))
+						if (TryGetTargetYamlHoverInfo(target, out var yamlHoverInfo))
 							return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
 					}
 				}
@@ -79,9 +79,32 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			return true;
 		}
 
-		private bool TryGetTargetYamlHoverInfo(YamlNode targetNode, out (string Content, Range Range) hoverInfo)
+		private bool TryGetTargetYamlHoverInfo(CursorTarget target, out (string Content, Range Range) hoverInfo)
 		{
-			// TODO:
+			if (symbolCache.ActorDefinitions.Any(x => x.Key == target.TargetString))
+			{
+				hoverInfo = (
+					$"Actor \"{target.TargetString}\"", new Range
+					{
+						Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
+						End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
+					});
+
+				return true;
+			}
+
+			if (symbolCache.ConditionDefinitions.Any(x => x.Key == target.TargetString))
+			{
+				hoverInfo = (
+					$"Condition \"{target.TargetString}\"", new Range
+					{
+						Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
+						End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
+					});
+
+				return true;
+			}
+
 			hoverInfo = (null, null);
 			return false;
 		}

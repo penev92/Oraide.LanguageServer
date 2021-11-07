@@ -56,7 +56,6 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			{
 				targetType = "value";
 				sourceString = targetNode.Value;
-
 			}
 			else
 			{
@@ -70,7 +69,6 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 					targetType = "key";
 					sourceString = targetNode.Key.Split('@')[0];
 				}
-				// TODO: Calculate startIndex and endIndex.
 			}
 
 			if (!TryGetTargetString(targetLine, targetCharacterIndex, sourceString, out var targetString, out var startIndex, out var endIndex))
@@ -143,7 +141,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 						startIndex = endIndex;
 					else
 					{
-						targetString = sourceString.Substring(startIndex, endIndex - startIndex + 1).Trim(' ', '\t', ',');
+						targetString = sourceString.Substring(startIndex, endIndex - startIndex + 1).Trim(' ', '\t', ',', '!');
 						Console.Error.WriteLine(targetString);
 						break;
 					}
