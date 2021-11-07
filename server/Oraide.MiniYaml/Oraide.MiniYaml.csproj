@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\OpenRA.MiniYamlParser\OpenRA.MiniYamlParser\OpenRA.MiniYamlParser.csproj" />
+    <ProjectReference Include="..\OpenRA.MiniYamlParser\OpenRA.MiniYamlParser.csproj" />
     <ProjectReference Include="..\Oraide.Core\Oraide.Core.csproj" />
   </ItemGroup>
 
