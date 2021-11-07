@@ -11,7 +11,8 @@ obj
 *.CodeAnalysisLog.xml
 *.lastcodeanalysissucceeded
 _ReSharper.*/
-/.vs
+server/.vs
+server/bin*
 
 # binaries
 mods/*/*.dll
@@ -41,15 +42,6 @@ IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP
 # Mac OS X
 .DS_Store
 
-# auto-generated documentation
-DOCUMENTATION.md
-WEAPONS.md
-Lua-API.md
-Settings.md
-*.html
-openra.6
-update.log
-
 # StyleCop
 *.Cache
 StyleCopViolations.xml
@@ -67,3 +59,10 @@ StyleCopViolations.xml
 
 # IntelliJ files
 .idea
+
+# VSCode plugin
+out
+dist
+node_modules
+.vscode-test/
+*.vsix
