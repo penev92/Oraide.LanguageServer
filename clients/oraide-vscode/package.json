@@ -1,17 +1,32 @@
 {
-	"name": "oraide",
-	"displayName": "oraide",
-	"description": "",
-	"version": "0.0.1",
-	"engines": {
-		"vscode": "^1.61.0"
-	},
+	"name": "oraide-vscode",
+	"displayName": "ORAIDE",
+	"description": "OpenRA language server extension for working with (Mini)YAML.",
 	"categories": [
 		"Other"
 	],
+	"tags": [
+		"OpenRA",
+		"RTS",
+		"strategy",
+		"game",
+		"modding",
+		"yaml",
+		"miniyaml"
+	],
+	"version": "0.0.1",
+	"publisher": "openra",
+	"private": false,
+	"license": "GPL-3.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/penev92/Oraide.LanguageServer"
+	},
+	"engines": {
+		"vscode": "^1.61.0"
+	},
 	"activationEvents": [
-		"onLanguage:miniyaml",
-		"onLanguage:yaml"
+		"onLanguage:miniyaml"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -19,11 +34,8 @@
 			{
 				"id": "miniyaml",
 				"extensions": [
-					".yaml",
-					".miniyaml",
-					".oraml"
-				],
-				"configuration": "./language-configuration.json"
+					".yaml"
+				]
 			}
 		],
 		"grammars": [
@@ -35,7 +47,7 @@
 		],
 		"configuration": {
 			"type": "object",
-			"title": "OpenRA IDE Configuration",
+			"title": "ORAIDE Configuration",
 			"properties": {
 				"oraide.server.path": {
 					"type": "string",
@@ -59,20 +71,23 @@
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
-		"@types/vscode": "^1.61.0",
 		"@types/glob": "^7.1.4",
 		"@types/mocha": "^9.0.0",
-		"@types/node": "14.x",
+		"@types/node": "^14.17.32",
+		"@types/vscode": "^1.61.0",
 		"@typescript-eslint/eslint-plugin": "^4.31.1",
 		"@typescript-eslint/parser": "^4.31.1",
+		"@vscode/test-electron": "^1.6.2",
 		"eslint": "^7.32.0",
 		"glob": "^7.1.7",
 		"mocha": "^9.1.1",
-		"typescript": "^4.4.3",
-		"@vscode/test-electron": "^1.6.2"
+		"typescript": "^4.4.3"
 	},
 	"dependencies": {
-		"lazystream": "^1.0.1",
+		"child_process": "^1.0.2",
+		"extract-zip": "^2.0.1",
+		"node-fetch": "^2.6.6",
+		"stream": "0.0.2",
 		"vscode-languageclient": "^7.0.0"
 	}
 }
