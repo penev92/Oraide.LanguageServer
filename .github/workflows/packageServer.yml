@@ -1,0 +1,42 @@
+name: Package server
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Server version tag'
+        default: 'server-v0.0.0'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v2
+
+      - name: Install .NET 5
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Create package
+        run: |
+          mkdir -p build/server
+          dotnet build server/Oraide.LanguageServer.sln
+
+      - name: Zip Release
+        uses: TheDoctor0/zip-release@0.6.0
+        with:
+          filename: "${{ github.event.inputs.version }}.zip"
+          directory: server/bin
+
+      - name: Upload Package
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.event.inputs.version }}
+          overwrite: true
+          file_glob: true
+          file: server/bin/${{ github.event.inputs.version }}.zip
