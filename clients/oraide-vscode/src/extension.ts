@@ -38,7 +38,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // TODO: What if the workspace changes during execution??
 
     let serverPath = undefined;
-    if (!utils.IS_DEBUG) {
+    if (utils.IS_DEBUG) {
         vscode.window.showInformationMessage(`IS DEBUG!!`);
         serverPath = config.get<string>('oraide.server.path');
     } else {
