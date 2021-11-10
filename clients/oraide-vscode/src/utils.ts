@@ -20,10 +20,3 @@ export async function getCurrentServerVersion(extensionStorageFolder: vscode.Uri
 
     return folders.pop() || ''; // Fall back to an empty string if no version strings were found to simplify later comparisson.
 }
-
-export async function getServerPath(context: vscode.ExtensionContext): Promise<string> {
-    // let a = context.globalStorageUri;
-    // vscode.window.showInformationMessage(context.asAbsolutePath('LanguageServer\\Oraide.LanguageServer.dll'));
-    // const exists = vscode.workspace.fs.stat()
-    return '';
-}
