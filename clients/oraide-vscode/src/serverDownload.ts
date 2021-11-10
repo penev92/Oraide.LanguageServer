@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as util from 'util';
 import * as extract from 'extract-zip';
+import { pathToFileURL, fileURLToPath } from 'url';
 
 const streamPipeline = util.promisify(require('stream').pipeline)
 
@@ -46,28 +47,23 @@ export async function downloadLanguageServer(context: vscode.ExtensionContext): 
     }
 
     const extensionStorageFolder = context.globalStorageUri;
+    let filePath = path.join(extensionStorageFolder.toString(true), 'LanguageServer', asset.name);
+    let resolvedFilePath = fileURLToPath(filePath);
 
-    // TODO: This is bad and we should feel bad. Find a way to clean up this mess!
-    let filePath = path.join(path.join(extensionStorageFolder.toString(), 'LanguageServer', asset.name));
-    let parsed = vscode.Uri.parse(filePath);
-    let toStringed = parsed.toString(true);
-    let finalNonsense = toStringed.substring(9);
+    // Write the downloaded zip file to disk.
+    await streamPipeline(response.body, fileSystem.createWriteStream(resolvedFilePath));
 
-    await streamPipeline(response.body, fileSystem.createWriteStream(finalNonsense));
-
-    let folderName = finalNonsense.substring(0, finalNonsense.length - 4);
-    // if (!fileSystem.existsSync(folderName)) {
-    //     await vscode.workspace.fs.createDirectory(vscode.Uri.parse(folderName));
-    // }
-
-    try {
-        await extract(finalNonsense, { dir: folderName });
-    } catch (error) {
-        return false;
+    // Create the folder in which we will be extracting the language server.
+    let folderPathUrl = pathToFileURL(resolvedFilePath.substring(0, resolvedFilePath.lastIndexOf('.')));
+    if (!fileSystem.existsSync(folderPathUrl)) {
+        fileSystem.mkdirSync(folderPathUrl);
     }
 
+    // Extract the downloaded zip.
+    await extract(resolvedFilePath, { dir: fileURLToPath(folderPathUrl) });
+
     // Finally, delete the downloaded .zip file.
-    fileSystem.unlinkSync(finalNonsense);
+    fileSystem.unlinkSync(resolvedFilePath);
 
     return true;
 };
