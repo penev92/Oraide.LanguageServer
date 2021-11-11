@@ -3,8 +3,7 @@
 import * as vscode from 'vscode';
 import * as fileSystem from 'fs';
 
-// Ignore error "Cannot find name 'v8debug'.ts(2304)". Node.js may or may not create such a global object when debugging.
-// This mess was taken from here: https://stackoverflow.com/questions/6889470/how-to-programmatically-detect-debug-mode-in-nodejs
+// Taken from https://stackoverflow.com/questions/6889470/how-to-programmatically-detect-debug-mode-in-nodejs
 export const IS_DEBUG = /--debug|--inspect/.test(process.execArgv.join(' '));
 
 export async function getCurrentServerVersion(extensionStorageFolder: vscode.Uri): Promise<string> {
@@ -14,7 +13,7 @@ export async function getCurrentServerVersion(extensionStorageFolder: vscode.Uri
     }
 
     let content = await vscode.workspace.fs.readDirectory(languageServerRootFolder);
-    let folders = content.filter(x => x[1] == 2) // TODO: There has to be a less stupid way of filtering just the subdirectories.
+    let folders = content.filter(x => x[1] === 2) // TODO: There has to be a less stupid way of filtering just the subdirectories.
         .map(x => x[0])
         .sort((a, b) => a.localeCompare(b));
 

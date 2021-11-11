@@ -3,22 +3,40 @@
 import * as vscode from 'vscode';
 import { ChildProcess, spawn } from 'child_process';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
+import { logger } from './logger';
 import * as serverDownload from './serverDownload';
 import * as utils from './utils';
 
 const LANGUAGE_SERVER_BINARY_NAME = "Oraide.LanguageServer.dll"
 
-export async function findOrDownloadLanguageServer(context: vscode.ExtensionContext): Promise<string | undefined> {
+export async function getLanguageServerPath(context: vscode.ExtensionContext, config: vscode.WorkspaceConfiguration) : Promise<string | undefined> {
+    let serverPath = undefined;
+
+    if (utils.IS_DEBUG) {
+        serverPath = config.get<string>('oraide.server.path');
+    } else {
+        serverPath = await findOrDownloadLanguageServer(context);
+    }
+
+    return serverPath;
+}
+
+async function findOrDownloadLanguageServer(context: vscode.ExtensionContext): Promise<string | undefined> {
     const globalStorageUri = context.globalStorageUri;
     let currentServerVersion = await utils.getCurrentServerVersion(globalStorageUri);
     let latestServerVersion = await serverDownload.getLatestServerVersion();
+
+    logger.appendLine("METHOD findOrDownloadLanguageServer");
 
     if (currentServerVersion === '' && latestServerVersion === '') {
         return undefined; // Nothing to do here - there is no language server and we couldn't find a version to download.
     }
     
     if (currentServerVersion === '') {
+        logger.appendLine("NO SERVER FOUND");
+        
         const userResponse = await vscode.window.showInformationMessage("ORAIDE needs to download the ORAIDE language server to function.", "Download now");
         if (userResponse !== "Download now") {
             return undefined;
@@ -44,12 +62,14 @@ export async function findOrDownloadLanguageServer(context: vscode.ExtensionCont
         }
     }
 
-    let languageServerUri = vscode.Uri.joinPath(globalStorageUri, 'LanguageServer', currentServerVersion, LANGUAGE_SERVER_BINARY_NAME);
-    let languageServerPath = languageServerUri.path.substring(1); // TODO: This is horrible. Please help!
+    let languageServerUri = path.join(globalStorageUri.toString(true), 'LanguageServer', currentServerVersion, LANGUAGE_SERVER_BINARY_NAME);
+    let languageServerPath = fileURLToPath(languageServerUri);
     return languageServerPath;
 };
 
 export async function spawnServerProcess(serverPath: string, workspaceFolderPath: string, defaultOpenRaPath: string): Promise<ChildProcess> {
+
+    logger.appendLine(`METHOD spawnServerProcess`);
 
     // Path to the server binary (not executable because reasons).
     // Path to the currently open directory/workspace.
@@ -61,18 +81,23 @@ export async function spawnServerProcess(serverPath: string, workspaceFolderPath
         defaultOpenRaPath
     ];
 
+    logger.appendLine(`ARGS: ${args.join(' ')}`);
+
     const options = {};
 
     const serverProcess = spawn(command, args, options);
 
     if (serverProcess && serverProcess.pid) {
+        logger.appendLine(`Spawned language server process with PID ${serverProcess.pid}`);
         vscode.window.showInformationMessage(`OpenRA IDE server PID: ${serverProcess.pid}`);
     }
 
     serverProcess.on('error', (err: { code?: string; message: string }) => {
+        logger.appendLine(`ERROR!!!`);
+        logger.appendLine(err.message)
         if (err.code === 'ENOENT') {
             const msg = `Could not spawn oraide process: ${err.message}`;
-            console.error(msg);
+            logger.appendLine(msg);
             vscode.window.showWarningMessage(msg);
         }
     });
@@ -80,11 +105,11 @@ export async function spawnServerProcess(serverPath: string, workspaceFolderPath
     if (utils.IS_DEBUG) {
         serverProcess.stderr.setEncoding('utf8');
         serverProcess.stderr.on('data', function (data) {
-            console.log('stderr: ' + data);
+            logger.appendLine('stderr: ' + data);
         });
 
         serverProcess.on('close', function (code) {
-            console.log('closing code: ' + code);
+            logger.appendLine('closing code: ' + code);
         });
     }
 

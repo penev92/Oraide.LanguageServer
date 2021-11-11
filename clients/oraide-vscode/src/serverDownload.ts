@@ -11,7 +11,7 @@ import { pathToFileURL, fileURLToPath } from 'url';
 
 const streamPipeline = util.promisify(require('stream').pipeline)
 
-export async function getLanguageServerAsset(): Promise<{ name: string; browser_download_url: vscode.Uri; } | undefined> {
+async function getLanguageServerAsset(): Promise<{ name: string; browser_download_url: vscode.Uri; } | undefined> {
 
     const headers: Record<string, string> = { Accept: "application/vnd.github.v3+json" };
     const requestUrl = "https://api.github.com/repos/penev92/Oraide.LanguageServer/releases/latest";
