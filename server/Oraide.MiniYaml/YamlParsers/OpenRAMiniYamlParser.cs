@@ -16,7 +16,7 @@ namespace Oraide.MiniYaml.YamlParsers
 
 			// TODO: What about maps?
 			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories)
-				.Where(x => x.Contains("/rules/") || x.Contains("\\rules\\"));
+				.Where(x => x.Contains("/rules/") || x.Contains("\\rules\\") || ((x.Contains("/maps/") || x.Contains("\\maps\\")) && !x.EndsWith("map.yaml")));
 
 			foreach (var filePath in filePaths)
 			{
