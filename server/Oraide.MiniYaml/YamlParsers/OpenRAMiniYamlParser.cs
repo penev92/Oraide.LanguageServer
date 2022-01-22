@@ -39,6 +39,36 @@ namespace Oraide.MiniYaml.YamlParsers
 			return actorDefinitionsPerMod.ToDictionary(x => x.Key, y => y.Value.ToLookup(n => n.Name, m => m));
 		}
 
+		public static IReadOnlyDictionary<string, ILookup<string, WeaponDefinition>> GetWeaponDefinitions(in string modFolderPath)
+		{
+			var result = new List<YamlNode>();
+			var weaponDefinitionsPerMod = new Dictionary<string, List<WeaponDefinition>>();
+
+			// TODO: What about maps?
+			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories)
+				.Where(x => x.Contains("/weapons/") || x.Contains("\\weapons\\"));
+
+			foreach (var filePath in filePaths)
+			{
+				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
+				var yamlNodes = nodes.Select(x => x.ToYamlNode());
+				result.AddRange(yamlNodes);
+			}
+
+			foreach (var node in result)
+			{
+				var location = new MemberLocation(node.Location.FilePath, node.Location.LineNumber, node.Location.CharacterPosition);
+
+				var modId = GetModId(location.FilePath);
+				if (!weaponDefinitionsPerMod.ContainsKey(modId))
+					weaponDefinitionsPerMod.Add(modId, new List<WeaponDefinition>());
+
+				weaponDefinitionsPerMod[modId].Add(new WeaponDefinition(node.Key, location));
+			}
+
+			return weaponDefinitionsPerMod.ToDictionary(x => x.Key, y => y.Value.ToLookup(n => n.Name, m => m));
+		}
+
 		public static IReadOnlyDictionary<string, ILookup<string, MemberLocation>> GetConditionDefinitions(in string modFolderPath)
 		{
 			var result = new List<KeyValuePair<string, MemberLocation>>();

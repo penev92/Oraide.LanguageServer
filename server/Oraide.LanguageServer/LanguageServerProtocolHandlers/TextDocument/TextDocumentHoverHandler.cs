@@ -100,6 +100,18 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				return true;
 			}
 
+			if (symbolCache.WeaponDefinitionsPerMod[target.ModId].Any(x => x.Key == target.TargetString))
+			{
+				hoverInfo = (
+					$"Weapon \"{target.TargetString}\"", new Range
+					{
+						Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
+						End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
+					});
+
+				return true;
+			}
+
 			if (symbolCache.ConditionDefinitionsPerMod[target.ModId].Any(x => x.Key == target.TargetString))
 			{
 				hoverInfo = (

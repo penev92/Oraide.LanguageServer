@@ -88,6 +88,15 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						End = new Position((uint)x.Location.LineNumber - 1, (uint)(x.Location.CharacterPosition + target.TargetString.Length))
 					}
 				})
+				.Union(symbolCache.WeaponDefinitionsPerMod[target.ModId][target.TargetString].Select(x => new Location
+				{
+					Uri = new Uri(x.Location.FilePath).ToString(),
+					Range = new Range
+					{
+						Start = new Position((uint)x.Location.LineNumber - 1, (uint)x.Location.CharacterPosition),
+						End = new Position((uint)x.Location.LineNumber - 1, (uint)(x.Location.CharacterPosition + target.TargetString.Length))
+					}
+				}))
 				.Union(symbolCache.ConditionDefinitionsPerMod[target.ModId][target.TargetString].Select(x => new Location
 				{
 					Uri = new Uri(x.FilePath).ToString(),

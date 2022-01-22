@@ -22,6 +22,11 @@ namespace Oraide.MiniYaml
 			return OpenRAMiniYamlParser.GetActorDefinitions(yamlFolder);
 		}
 
+		public IReadOnlyDictionary<string, ILookup<string, WeaponDefinition>> GetWeaponDefinitions()
+		{
+			return OpenRAMiniYamlParser.GetWeaponDefinitions(yamlFolder);
+		}
+
 		public IReadOnlyDictionary<string, ILookup<string, MemberLocation>> GetConditionDefinitions()
 		{
 			return OpenRAMiniYamlParser.GetConditionDefinitions(yamlFolder);

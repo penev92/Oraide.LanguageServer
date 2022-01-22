@@ -60,6 +60,14 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				CommitCharacters = new[] { ":" }
 			});
 
+			var weaponNames = symbolCache.WeaponDefinitionsPerMod[modId].Select(x => new CompletionItem
+			{
+				Label = x.Key,
+				Kind = CompletionItemKind.Unit,
+				Detail = "Weapon name",
+				CommitCharacters = new[] { ":" }
+			});
+
 			var conditionNames = symbolCache.ConditionDefinitionsPerMod[modId].Select(x => new CompletionItem
 			{
 				Label = x.Key,
@@ -68,7 +76,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				Documentation = "Conditions are arbitrary user-defined strings that are used across multiple actors/weapons/traits."
 			});
 
-			return traitNames.Union(actorNames).Union(conditionNames);
+			return traitNames.Union(actorNames).Union(weaponNames).Union(conditionNames);
 		}
 	}
 }

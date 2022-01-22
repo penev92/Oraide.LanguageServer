@@ -22,6 +22,11 @@ namespace Oraide.LanguageServer.Caching
 		public IReadOnlyDictionary<string, ILookup<string, ActorDefinition>> ActorDefinitionsPerMod { get; private set; }
 
 		/// <summary>
+		/// A collection of all weapon definitions in YAML (including abstract ones) grouped by their key/name.
+		/// </summary>
+		public IReadOnlyDictionary<string, ILookup<string, WeaponDefinition>> WeaponDefinitionsPerMod { get; private set; }
+
+		/// <summary>
 		/// A collection of all granted and consumed conditions and their usages in YAML grouped by their name.
 		/// </summary>
 		public IReadOnlyDictionary<string, ILookup<string, MemberLocation>> ConditionDefinitionsPerMod { get; private set; }
@@ -65,6 +70,7 @@ namespace Oraide.LanguageServer.Caching
 		public void UpdateYamlSymbols()
 		{
 			ActorDefinitionsPerMod = yamlInformationProvider.GetActorDefinitions();
+			WeaponDefinitionsPerMod = yamlInformationProvider.GetWeaponDefinitions();
 			ConditionDefinitionsPerMod = yamlInformationProvider.GetConditionDefinitions();
 		}
 	}
