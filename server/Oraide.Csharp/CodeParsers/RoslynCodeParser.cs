@@ -96,8 +96,10 @@ namespace Oraide.Csharp.CodeParsers
 													}
 
 												var propertyName = variableDeclaratorSyntax.Identifier.ValueText;
+												var propertyType = HumanReadablePropertyType(fieldMember.Declaration.Type);
+												var defaultValue = HumanReadablePropertyDefaultValue(variableDeclaratorSyntax);
 												var location = FindPropertyLocationInText(filePath, text, variableDeclaratorSyntax.GetLocation().SourceSpan.Start);
-												traitProperties.Add(new TraitPropertyInfo(propertyName, location, fieldDesc, loadUsing));
+												traitProperties.Add(new TraitPropertyInfo(propertyName, propertyType, defaultValue, location, fieldDesc, loadUsing));
 											}
 
 									// Some manual string nonsense to determine trait name location inside the file.
@@ -131,6 +133,114 @@ namespace Oraide.Csharp.CodeParsers
 			var lineNumber = lines.Length;
 			var characterNumber = lines.Last().Replace('\t', ' ').Length;
 			return new MemberLocation(filePath, lineNumber, characterNumber);
+		}
+
+		static string HumanReadablePropertyType(TypeSyntax typeSyntax)
+		{
+			var propertyType = string.Empty;
+			try
+			{
+				if (typeSyntax is PredefinedTypeSyntax predefinedTypeSyntax)
+					propertyType = predefinedTypeSyntax.Keyword.Text;
+				else if (typeSyntax is GenericNameSyntax genericNameSyntax)
+					propertyType = $"{genericNameSyntax.Identifier.Value} of {genericNameSyntax.TypeArgumentList.Arguments}";
+				else if (typeSyntax is IdentifierNameSyntax identifierNameSyntax)
+					propertyType = identifierNameSyntax.Identifier.Text;
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e);
+			}
+
+			return propertyType;
+		}
+
+		static string HumanReadablePropertyDefaultValue(VariableDeclaratorSyntax declaratorSyntax)
+		{
+			var defaultValue = string.Empty;
+			try
+			{
+				if (declaratorSyntax.Initializer == null)
+					return defaultValue;
+
+				defaultValue = declaratorSyntax.Initializer.Value.ToString();
+				var valueKind = declaratorSyntax.Initializer.Value.Kind();
+				if (valueKind == SyntaxKind.BitwiseOrExpression)
+				{
+					var values = new List<string>();
+					var binaryExpression = (BinaryExpressionSyntax)declaratorSyntax.Initializer.Value;
+					while (true)
+					{
+						var leftExpression = binaryExpression.Left;
+						if (leftExpression is MemberAccessExpressionSyntax leftAccessExpression)
+						{
+							values.Add(((MemberAccessExpressionSyntax)binaryExpression.Right).Name.Identifier.Text);
+							values.Add(leftAccessExpression.Name.Identifier.Text);
+							break;
+						}
+
+						if (leftExpression is BinaryExpressionSyntax leftBinaryExpression)
+						{
+							values.Add(((MemberAccessExpressionSyntax)binaryExpression.Right).Name.Identifier.Text);
+							binaryExpression = leftBinaryExpression;
+						}
+					}
+
+					values.Reverse();
+					defaultValue = string.Join(", ", values);
+				}
+				else if (valueKind == SyntaxKind.SimpleMemberAccessExpression)
+					defaultValue = ((MemberAccessExpressionSyntax)declaratorSyntax.Initializer.Value).Name.Identifier.Text;
+				else if (valueKind == SyntaxKind.ObjectCreationExpression)
+				{
+					var objectCreationExpression = (ObjectCreationExpressionSyntax)declaratorSyntax.Initializer.Value;
+					if (objectCreationExpression.Initializer != null)
+						defaultValue = string.Join(", ", objectCreationExpression.Initializer.Expressions.Select(x => x.ToString()));
+					else if (objectCreationExpression.ArgumentList != null)
+						defaultValue = objectCreationExpression.ArgumentList.Arguments.ToString();
+
+					if (string.IsNullOrWhiteSpace(defaultValue))
+						defaultValue = "(empty)";
+				}
+				else if (valueKind == SyntaxKind.TrueLiteralExpression || valueKind == SyntaxKind.FalseLiteralExpression)
+					defaultValue = bool.FalseString;
+				else if (valueKind == SyntaxKind.ArrayInitializerExpression)
+					defaultValue = ((InitializerExpressionSyntax)declaratorSyntax.Initializer.Value).Expressions.ToString();
+				else if (valueKind == SyntaxKind.DefaultExpression)
+				{
+					if (defaultValue.Contains('<') && defaultValue.Contains('>'))
+						defaultValue = "(empty)";
+				}
+				else if (valueKind == SyntaxKind.ArrayCreationExpression)
+				{
+					var arrayCreationExpression = (ArrayCreationExpressionSyntax)declaratorSyntax.Initializer.Value;
+					if (arrayCreationExpression.Initializer != null)
+						defaultValue = string.Join(", ", arrayCreationExpression.Initializer.Expressions.Select(x => x.ToString()));
+
+					if (string.IsNullOrWhiteSpace(defaultValue))
+						defaultValue = "(empty)";
+				}
+				else if (valueKind == SyntaxKind.ImplicitArrayCreationExpression)
+				{
+					var arrayCreationExpression = (ImplicitArrayCreationExpressionSyntax)declaratorSyntax.Initializer.Value;
+					defaultValue = string.Join(", ", arrayCreationExpression.Initializer.Expressions.Select(x => x.ToString()));
+
+					if (string.IsNullOrWhiteSpace(defaultValue))
+						defaultValue = "(empty)";
+				}
+				else if (valueKind != SyntaxKind.StringLiteralExpression
+				         && valueKind != SyntaxKind.NumericLiteralExpression
+				         && valueKind != SyntaxKind.NullLiteralExpression
+				         && valueKind != SyntaxKind.InvocationExpression
+				         && valueKind != SyntaxKind.UnaryMinusExpression)
+					throw new NotImplementedException($"unsupported type {valueKind}!");
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e);
+			}
+
+			return defaultValue;
 		}
 	}
 }

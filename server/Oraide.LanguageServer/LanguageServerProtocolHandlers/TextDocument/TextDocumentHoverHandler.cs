@@ -59,7 +59,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			else
 			{
 				var prop = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
-				content = $"{prop.PropertyName}\n{prop.Description}";
+				content = $"{prop.PropertyName} ({prop.PropertyType})\n{prop.Description}\nDefault value: {prop.DefaultValue}";
 			}
 
 			if (string.IsNullOrWhiteSpace(content))

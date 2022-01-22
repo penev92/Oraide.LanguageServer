@@ -14,17 +14,12 @@ namespace Oraide.Csharp
 	//  - Any of the above for non-trait types.
 	public class CodeInformationProvider
 	{
-		readonly string workspaceFolderPath;
-		readonly string defaultOpenRaFolderPath;
 		readonly string openRaFolder;
 		readonly CodeSymbolGenerationStrategy symbolGenerator;
 
 		public CodeInformationProvider(string workspaceFolderPath, string defaultOpenRaFolderPath)
 		{
-			this.workspaceFolderPath = workspaceFolderPath;
-			this.defaultOpenRaFolderPath = defaultOpenRaFolderPath;
-
-			openRaFolder = GetOpenRaFolder();
+			openRaFolder = GetOpenRaFolder(workspaceFolderPath, defaultOpenRaFolderPath);
 			if (OpenRaFolderUtils.IsOpenRaRepositoryFolder(openRaFolder) || OpenRaFolderUtils.IsModSdkRepositoryFolder(openRaFolder))
 			{
 				// TODO: Strategy 1 - C# code parsing.
@@ -48,7 +43,7 @@ namespace Oraide.Csharp
 			return symbolGenerator.GetTraitInfos(openRaFolder);
 		}
 
-		string GetOpenRaFolder()
+		string GetOpenRaFolder(string workspaceFolderPath, string defaultOpenRaFolderPath)
 		{
 			var oraFolderPath = "";
 			if (OpenRaFolderUtils.IsOpenRaFolder(workspaceFolderPath))
