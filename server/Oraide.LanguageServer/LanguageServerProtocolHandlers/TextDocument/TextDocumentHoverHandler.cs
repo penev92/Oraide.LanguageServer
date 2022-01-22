@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using LspTypes;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
@@ -36,6 +37,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						if ((target.TargetType == "value" || target.TargetNodeIndentation == 0)
 						    && TryGetTargetYamlHoverInfo(target, out var yamlHoverInfo))
 							return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
+
+						if (TryGetTargetValueHoverInfo(target, out var valueHoverInfo))
+							return HoverFromHoverInfo(valueHoverInfo.Content, valueHoverInfo.Range);
 					}
 				}
 				catch (Exception)
@@ -106,6 +110,27 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					});
 
 				return true;
+			}
+
+			hoverInfo = (null, null);
+			return false;
+		}
+
+		private bool TryGetTargetValueHoverInfo(CursorTarget target, out (string Content, Range Range) hoverInfo)
+		{
+			if (target.TargetType == "value")
+			{
+				if (Regex.IsMatch(target.TargetString, "[0-9]+c[0-9]+", RegexOptions.Compiled))
+				{
+					var parts = target.TargetString.Split('c');
+					hoverInfo = ($"Range in world distance units equal to {parts[0]} cells and {parts[1]} distance units (where 1 cell has 1024 units)", new Range
+					{
+						Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
+						End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
+					});
+
+					return true;
+				}
 			}
 
 			hoverInfo = (null, null);
