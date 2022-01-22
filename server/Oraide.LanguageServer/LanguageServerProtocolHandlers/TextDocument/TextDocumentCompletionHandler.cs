@@ -24,10 +24,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						Console.Error.WriteLine("<-- TextDocument-Completion");
 						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(completionParams));
 
+						TryGetModId(completionParams.TextDocument.Uri, out var modId);
 						return new CompletionList
 						{
 							IsIncomplete = false,
-							Items = GetCompletionItems().ToArray()
+							Items = GetCompletionItems(modId).ToArray()
 						};
 					}
 
@@ -40,7 +41,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			}
 		}
 
-		IEnumerable<CompletionItem> GetCompletionItems()
+		IEnumerable<CompletionItem> GetCompletionItems(string modId)
 		{
 			var traitNames = symbolCache.TraitInfos.Select(x => new CompletionItem
 			{
@@ -51,7 +52,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				CommitCharacters = new[] { ":" }
 			});
 
-			var actorNames = symbolCache.ActorDefinitions.Select(x => new CompletionItem
+			var actorNames = symbolCache.ActorDefinitionsPerMod[modId].Select(x => new CompletionItem
 			{
 				Label = x.Key,
 				Kind = CompletionItemKind.Unit,
@@ -59,7 +60,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				CommitCharacters = new[] { ":" }
 			});
 
-			var conditionNames = symbolCache.ConditionDefinitions.Select(x => new CompletionItem
+			var conditionNames = symbolCache.ConditionDefinitionsPerMod[modId].Select(x => new CompletionItem
 			{
 				Label = x.Key,
 				Kind = CompletionItemKind.Value,

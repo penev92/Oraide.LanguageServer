@@ -76,7 +76,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			// If it is a top-level node *and this is an actor-definition or a weapon-definition file* it definitely is a definition.
 			// If it is indented once we need to check if the target is the key or the value - keys are traits, but values *could* reference actor/weapon definitions.
 
-			definitionLocations = symbolCache.ActorDefinitions[target.TargetString].Select(x => new Location
+			definitionLocations = symbolCache.ActorDefinitionsPerMod[target.ModId][target.TargetString].Select(x => new Location
 				{
 					Uri = new Uri(x.Location.FilePath).ToString(),
 					Range = new Range
@@ -85,7 +85,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						End = new Position((uint)x.Location.LineNumber - 1, (uint)(x.Location.CharacterPosition + target.TargetString.Length))
 					}
 				})
-				.Union(symbolCache.ConditionDefinitions[target.TargetString].Select(x => new Location
+				.Union(symbolCache.ConditionDefinitionsPerMod[target.ModId][target.TargetString].Select(x => new Location
 				{
 					Uri = new Uri(x.FilePath).ToString(),
 					Range = new Range

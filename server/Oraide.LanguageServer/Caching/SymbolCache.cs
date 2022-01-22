@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Oraide.Core.Entities;
@@ -20,12 +19,12 @@ namespace Oraide.LanguageServer.Caching
 		/// <summary>
 		/// A collection of all actor definitions in YAML (including abstract ones) grouped by their key/name.
 		/// </summary>
-		public ILookup<string, ActorDefinition> ActorDefinitions { get; private set; }
+		public IReadOnlyDictionary<string, ILookup<string, ActorDefinition>> ActorDefinitionsPerMod { get; private set; }
 
 		/// <summary>
 		/// A collection of all granted and consumed conditions and their usages in YAML grouped by their name.
 		/// </summary>
-		public ILookup<string, MemberLocation> ConditionDefinitions { get; private set; }
+		public IReadOnlyDictionary<string, ILookup<string, MemberLocation>> ConditionDefinitionsPerMod { get; private set; }
 
 		private readonly CodeInformationProvider codeInformationProvider;
 		private readonly YamlInformationProvider yamlInformationProvider;
@@ -65,8 +64,8 @@ namespace Oraide.LanguageServer.Caching
 
 		public void UpdateYamlSymbols()
 		{
-			ActorDefinitions = yamlInformationProvider.GetActorDefinitions();
-			ConditionDefinitions = yamlInformationProvider.GetConditionDefinitions();
+			ActorDefinitionsPerMod = yamlInformationProvider.GetActorDefinitions();
+			ConditionDefinitionsPerMod = yamlInformationProvider.GetConditionDefinitions();
 		}
 	}
 }

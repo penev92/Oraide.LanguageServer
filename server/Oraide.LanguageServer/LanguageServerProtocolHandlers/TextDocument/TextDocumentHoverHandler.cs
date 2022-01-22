@@ -81,7 +81,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		private bool TryGetTargetYamlHoverInfo(CursorTarget target, out (string Content, Range Range) hoverInfo)
 		{
-			if (symbolCache.ActorDefinitions.Any(x => x.Key == target.TargetString))
+			if (symbolCache.ActorDefinitionsPerMod[target.ModId].Any(x => x.Key == target.TargetString))
 			{
 				hoverInfo = (
 					$"Actor \"{target.TargetString}\"", new Range
@@ -93,7 +93,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				return true;
 			}
 
-			if (symbolCache.ConditionDefinitions.Any(x => x.Key == target.TargetString))
+			if (symbolCache.ConditionDefinitionsPerMod[target.ModId].Any(x => x.Key == target.TargetString))
 			{
 				hoverInfo = (
 					$"Condition \"{target.TargetString}\"", new Range

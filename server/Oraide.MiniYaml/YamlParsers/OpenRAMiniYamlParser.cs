@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.MiniYaml;
 
@@ -9,12 +9,15 @@ namespace Oraide.MiniYaml.YamlParsers
 {
 	public static class OpenRAMiniYamlParser
 	{
-		public static ILookup<string, ActorDefinition> GetActorDefinitions(in string modFolderPath)
+		public static IReadOnlyDictionary<string, ILookup<string, ActorDefinition>> GetActorDefinitions(in string modFolderPath)
 		{
 			var result = new List<YamlNode>();
-			var actorDefinitions = new List<ActorDefinition>();
+			var actorDefinitionsPerMod = new Dictionary<string, List<ActorDefinition>>();
 
-			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories);
+			// TODO: What about maps?
+			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories)
+				.Where(x => x.Contains("/rules/") || x.Contains("\\rules\\"));
+
 			foreach (var filePath in filePaths)
 			{
 				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
@@ -25,17 +28,25 @@ namespace Oraide.MiniYaml.YamlParsers
 			foreach (var node in result)
 			{
 				var location = new MemberLocation(node.Location.FilePath, node.Location.LineNumber, node.Location.CharacterPosition);
-				actorDefinitions.Add(new ActorDefinition(node.Key, location, new List<TraitDefinition>()));
+
+				var modId = GetModId(location.FilePath);
+				if (!actorDefinitionsPerMod.ContainsKey(modId))
+					actorDefinitionsPerMod.Add(modId, new List<ActorDefinition>());
+
+				actorDefinitionsPerMod[modId].Add(new ActorDefinition(node.Key, location, new List<TraitDefinition>()));
 			}
 
-			return actorDefinitions.ToLookup(x => x.Name, y => y);
+			return actorDefinitionsPerMod.ToDictionary(x => x.Key, y => y.Value.ToLookup(n => n.Name, m => m));
 		}
 
-		public static ILookup<string, MemberLocation> GetConditionDefinitions(in string modFolderPath)
+		public static IReadOnlyDictionary<string, ILookup<string, MemberLocation>> GetConditionDefinitions(in string modFolderPath)
 		{
 			var result = new List<KeyValuePair<string, MemberLocation>>();
 
-			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories);
+			// TODO: What about maps?
+			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories)
+				.Where(x => x.Contains("/rules/") || x.Contains("\\rules\\"));
+
 			foreach (var filePath in filePaths)
 			{
 				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
@@ -48,7 +59,9 @@ namespace Oraide.MiniYaml.YamlParsers
 				result.AddRange(conditions);
 			}
 
-			return result.ToLookup(x => x.Key, y => y.Value);
+			return result.GroupBy(x => GetModId(x.Value.FilePath))
+				.ToDictionary(x => x.Key,
+					y => y.ToLookup(n => n.Key, m => m.Value));
 		}
 
 		public static IEnumerable<YamlNode> ParseText(string text, bool flatten = false)
@@ -89,6 +102,13 @@ namespace Oraide.MiniYaml.YamlParsers
 		static MemberLocation ToMemberLocation(this OpenRA.MiniYamlParser.MiniYamlNode.SourceLocation source)
 		{
 			return new MemberLocation(source.Filename, source.Line, source.Character);
+		}
+
+		static string GetModId(string filePath)
+		{
+			var fileUri = filePath.Replace("\\", "/");
+			var match = Regex.Match(fileUri, "(\\/mods\\/[^\\/]*\\/)").Value;
+			return match.Split('/')[2];
 		}
 	}
 }

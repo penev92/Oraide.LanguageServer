@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using LspTypes;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.Csharp;
@@ -77,7 +78,8 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				return false;
 			}
 
-			target = new CursorTarget(targetNode, targetType, targetString,
+			TryGetModId(positionParams.TextDocument.Uri, out var modId);
+			target = new CursorTarget(modId, targetNode, targetType, targetString,
 				new MemberLocation(filePath, targetLineIndex, startIndex),
 				new MemberLocation(filePath, targetLineIndex, endIndex));
 
@@ -121,6 +123,13 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 
 			traitInfo = default;
 			return false;
+		}
+
+		protected bool TryGetModId(string fileUri, out string modId)
+		{
+			var match = Regex.Match(fileUri, "(\\/mods\\/[^\\/]*\\/)").Value;
+			modId = match.Split('/')[2];
+			return true;
 		}
 
 		bool TryGetTargetString(string targetLine, int targetCharacterIndex, string sourceString, out string targetString, out int startIndex, out int endIndex)
