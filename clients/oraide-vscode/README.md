@@ -25,4 +25,8 @@ Users appreciate release notes as you update your extension.
 
 Initial release.
 
+### Known issues
+
+ - TooltipInfoBase inheritance is ignored, so inheriting types won't know about their `Name` property.
+
 **Enjoy!**
