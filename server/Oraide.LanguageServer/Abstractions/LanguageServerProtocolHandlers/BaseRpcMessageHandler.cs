@@ -79,9 +79,10 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			}
 
 			TryGetModId(positionParams.TextDocument.Uri, out var modId);
+			TryGetTargetStringIndentation(targetNode, out var indentation);
 			target = new CursorTarget(modId, targetNode, targetType, targetString,
 				new MemberLocation(filePath, targetLineIndex, startIndex),
-				new MemberLocation(filePath, targetLineIndex, endIndex));
+				new MemberLocation(filePath, targetLineIndex, endIndex), indentation);
 
 			return true;
 		}
@@ -161,6 +162,19 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 
 			startIndex = targetLine.IndexOf(targetString, StringComparison.InvariantCulture);
 			endIndex = startIndex + targetString.Length;
+			return true;
+		}
+
+		bool TryGetTargetStringIndentation(YamlNode yamlNode, out int indentation)
+		{
+			indentation = 0;
+			var node = yamlNode;
+			while (node.ParentNode != null)
+			{
+				node = node.ParentNode;
+				indentation++;
+			}
+
 			return true;
 		}
 

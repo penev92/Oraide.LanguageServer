@@ -29,10 +29,13 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					if (TryGetCursorTarget(positionParams, out var target))
 					{
-						if (TryGetTargetCodeDefinitionLocations(target, out var codeDefinitionLocations))
+						if (target.TargetType == "key"
+						    && (target.TargetNodeIndentation == 1 || target.TargetNodeIndentation == 2)
+						    && TryGetTargetCodeDefinitionLocations(target, out var codeDefinitionLocations))
 							return codeDefinitionLocations;
 
-						if (TryGetTargetYamlDefinitionLocations(target, out var yamlDefinitionLocations))
+						if ((target.TargetType == "value" || target.TargetNodeIndentation == 0)
+						    && TryGetTargetYamlDefinitionLocations(target, out var yamlDefinitionLocations))
 							return yamlDefinitionLocations;
 					}
 				}

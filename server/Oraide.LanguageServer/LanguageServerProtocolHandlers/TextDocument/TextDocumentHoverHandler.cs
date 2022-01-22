@@ -28,10 +28,13 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					if (TryGetCursorTarget(positionParams, out var target))
 					{
-						if (TryGetTargetCodeHoverInfo(target, out var codeHoverInfo))
+						if (target.TargetType == "key"
+						    && (target.TargetNodeIndentation == 1 || target.TargetNodeIndentation == 2)
+						    && TryGetTargetCodeHoverInfo(target, out var codeHoverInfo))
 							return HoverFromHoverInfo(codeHoverInfo.Content, codeHoverInfo.Range);
 
-						if (TryGetTargetYamlHoverInfo(target, out var yamlHoverInfo))
+						if ((target.TargetType == "value" || target.TargetNodeIndentation == 0)
+						    && TryGetTargetYamlHoverInfo(target, out var yamlHoverInfo))
 							return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
 					}
 				}
