@@ -61,12 +61,18 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			string content;
 			if (traitInfo.TraitName == target.TargetString)
 			{
-				content = $"{traitInfo.TraitInfoName}\n{traitInfo.Location.FilePath}\n{traitInfo.TraitDescription}";
+				content = "```csharp\n" +
+				          $"class {traitInfo.TraitInfoName}" +
+				          $"\n```\n" +
+						  $"{traitInfo.TraitDescription}";
 			}
 			else
 			{
 				var prop = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
-				content = $"{prop.PropertyName} ({prop.PropertyType})\n{prop.Description}\nDefault value: {prop.DefaultValue}";
+				content = "```csharp\n" +
+				          $"{prop.PropertyName} ({prop.PropertyType})" +
+				          $"\n```\n" +
+						  $"{prop.Description}\n\nDefault value: {prop.DefaultValue}";
 			}
 
 			if (string.IsNullOrWhiteSpace(content))
@@ -91,7 +97,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			if (symbolCache.ActorDefinitionsPerMod[target.ModId].Any(x => x.Key == target.TargetString))
 			{
 				hoverInfo = (
-					$"Actor \"{target.TargetString}\"", new Range
+					$"```csharp\nActor \"{target.TargetString}\"\n```", new Range
 					{
 						Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
 						End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
@@ -103,7 +109,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			if (symbolCache.WeaponDefinitionsPerMod[target.ModId].Any(x => x.Key == target.TargetString))
 			{
 				hoverInfo = (
-					$"Weapon \"{target.TargetString}\"", new Range
+					$"```csharp\nWeapon \"{target.TargetString}\"\n```", new Range
 					{
 						Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
 						End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
@@ -115,7 +121,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			if (symbolCache.ConditionDefinitionsPerMod[target.ModId].Any(x => x.Key == target.TargetString))
 			{
 				hoverInfo = (
-					$"Condition \"{target.TargetString}\"", new Range
+					$"```csharp\nCondition \"{target.TargetString}\"\n```", new Range
 					{
 						Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
 						End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
@@ -155,7 +161,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			{
 				Contents = new SumType<string, MarkedString, MarkedString[], MarkupContent>(new MarkupContent
 				{
-					Kind = MarkupKind.PlainText,
+					Kind = MarkupKind.Markdown,
 					Value = content
 				}),
 				Range = range
