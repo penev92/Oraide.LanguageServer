@@ -14,7 +14,7 @@
 		"yaml",
 		"miniyaml"
 	],
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"publisher": "openra",
 	"private": false,
 	"license": "GPL-3.0",

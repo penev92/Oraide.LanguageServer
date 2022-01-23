@@ -1,32 +1,33 @@
-# oraide README
-
-This is the README for "oraide".
+# Visual Studio Code extension for working with OpenRA's MiniYAML.
 
 ## Features
 
+Current features include:
+ - Navigating to Traits and Trait properties inside C# code (if available).
+ - Navigating to actor and weapon definitions inside parsed MiniYAML files.
+ - Hover info for Traits, Trait properties, actor and weapon definitions, conditions and more.
+ - Context-aware IntelliSense to help with writing MiniYAML.
+
 ## Requirements
+
+The language server requires .NET 6 to run.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `oraide.server`: Path to the language server.
-* `oraide.game`: A fallback OpenRA directory path.
+ - `oraide.server.path`: Path to the language server.
+ - `oraide.game.path`: A fallback OpenRA directory path.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.2
 
-### 0.0.1
-
-Initial release.
+First public release.
 
 ### Known issues
 
  - TooltipInfoBase inheritance is ignored, so inheriting types won't know about their `Name` property.
+ - Currently only parsing code symbols from C# files is supported. Decompiling game binaries and reading trait information from a static file are not yet implemented.
 
 **Enjoy!**
