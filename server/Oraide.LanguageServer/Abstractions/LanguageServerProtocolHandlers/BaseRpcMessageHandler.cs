@@ -23,11 +23,18 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			this.openFileCache = openFileCache;
 		}
 
-		protected bool TryGetCursorTarget(TextDocumentPositionParams positionParams, out CursorTarget target)
+		protected virtual bool TryGetCursorTarget(TextDocumentPositionParams positionParams, out CursorTarget target)
 		{
 			var filePath = positionParams.TextDocument.Uri;
 			var targetLineIndex = (int)positionParams.Position.Line;
 			var targetCharacterIndex = (int)positionParams.Position.Character;
+
+			// Determine file type.
+			var fileType = FileType.Unknown;
+			if (filePath.Contains("/rules/") || (filePath.Contains("/maps/") && !filePath.EndsWith("map.yaml")))
+				fileType = FileType.Rules;
+			else if (filePath.Contains("/weapons/"))
+				fileType = FileType.Weapons;
 
 			if (!openFileCache.ContainsFile(filePath))
 			{
@@ -80,7 +87,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 
 			TryGetModId(positionParams.TextDocument.Uri, out var modId);
 			TryGetTargetStringIndentation(targetNode, out var indentation);
-			target = new CursorTarget(modId, targetNode, targetType, targetString,
+			target = new CursorTarget(modId, fileType, targetNode, targetType, targetString,
 				new MemberLocation(filePath, targetLineIndex, startIndex),
 				new MemberLocation(filePath, targetLineIndex, endIndex), indentation);
 
@@ -133,6 +140,19 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			return true;
 		}
 
+		protected bool TryGetTargetStringIndentation(YamlNode yamlNode, out int indentation)
+		{
+			indentation = 0;
+			var node = yamlNode;
+			while (node.ParentNode != null)
+			{
+				node = node.ParentNode;
+				indentation++;
+			}
+
+			return true;
+		}
+
 		bool TryGetTargetString(string targetLine, int targetCharacterIndex, string sourceString, out string targetString, out int startIndex, out int endIndex)
 		{
 			targetString = string.Empty;
@@ -162,19 +182,6 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 
 			startIndex = targetLine.IndexOf(targetString, StringComparison.InvariantCulture);
 			endIndex = startIndex + targetString.Length;
-			return true;
-		}
-
-		bool TryGetTargetStringIndentation(YamlNode yamlNode, out int indentation)
-		{
-			indentation = 0;
-			var node = yamlNode;
-			while (node.ParentNode != null)
-			{
-				node = node.ParentNode;
-				indentation++;
-			}
-
 			return true;
 		}
 

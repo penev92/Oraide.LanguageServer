@@ -13,9 +13,18 @@ namespace Oraide.Core.Entities.MiniYaml
 		Indent5 = 16,
 	}
 
+	public enum FileType
+	{
+		Unknown = 0,
+		Rules = 1,
+		Weapons = 2
+	}
+
 	public readonly struct CursorTarget
 	{
 		public string ModId { get; }
+
+		public FileType FileType { get; }
 
 		public YamlNode TargetNode { get; }
 
@@ -30,10 +39,11 @@ namespace Oraide.Core.Entities.MiniYaml
 
 		public int TargetNodeIndentation { get; }
 
-		public CursorTarget(string modId, YamlNode targetNode, string targetType, string targetString,
+		public CursorTarget(string modId, FileType fileType, YamlNode targetNode, string targetType, string targetString,
 			MemberLocation targetStart, MemberLocation targetEnd, int targetNodeIndentation)
 		{
 			ModId = modId;
+			FileType = fileType;
 			TargetNode = targetNode;
 			TargetType = targetType;
 			TargetString = targetString;
