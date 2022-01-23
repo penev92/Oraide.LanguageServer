@@ -64,7 +64,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				content = "```csharp\n" +
 				          $"class {traitInfo.TraitInfoName}" +
 				          $"\n```\n" +
-						  $"{traitInfo.TraitDescription}";
+						  $"{traitInfo.TraitDescription}\n\n" +
+				          "https://docs.openra.net/en/latest/release/traits/#" + $"{traitInfo.TraitName.ToLower()}";
 			}
 			else
 			{
