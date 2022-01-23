@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using LspTypes;
 using Oraide.Core.Entities;
+using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
@@ -119,15 +120,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				CommitCharacters = new[] { ":" }
 			});
 
-			var traitProperties = symbolCache.TraitInfos.SelectMany(x => x.Value.TraitPropertyInfos)
-				.Select(x => new CompletionItem
-				{
-					Label = x.PropertyName,
-					Kind = CompletionItemKind.Property,
-					Detail = "Trait property. Expand for details >",
-					Documentation = x.Description,
-					CommitCharacters = new[] { ":" }
-				});
 
 			var actorNames = symbolCache.ActorDefinitionsPerMod[cursorTarget.ModId].Select(x => new CompletionItem
 			{
@@ -180,7 +172,21 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					if (cursorTarget.TargetType == "key")
 					{
 						// Get only trait properties.
-						return traitProperties;
+						var traitName = cursorTarget.TargetNode.ParentNode.Key;
+						var traitInfoName = $"{traitName}Info";
+						var trait = symbolCache.TraitInfos[traitInfoName];
+
+						var traits = new List<TraitInfo>();
+						traits.AddRange(GetInheritedTraitInfos(trait));
+
+						return traits.SelectMany(x => x.TraitPropertyInfos).Select(y => new CompletionItem
+						{
+							Label = y.PropertyName,
+							Kind = CompletionItemKind.Property,
+							Detail = "Trait property. Expand for details >",
+							Documentation = y.Description,
+							CommitCharacters = new[] {":"}
+						});
 					}
 
 					if (cursorTarget.TargetType == "value")
@@ -192,6 +198,16 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			}
 
 			return Enumerable.Empty<CompletionItem>();
+		}
+
+		// TODO: Go further than one level of inheritance down.
+		IEnumerable<TraitInfo> GetInheritedTraitInfos(TraitInfo traitInfo)
+		{
+			yield return traitInfo;
+
+			foreach (var inheritedTypeName in traitInfo.InheritedTypes)
+				if (symbolCache.TraitInfos.ContainsKey(inheritedTypeName))
+					yield return symbolCache.TraitInfos[inheritedTypeName];
 		}
 	}
 }
