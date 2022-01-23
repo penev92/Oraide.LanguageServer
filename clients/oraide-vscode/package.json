@@ -30,21 +30,6 @@
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"languages": [
-			{
-				"id": "miniyaml",
-				"extensions": [
-					".yaml"
-				]
-			}
-		],
-		"grammars": [
-			{
-				"language": "miniyaml",
-				"scopeName": "source.miniyaml",
-				"path": "./syntaxes/miniyaml.tmLanguage.json"
-			}
-		],
 		"configuration": {
 			"type": "object",
 			"title": "ORAIDE Configuration",
