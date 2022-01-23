@@ -26,7 +26,7 @@
 		"vscode": "^1.61.0"
 	},
 	"activationEvents": [
-		"onLanguage:miniyaml"
+		"onLanguage:yaml"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
