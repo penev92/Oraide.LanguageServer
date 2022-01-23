@@ -14,7 +14,7 @@ export async function activate(context: vscode.ExtensionContext) {
     
     logger.appendLine(`Activating...`);
 
-    if (!utils.IS_DEBUG) {
+    if (utils.IS_DEBUG) {
         logger.appendLine(`This is running in DEBUG!`);
     } else {
         logger.appendLine("This is running for real!");

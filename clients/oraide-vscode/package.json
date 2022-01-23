@@ -51,7 +51,7 @@
 			"properties": {
 				"oraide.server.path": {
 					"type": "string",
-					"default": "D:\\Work.Personal\\OpenRA\\Oraide\\server\\bin\\Oraide.LanguageServer.dll",
+					"default": "",
 					"description": "Path to the Language Server executable/binary to run."
 				},
 				"oraide.game.path": {
