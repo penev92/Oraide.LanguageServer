@@ -45,7 +45,14 @@ namespace Oraide.Csharp.CodeParsers
 									foreach (var attributeList in classElement.AttributeLists)
 										foreach (var attribute in attributeList.Attributes)
 											if (attribute.Name.GetText().ToString() == "Desc")
-												traitDesc = attribute.ArgumentList.Arguments.ToString();
+											{
+												var strings = attribute.ArgumentList.Arguments
+													.Select(x => x.GetText().ToString())
+													.Select(x => x.Substring(x.IndexOf('"') + 1))
+													.Select(x => x.Substring(0, x.Length - 1));
+
+												traitDesc = string.Join(" ", strings);
+											}
 
 									// Get inherited/implemented types.
 									if (classElement.BaseList != null)
@@ -68,32 +75,43 @@ namespace Oraide.Csharp.CodeParsers
 												var fieldDesc = "";
 												var loadUsing = "";
 												foreach (var attributeList in fieldMember.AttributeLists)
-												foreach (var attribute in attributeList.Attributes)
-													if (attribute.Name.GetText().ToString() == "Desc")
-														fieldDesc = attribute.ArgumentList.Arguments.ToString();
-													else if (attribute.Name.GetText().ToString() == "FieldLoader.LoadUsing")
+												{
+													foreach (var attribute in attributeList.Attributes)
 													{
-														loadUsing = attribute.ArgumentList.Arguments.ToString();
+														if (attribute.Name.GetText().ToString() == "Desc")
+														{
+															var strings = attribute.ArgumentList.Arguments
+																.Select(x => x.GetText().ToString())
+																.Select(x => x.Substring(x.IndexOf('"') + 1))
+																.Select(x => x.Substring(0, x.Length - 1));
+
+															fieldDesc = string.Join(" ", strings);
+														}
+														else if (attribute.Name.GetText().ToString() == "FieldLoader.LoadUsing")
+														{
+															loadUsing = attribute.ArgumentList.Arguments.ToString();
+														}
+														else
+														{
+															// Full set of attributes on trait properties for future reference.
+															if (attribute.Name.GetText().ToString() != "FieldLoader.Require"
+															    && attribute.Name.GetText().ToString() != "FieldLoader.Ignore"
+															    && attribute.Name.GetText().ToString() != "ActorReference"
+															    && attribute.Name.GetText().ToString() != "VoiceReference"
+															    && attribute.Name.GetText().ToString() != "VoiceSetReference"
+															    && attribute.Name.GetText().ToString() != "CursorReference"
+															    && attribute.Name.GetText().ToString() != "WeaponReference"
+															    && attribute.Name.GetText().ToString() != "PaletteReference"
+															    && attribute.Name.GetText().ToString() != "PaletteDefinition"
+															    && attribute.Name.GetText().ToString() != "SequenceReference"
+															    && attribute.Name.GetText().ToString() != "NotificationReference"
+															    && attribute.Name.GetText().ToString() != "GrantedConditionReference"
+															    && attribute.Name.GetText().ToString() != "ConsumedConditionReference"
+															    && attribute.Name.GetText().ToString() != "LocomotorReference")
+																fieldDesc = fieldDesc;
+														}
 													}
-													else
-													{
-														// Full set of attributes on trait properties for future reference.
-														if (attribute.Name.GetText().ToString() != "FieldLoader.Require"
-															&& attribute.Name.GetText().ToString() != "FieldLoader.Ignore"
-															&& attribute.Name.GetText().ToString() != "ActorReference"
-														    && attribute.Name.GetText().ToString() != "VoiceReference"
-														    && attribute.Name.GetText().ToString() != "VoiceSetReference"
-															&& attribute.Name.GetText().ToString() != "CursorReference"
-														    && attribute.Name.GetText().ToString() != "WeaponReference"
-														    && attribute.Name.GetText().ToString() != "PaletteReference"
-														    && attribute.Name.GetText().ToString() != "PaletteDefinition"
-															&& attribute.Name.GetText().ToString() != "SequenceReference"
-															&& attribute.Name.GetText().ToString() != "NotificationReference"
-															&& attribute.Name.GetText().ToString() != "GrantedConditionReference"
-															&& attribute.Name.GetText().ToString() != "ConsumedConditionReference"
-															&& attribute.Name.GetText().ToString() != "LocomotorReference")
-															fieldDesc = fieldDesc;
-													}
+												}
 
 												var propertyName = variableDeclaratorSyntax.Identifier.ValueText;
 												var propertyType = HumanReadablePropertyType(fieldMember.Declaration.Type);
