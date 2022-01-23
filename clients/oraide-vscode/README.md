@@ -21,6 +21,12 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.0.3
+
+ - Started beautifying hover tooltips by using Markdown and by fixing parsing of Desc attributes on traits and trait properties.
+ - Added links to online trait documentation.
+ - Fixed a couple of small issues with the extension.
+
 ### 0.0.2
 
 First public release.
@@ -29,5 +35,6 @@ First public release.
 
  - TooltipInfoBase inheritance is ignored, so inheriting types won't know about their `Name` property.
  - Currently only parsing code symbols from C# files is supported. Decompiling game binaries and reading trait information from a static file are not yet implemented.
+ - The hover tooltip links to the online documentation may or may not work depending on your local version of OpenRA, as the links are never checked for validity and they always target the current release's documentation.
 
 **Enjoy!**
