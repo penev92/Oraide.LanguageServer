@@ -56,34 +56,34 @@ First public release.
 
  - Hovering over text in YAML files will (often) give helpful information:
     <p align="center">
-        <img src="./images/docs/Hover_tooltips.gif" alt="" />
+        <img src="https://raw.githubusercontent.com/penev92/Oraide.LanguageServer/main/clients/oraide-vscode/images/docs/Hover_tooltips.gif" alt="" />
     </p>
 
  - Pressing Ctrl while hovering over text will activate VSCode's PeekDefinition:
     <p align="center">
-        <img src="./images/docs/Peek_definition.gif" alt="" />
+        <img src="https://raw.githubusercontent.com/penev92/Oraide.LanguageServer/main/clients/oraide-vscode/images/docs/Peek_definition.gif" alt="" />
     </p>
 
  - Clicking on text will activate VSCode's GoToDefinition:
     - For actor definitions:
         <p align="center">
-            <img src="./images/docs/GoToDefinition_1.gif" alt="" />
+            <img src="https://raw.githubusercontent.com/penev92/Oraide.LanguageServer/main/clients/oraide-vscode/images/docs/GoToDefinition_1.gif" alt="" />
         </p>
 
     - For weapon definitions:
         <p align="center">
-            <img src="./images/docs/GoToDefinition_2.gif" alt="" />
+            <img src="https://raw.githubusercontent.com/penev92/Oraide.LanguageServer/main/clients/oraide-vscode/images/docs/GoToDefinition_2.gif" alt="" />
         </p>
 
     - For traits definitions:
         <p align="center">
-            <img src="./images/docs/GoToDefinition_3.gif" alt="" />
+            <img src="https://raw.githubusercontent.com/penev92/Oraide.LanguageServer/main/clients/oraide-vscode/images/docs/GoToDefinition_3.gif" alt="" />
         </p>
 
     - And more...
 
  - There is even support for VSCode's IntelliSense:
         <p align="center">
-            <img src="./images/docs/IntelliSense_3.gif" alt="" />
+            <img src="https://raw.githubusercontent.com/penev92/Oraide.LanguageServer/main/clients/oraide-vscode/images/docs/IntelliSense.gif" alt="" />
         </p>
         *(activated with Ctrl+Space or whatever your VSCode hotkeys are)*
