@@ -1,6 +1,6 @@
 {
 	"name": "oraide-vscode",
-	"displayName": "ORAIDE",
+	"displayName": "OpenRA MiniYAML Language Extension (ORAIDE)",
 	"description": "OpenRA language server extension for working with (Mini)YAML.",
 	"categories": [
 		"Other"
@@ -14,9 +14,10 @@
 		"yaml",
 		"miniyaml"
 	],
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"publisher": "openra",
 	"private": false,
+	"icon": "images/icon.png",
 	"license": "GPL-3.0",
 	"repository": {
 		"type": "git",
