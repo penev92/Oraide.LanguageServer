@@ -6,7 +6,6 @@ namespace Oraide.Core
 	public static class OpenRaFolderUtils
 	{
 		const string ModFile = "mod.yaml";
-		const string IconFile = "icon.png";
 		const string MakeFile = "Makefile";
 		const string VersionFile = "VERSION";
 		const string ModConfigFile = "mod.config";
@@ -19,8 +18,8 @@ namespace Oraide.Core
 
 		public static bool IsModFolder(string folderPath)
 		{
-			// Contains "mod.yaml" and "icon.png" files.
-			return File.Exists(Path.Combine(folderPath, ModFile)) && File.Exists(Path.Combine(folderPath, IconFile));
+			// Contains "mod.yaml" file.
+			return File.Exists(Path.Combine(folderPath, ModFile));
 		}
 
 		public static bool IsModsFolder(string folderPath)
