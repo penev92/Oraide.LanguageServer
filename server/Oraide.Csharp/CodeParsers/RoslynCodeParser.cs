@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Oraide.Core.Entities;
@@ -53,6 +54,9 @@ namespace Oraide.Csharp.CodeParsers
 
 												traitDesc = string.Join(" ", strings);
 											}
+
+									// Resolve `nameof(...)`.
+									traitDesc = Regex.Replace(traitDesc, "(\"\\s*\\+\\s*nameof\\(([A-Za-z]*)\\)\\s*\\+\\s*\")", "$2");
 
 									// Get inherited/implemented types.
 									if (classElement.BaseList != null)
@@ -112,6 +116,9 @@ namespace Oraide.Csharp.CodeParsers
 														}
 													}
 												}
+
+												// Resolve `nameof(...)`.
+												fieldDesc = Regex.Replace(fieldDesc, "(\"\\s*\\+\\s*nameof\\(([A-Za-z]*)\\)\\s*\\+\\s*\")", "$2");
 
 												var propertyName = variableDeclaratorSyntax.Identifier.ValueText;
 												var propertyType = HumanReadablePropertyType(fieldMember.Declaration.Type);
