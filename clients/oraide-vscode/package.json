@@ -38,12 +38,12 @@
 				"oraide.server.path": {
 					"type": "string",
 					"default": "",
-					"description": "Path to the Language Server executable/binary to run."
+					"description": "Path to the Language Server executable/binary to run.\nLeave empty to use the installed one."
 				},
 				"oraide.game.path": {
 					"type": "string",
 					"default": "",
-					"description": "Path to the default OpenRA repository or installation folder."
+					"description": "Path to the default OpenRA repository or installation folder.\nThis is used as a fallback when looking for engine information if the workspace folder doesn't fit."
 				}
 			}
 		}
