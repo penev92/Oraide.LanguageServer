@@ -94,6 +94,14 @@ namespace Oraide.LanguageServer
 			return (IEnumerable<Location>)methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<TextDocumentPositionParams>() });
 		}
 
+		// The currently used LSPTypes library doesn't even have support for this method, so hardcoding the method name.
+		[JsonRpcMethod("textDocument/declaration")]
+		public IEnumerable<Location> Declaration(JToken arg)
+		{
+			// Luckily, for our purposes there isn't a case where definition != declaration, so just reuse Definition() here.
+			return Definition(arg);
+		}
+
 		[JsonRpcMethod(Methods.TextDocumentHoverName)]
 		public Hover Hover(JToken arg)
 		{
