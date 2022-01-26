@@ -102,6 +102,13 @@ namespace Oraide.LanguageServer
 			return Definition(arg);
 		}
 
+		[JsonRpcMethod(Methods.TextDocumentImplementationName)]
+		public IEnumerable<Location> Implementation(JToken arg)
+		{
+			// We will just assume that for our purposes there isn't a case where definition != implementation and just reuse Definition() here.
+			return Definition(arg);
+		}
+
 		[JsonRpcMethod(Methods.TextDocumentHoverName)]
 		public Hover Hover(JToken arg)
 		{
