@@ -23,10 +23,6 @@ export async function activate(context: vscode.ExtensionContext) {
     // Checking if the fallback OpenRA folder is configured.
     const config = vscode.workspace.getConfiguration();
     const gameFolderPath = config.get<string>('oraide.game.path');
-    if (!gameFolderPath) {
-        vscode.window.showInformationMessage('Invalid path to OpenRA default folder! Please configure via extension settings.');
-        // return;
-    }
 
     // Just a sanity check for the workspace folder.
     if (vscode.workspace.workspaceFolders === undefined || vscode.workspace.workspaceFolders.length === 0) {

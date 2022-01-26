@@ -43,7 +43,7 @@
 				"oraide.game.path": {
 					"type": "string",
 					"default": "",
-					"description": "Path to the default OpenRA repository or installation folder.\nThis is used as a fallback when looking for engine information if the workspace folder doesn't fit."
+					"description": "Path to the default OpenRA repository or installation folder.\nThis is used as a fallback when looking for engine information if none is found."
 				}
 			}
 		}
