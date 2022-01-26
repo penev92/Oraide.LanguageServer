@@ -176,15 +176,17 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
 						var traitInfoName = $"{traitName}Info";
 						var traits = symbolCache.TraitInfos[traitInfoName];
+						var presentProperties = cursorTarget.TargetNode.ParentNode.ChildNodes.Select(x => x.Key).ToHashSet();
 
-						var allTraits = new List<TraitInfo>();
-						allTraits.AddRange(GetInheritedTraitInfos(traits));
+						var inheritedTraits = new List<TraitInfo>();
+						inheritedTraits.AddRange(GetInheritedTraitInfos(traits));
 
 						// Getting all traits and then all their properties is not great but we have no way to differentiate between traits of the same name
 						// until the server learns the concept of a mod and loaded assemblies.
-						return allTraits
+						return inheritedTraits
 							.SelectMany(x => x.TraitPropertyInfos)
 							.DistinctBy(y => y.PropertyName)
+							.Where(x => !presentProperties.Contains(x.PropertyName))
 							.Select(z => new CompletionItem
 							{
 								Label = z.PropertyName,
