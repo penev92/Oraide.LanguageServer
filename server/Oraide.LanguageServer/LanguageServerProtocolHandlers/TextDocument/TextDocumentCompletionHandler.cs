@@ -173,7 +173,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					if (cursorTarget.TargetType == "key")
 					{
 						// Get only trait properties.
-						var traitName = cursorTarget.TargetNode.ParentNode.Key;
+						var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
 						var traitInfoName = $"{traitName}Info";
 						var traits = symbolCache.TraitInfos[traitInfoName];
 
