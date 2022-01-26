@@ -56,7 +56,7 @@ namespace Oraide.Csharp.CodeParsers
 											}
 
 									// Resolve `nameof(...)`.
-									traitDesc = Regex.Replace(traitDesc, "(\"\\s*\\+\\s*nameof\\(([A-Za-z]*)\\)\\s*\\+\\s*\")", "$2");
+									traitDesc = Regex.Replace(traitDesc, "(\"\\s*\\+\\s*nameof\\(([A-Za-z0-9.\\S]*)\\)\\s*\\+\\s*\")", "$2");
 
 									// Get inherited/implemented types.
 									if (classElement.BaseList != null)
@@ -118,7 +118,7 @@ namespace Oraide.Csharp.CodeParsers
 												}
 
 												// Resolve `nameof(...)`.
-												fieldDesc = Regex.Replace(fieldDesc, "(\"\\s*\\+\\s*nameof\\(([A-Za-z]*)\\)\\s*\\+\\s*\")", "$2");
+												fieldDesc = Regex.Replace(fieldDesc, "(\"\\s*\\+\\s*nameof\\(([A-Za-z0-9.\\S]*)\\)\\s*\\+\\s*\")", "$2");
 
 												var propertyName = variableDeclaratorSyntax.Identifier.ValueText;
 												var propertyType = HumanReadablePropertyType(fieldMember.Declaration.Type);
