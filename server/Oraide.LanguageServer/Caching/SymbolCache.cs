@@ -10,11 +10,11 @@ using Oraide.MiniYaml;
 
 namespace Oraide.LanguageServer.Caching
 {
+	// TODO: Make this mod-aware (and per-mod) instead of having dictionaries per mod. Then we can potentially also load/leave traits from loaded assemblies.
 	public class SymbolCache
 	{
-		// TODO: Change to ILookup (to match `actorDefinitions` and also there may be more than one trait with the same name across namespaces).
 		// TODO: Populate this asynchronously from a separate thread because it can be very, very slow.
-		public IReadOnlyDictionary<string, TraitInfo> TraitInfos { get; private set; }
+		public ILookup<string, TraitInfo> TraitInfos { get; private set; }
 
 		/// <summary>
 		/// A collection of all actor definitions in YAML (including abstract ones) grouped by their key/name.

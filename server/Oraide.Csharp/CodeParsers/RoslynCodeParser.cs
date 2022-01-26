@@ -12,9 +12,9 @@ namespace Oraide.Csharp.CodeParsers
 {
 	public static class RoslynCodeParser
 	{
-		public static IReadOnlyDictionary<string, TraitInfo> Parse(in string oraFolderPath)
+		public static ILookup<string, TraitInfo> Parse(in string oraFolderPath)
 		{
-			var traitDictionary = new Dictionary<string, TraitInfo>();
+			var traitInfos = new List<TraitInfo>();
 
 			var filePaths = Directory.EnumerateFiles(oraFolderPath, "*.cs", SearchOption.AllDirectories);
 			foreach (var filePath in filePaths)
@@ -133,12 +133,12 @@ namespace Oraide.Csharp.CodeParsers
 
 									// Finally, add the TraitInfo to the list of loaded TraitInfos.
 									var traitInfo = new TraitInfo(traitInfoName.Substring(0, traitInfoName.Length - 4), traitInfoName, traitDesc, classLocation, baseTypes.ToArray(), traitProperties.ToArray());
-									traitDictionary.Add(traitInfoName, traitInfo);
+									traitInfos.Add(traitInfo);
 								}
 				}
 			}
 
-			return traitDictionary;
+			return traitInfos.ToLookup(x => x.TraitInfoName, y => y);
 		}
 
 		static MemberLocation FindClassLocationInText(string filePath, string text, string traitInfoName, int definitionStartIndex)

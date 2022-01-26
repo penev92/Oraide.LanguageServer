@@ -113,13 +113,14 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		{
 			var traitNames = symbolCache.TraitInfos.Select(x => new CompletionItem
 			{
-				Label = x.Value.TraitName,
+				// Using .First() is not great but we have no way to differentiate between traits of the same name
+				// until the server learns the concept of a mod and loaded assemblies.
+				Label = x.First().TraitName,
 				Kind = CompletionItemKind.Class,
 				Detail = "Trait name. Expand for details >",
-				Documentation = x.Value.TraitDescription,
+				Documentation = x.First().TraitDescription,
 				CommitCharacters = new[] { ":" }
 			});
-
 
 			var actorNames = symbolCache.ActorDefinitionsPerMod[cursorTarget.ModId].Select(x => new CompletionItem
 			{
@@ -174,19 +175,24 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						// Get only trait properties.
 						var traitName = cursorTarget.TargetNode.ParentNode.Key;
 						var traitInfoName = $"{traitName}Info";
-						var trait = symbolCache.TraitInfos[traitInfoName];
+						var traits = symbolCache.TraitInfos[traitInfoName];
 
-						var traits = new List<TraitInfo>();
-						traits.AddRange(GetInheritedTraitInfos(trait));
+						var allTraits = new List<TraitInfo>();
+						allTraits.AddRange(GetInheritedTraitInfos(traits));
 
-						return traits.SelectMany(x => x.TraitPropertyInfos).Select(y => new CompletionItem
-						{
-							Label = y.PropertyName,
-							Kind = CompletionItemKind.Property,
-							Detail = "Trait property. Expand for details >",
-							Documentation = y.Description,
-							CommitCharacters = new[] {":"}
-						});
+						// Getting all traits and then all their properties is not great but we have no way to differentiate between traits of the same name
+						// until the server learns the concept of a mod and loaded assemblies.
+						return allTraits
+							.SelectMany(x => x.TraitPropertyInfos)
+							.DistinctBy(y => y.PropertyName)
+							.Select(z => new CompletionItem
+							{
+								Label = z.PropertyName,
+								Kind = CompletionItemKind.Property,
+								Detail = "Trait property. Expand for details >",
+								Documentation = z.Description,
+								CommitCharacters = new[] {":"}
+							});
 					}
 
 					if (cursorTarget.TargetType == "value")
@@ -201,13 +207,17 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		}
 
 		// TODO: Go further than one level of inheritance down.
-		IEnumerable<TraitInfo> GetInheritedTraitInfos(TraitInfo traitInfo)
+		IEnumerable<TraitInfo> GetInheritedTraitInfos(IEnumerable<TraitInfo> traitInfos)
 		{
-			yield return traitInfo;
+			foreach (var traitInfo in traitInfos)
+			{
+				yield return traitInfo;
 
-			foreach (var inheritedTypeName in traitInfo.InheritedTypes)
-				if (symbolCache.TraitInfos.ContainsKey(inheritedTypeName))
-					yield return symbolCache.TraitInfos[inheritedTypeName];
+				foreach (var inheritedTypeName in traitInfo.InheritedTypes)
+					if (symbolCache.TraitInfos.Contains(inheritedTypeName))
+						foreach (var inheritedTraitInfo in symbolCache.TraitInfos[inheritedTypeName])
+							yield return inheritedTraitInfo;
+			}
 		}
 	}
 }

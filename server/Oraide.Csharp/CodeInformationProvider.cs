@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
+using System.Linq;
 using Oraide.Core;
 using Oraide.Core.Entities.Csharp;
 
@@ -38,7 +38,7 @@ namespace Oraide.Csharp
 			}
 		}
 
-		public IReadOnlyDictionary<string, TraitInfo> GetTraitInfos()
+		public ILookup<string, TraitInfo> GetTraitInfos()
 		{
 			return symbolGenerator.GetTraitInfos(openRaFolder);
 		}
