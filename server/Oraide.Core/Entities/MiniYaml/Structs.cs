@@ -22,11 +22,14 @@ namespace Oraide.Core.Entities.MiniYaml
 	{
 		public string Name { get; }
 
+		public string FullName { get; }
+
 		public MemberLocation Location { get; }
 
 		public TraitDefinition(string name, MemberLocation location)
 		{
-			Name = name;
+			FullName = name;
+			Name = name.Split('@')[0];
 			Location = location;
 		}
 	}

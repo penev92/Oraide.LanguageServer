@@ -37,6 +37,7 @@ namespace Oraide.LanguageServer.Extensions
 				.AddSingleton<IRpcMessageHandler, TextDocumentDidChangeHandler>()
 				.AddSingleton<IRpcMessageHandler, TextDocumentDidCloseHandler>()
 				.AddSingleton<IRpcMessageHandler, TextDocumentDefinitionHandler>()
+				.AddSingleton<IRpcMessageHandler, TextDocumentReferencesHandler>()
 				.AddSingleton<IRpcMessageHandler, TextDocumentHoverHandler>();
 		}
 

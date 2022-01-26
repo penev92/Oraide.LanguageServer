@@ -36,10 +36,8 @@ namespace Oraide.LanguageServer.Caching
 
 		public SymbolCache(string workspaceFolderPath, string defaultOpenRaFolderPath)
 		{
-			Console.Error.WriteLine("WORKSPACE FOLDER PATH:");
-			Console.Error.WriteLine(workspaceFolderPath);
-			Console.Error.WriteLine("OPENRA FOLDER PATH:");
-			Console.Error.WriteLine(defaultOpenRaFolderPath);
+			Console.Error.WriteLine($"WORKSPACE FOLDER PATH:  {workspaceFolderPath}");
+			Console.Error.WriteLine($"OPENRA FOLDER PATH:  {defaultOpenRaFolderPath}");
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 

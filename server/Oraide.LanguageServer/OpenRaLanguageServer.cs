@@ -109,6 +109,13 @@ namespace Oraide.LanguageServer
 			return Definition(arg);
 		}
 
+		[JsonRpcMethod(Methods.TextDocumentReferencesName)]
+		public IEnumerable<Location> References(JToken arg)
+		{
+			var (messageHandlerClass, methodInfo) = rpcMessageHandlers[Methods.TextDocumentReferencesName];
+			return (IEnumerable<Location>)methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<TextDocumentPositionParams>() });
+		}
+
 		[JsonRpcMethod(Methods.TextDocumentHoverName)]
 		public Hover Hover(JToken arg)
 		{

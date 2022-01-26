@@ -33,7 +33,8 @@ namespace Oraide.MiniYaml.YamlParsers
 				if (!actorDefinitionsPerMod.ContainsKey(modId))
 					actorDefinitionsPerMod.Add(modId, new List<ActorDefinition>());
 
-				actorDefinitionsPerMod[modId].Add(new ActorDefinition(node.Key, location, new List<TraitDefinition>()));
+				var actorTraits = node.ChildNodes.Select(x => new TraitDefinition(x.Key, x.Location)).ToList();
+				actorDefinitionsPerMod[modId].Add(new ActorDefinition(node.Key, location, actorTraits));
 			}
 
 			return actorDefinitionsPerMod.ToDictionary(x => x.Key, y => y.Value.ToLookup(n => n.Name, m => m));
