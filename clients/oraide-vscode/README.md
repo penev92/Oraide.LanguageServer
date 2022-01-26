@@ -23,6 +23,14 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.0.7
+
+ - Fixed language server sometimes not accepting a mod directory because of a missing `icon.png`.
+ - Fixed the language server crashing when there are multiple traits with the same name across namespaces.
+ - Fixed IntelliSense not working for trait properties when the current trait has a `@` suffix.
+ - Resolved `nameof()` usages in Trait and Trait property descriptions when parsing C# files for code symbols.
+ - Improved VSCode extension's contributed settings' descriptions.
+
 ### 0.0.6
 
  - Improved extension README and added feature preview gifs.
@@ -46,9 +54,11 @@ First public release.
 
 ### Known issues
 
- - TooltipInfoBase inheritance is ignored, so inheriting types won't know about their `Name` property.
+ - `TooltipInfoBase` inheritance is ignored, so inheriting types won't know about their `Name` property.
  - Currently only parsing code symbols from C# files is supported. Decompiling game binaries and reading trait information from a static file are not yet implemented.
  - The hover tooltip links to the online documentation may or may not work depending on your local version of OpenRA, as the links are never checked for validity and they always target the current release's documentation.
+ - When getting suggestions for IntelliSense about trait properties, trait inheritance is only checked one level down, which can potentially miss inherited trait properties (`Attack*` traits are a good example of this).
+ - Neither hovering/navigation nor autocomplete work very well for traits that match other traits' names from other namespaces.
 
 **Enjoy!**
 
