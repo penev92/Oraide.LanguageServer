@@ -58,7 +58,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 					FoldingRangeProvider = false,
 					ExecuteCommandProvider = new ExecuteCommandOptions
 					{
-						Commands = new string[0]
+						Commands = Array.Empty<string>()
 					},
 					SelectionRangeProvider = false,
 					LinkedEditingRangeProvider = false,
@@ -69,7 +69,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 						Range = false
 					},
 					MonikerProvider = false,
-					WorkspaceSymbolProvider = false,
+					WorkspaceSymbolProvider = true, // The server provides workspace symbols.
 					Workspace = null,
 					Experimental = null
 				};

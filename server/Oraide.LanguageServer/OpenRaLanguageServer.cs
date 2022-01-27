@@ -155,6 +155,13 @@ namespace Oraide.LanguageServer
 			methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<DidChangeWatchedFilesParams>() });
 		}
 
+		[JsonRpcMethod(Methods.WorkspaceSymbolName)]
+		public IEnumerable<SymbolInformation> WorkspaceSymbols(JToken arg)
+		{
+			var (messageHandlerClass, methodInfo) = rpcMessageHandlers[Methods.WorkspaceSymbolName];
+			return (IEnumerable<SymbolInformation>)methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<WorkspaceSymbolParams>() });
+		}
+
 		#endregion
 
 		#endregion

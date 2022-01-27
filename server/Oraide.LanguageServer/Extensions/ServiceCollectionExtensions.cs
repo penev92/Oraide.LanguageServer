@@ -44,6 +44,7 @@ namespace Oraide.LanguageServer.Extensions
 		public static IServiceCollection AddWorkspaceLspMessageHandlers(this IServiceCollection serviceCollection)
 		{
 			return serviceCollection
+				.AddSingleton<IRpcMessageHandler, WorkspaceSymbolRequestHandler>()
 				.AddSingleton<IRpcMessageHandler, DidChangeWatchedFilesHandler>();
 		}
 	}
