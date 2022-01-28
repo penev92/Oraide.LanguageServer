@@ -23,6 +23,15 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.0.8
+
+- Added support for `GoToDeclaration` and `GoToImplementations`/`FindAllImplementations` (both redundant to `GoToDefinition`, but added for completeness).
+- Added limited support for `GoToReferences`/`FindAllReferences`.
+- Added support for getting workspace symbols (for quick navigation).
+- Fixed icon background not being transparent.
+- Improved IntelliSense suggestions for trait properties.
+- Improved hover tooltip Trait and Trait property descriptions.
+
 ### 0.0.7
 
  - Fixed language server sometimes not accepting a mod directory because of a missing `icon.png`.
@@ -59,6 +68,7 @@ First public release.
  - The hover tooltip links to the online documentation may or may not work depending on your local version of OpenRA, as the links are never checked for validity and they always target the current release's documentation.
  - When getting suggestions for IntelliSense about trait properties, trait inheritance is only checked one level down, which can potentially miss inherited trait properties (`Attack*` traits are a good example of this).
  - Neither hovering/navigation nor autocomplete work very well for traits that match other traits' names from other namespaces.
+ - Support for GoToReferences/FindAllReferences currently only works for traits.
 
 **Enjoy!**
 
