@@ -89,7 +89,6 @@ export async function spawnServerProcess(serverPath: string, workspaceFolderPath
 
     if (serverProcess && serverProcess.pid) {
         logger.appendLine(`Spawned language server process with PID ${serverProcess.pid}`);
-        vscode.window.showInformationMessage(`OpenRA IDE server PID: ${serverProcess.pid}`);
     }
 
     serverProcess.on('error', (err: { code?: string; message: string }) => {
