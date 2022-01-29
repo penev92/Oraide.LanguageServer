@@ -88,7 +88,7 @@ function start(context: vscode.ExtensionContext, serverPath: string, workspaceFo
             configurationSection: 'oraide',
             fileEvents: vscode.workspace.createFileSystemWatcher('**/*.yaml')
         },
-        outputChannelName: "OpenRA IDE client",
+        outputChannelName: "OpenRA IDE server",
     };
 
     let client = new vscodelc.LanguageClient('oraide', 'OpenRA IDE', serverOptions, clientOptions, true);

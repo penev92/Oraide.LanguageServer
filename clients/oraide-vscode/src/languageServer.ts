@@ -33,10 +33,10 @@ async function findOrDownloadLanguageServer(context: vscode.ExtensionContext): P
     if (currentServerVersion === '' && latestServerVersion === '') {
         return undefined; // Nothing to do here - there is no language server and we couldn't find a version to download.
     }
-    
+
     if (currentServerVersion === '') {
         logger.appendLine("NO SERVER FOUND");
-        
+
         const userResponse = await vscode.window.showInformationMessage("ORAIDE needs to download the ORAIDE language server to function.", "Download now");
         if (userResponse !== "Download now") {
             return undefined;
@@ -48,7 +48,7 @@ async function findOrDownloadLanguageServer(context: vscode.ExtensionContext): P
             }
         }
     }
-    
+
     if (latestServerVersion.localeCompare(currentServerVersion) > 0) {
         const userResponse = await vscode.window.showInformationMessage("ORAIDE would like to download a newer version of its language server.", "Download now");
         if (userResponse !== "Download now") {
