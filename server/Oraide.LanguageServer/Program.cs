@@ -12,7 +12,8 @@ namespace Oraide.LanguageServer
 			// Add argument validation, maybe parsing, or maybe even an overkill NuGet package for handling them.
 
 			await using var serviceProvider = new ServiceCollection()
-				.AddFileCaches(args[0], args[1])
+				.AddSymbolProviders(args[0], args[1])
+				.AddFileCaches()
 				.AddLanguageServer()
 				.AddGeneralLspMessageHandlers()
 				.AddTextDocumentLspMessageHandlers()

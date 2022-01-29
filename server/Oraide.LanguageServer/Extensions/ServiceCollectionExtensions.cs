@@ -1,20 +1,29 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Oraide.Csharp;
 using Oraide.LanguageServer.Abstractions;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
 using Oraide.LanguageServer.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument;
 using Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace;
+using Oraide.MiniYaml;
 
 namespace Oraide.LanguageServer.Extensions
 {
 	static class ServiceCollectionExtensions
 	{
-		public static IServiceCollection AddFileCaches(this IServiceCollection serviceCollection, string workspaceFolderPath, string defaultOpenRaFolderPath)
+		public static IServiceCollection AddSymbolProviders(this IServiceCollection serviceCollection, string workspaceFolderPath, string defaultOpenRaFolderPath)
 		{
 			return serviceCollection
-				.AddSingleton(provider => new SymbolCache(workspaceFolderPath, defaultOpenRaFolderPath))
-				.AddSingleton(provider => new OpenFileCache());
+				.AddSingleton(new CodeInformationProvider(workspaceFolderPath, defaultOpenRaFolderPath))
+				.AddSingleton(new YamlInformationProvider(workspaceFolderPath));
+		}
+
+		public static IServiceCollection AddFileCaches(this IServiceCollection serviceCollection)
+		{
+			return serviceCollection
+				.AddSingleton<SymbolCache>()
+				.AddSingleton<OpenFileCache>();
 		}
 
 		public static IServiceCollection AddLanguageServer(this IServiceCollection serviceCollection)

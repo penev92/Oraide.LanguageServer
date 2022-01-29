@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using Oraide.Core;
 using Oraide.Core.Entities.Csharp;
@@ -19,7 +20,14 @@ namespace Oraide.Csharp
 
 		public CodeInformationProvider(string workspaceFolderPath, string defaultOpenRaFolderPath)
 		{
+			Console.Error.WriteLine($"WORKSPACE FOLDER PATH:  {workspaceFolderPath}");
+			Console.Error.WriteLine($"OPENRA DEFAULT FOLDER PATH:  {defaultOpenRaFolderPath}");
+
 			openRaFolder = GetOpenRaFolder(workspaceFolderPath, defaultOpenRaFolderPath);
+
+			Console.Error.WriteLine($"OPENRA CHOSEN FOLDER PATH:  {openRaFolder}");
+			Console.Error.WriteLine("-------------");
+
 			if (OpenRaFolderUtils.IsOpenRaRepositoryFolder(openRaFolder) || OpenRaFolderUtils.IsModSdkRepositoryFolder(openRaFolder))
 			{
 				// TODO: Strategy 1 - C# code parsing.

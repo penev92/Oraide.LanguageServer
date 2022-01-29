@@ -34,22 +34,20 @@ namespace Oraide.LanguageServer.Caching
 		private readonly CodeInformationProvider codeInformationProvider;
 		private readonly YamlInformationProvider yamlInformationProvider;
 
-		public SymbolCache(string workspaceFolderPath, string defaultOpenRaFolderPath)
+		public SymbolCache(CodeInformationProvider codeInformationProvider, YamlInformationProvider yamlInformationProvider)
 		{
-			Console.Error.WriteLine($"WORKSPACE FOLDER PATH:  {workspaceFolderPath}");
-			Console.Error.WriteLine($"OPENRA FOLDER PATH:  {defaultOpenRaFolderPath}");
+			this.codeInformationProvider = codeInformationProvider;
+			this.yamlInformationProvider = yamlInformationProvider;
+
+			Console.Error.WriteLine("Start loading symbol information...");
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 
-			// TODO: Get this via DI:
-			codeInformationProvider = new CodeInformationProvider(workspaceFolderPath, defaultOpenRaFolderPath);
 			UpdateCodeSymbols();
 
 			var elapsed = stopwatch.Elapsed;
 			Console.Error.WriteLine($"Loaded {TraitInfos.Count} traitInfos in {elapsed}.");
 
-			// TODO: Get this via DI:
-			yamlInformationProvider = new YamlInformationProvider(workspaceFolderPath);
 			UpdateYamlSymbols();
 
 			elapsed = stopwatch.Elapsed;
