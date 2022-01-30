@@ -1,14 +1,13 @@
 ﻿using System;
 using LspTypes;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
-using Oraide.LanguageServer.Caching;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 {
 	public class InitializeHandler : BaseRpcMessageHandler
 	{
-		public InitializeHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
-			: base(symbolCache, openFileCache) { }
+		public InitializeHandler()
+			: base(null, null) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.InitializeName)]
 		public InitializeResult Initialize(InitializeParams initializeParams)

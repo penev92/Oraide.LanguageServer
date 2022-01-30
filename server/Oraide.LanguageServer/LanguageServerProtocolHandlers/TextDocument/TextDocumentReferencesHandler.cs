@@ -33,7 +33,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						{
 							if (target.TargetNodeIndentation == 1)
 							{
-								var traitDefinitions = symbolCache.ActorDefinitionsPerMod[target.ModId]
+								var traitDefinitions = symbolCache[target.ModId].ActorDefinitions
 									.SelectMany(x =>
 										x.SelectMany(y => y.Traits.Where(z => z.Name == target.TargetString)));
 

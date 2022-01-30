@@ -22,13 +22,7 @@ namespace Oraide.LanguageServer.Extensions
 		public static IServiceCollection AddCaches(this IServiceCollection serviceCollection)
 		{
 			return serviceCollection
-				.AddSingleton<SymbolCache>() // Just until consumers start using the factory.
-				.AddSingleton<SymbolCacheFactory>()
-				.AddSingleton(provider =>
-				{
-					var factory = provider.GetRequiredService<SymbolCacheFactory>();
-					return factory.CreateSymbolCachesPerMod();
-				})
+				.AddSingleton<SymbolCache>()
 				.AddSingleton<OpenFileCache>();
 		}
 

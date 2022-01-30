@@ -1,88 +1,77 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Oraide.Core;
 using Oraide.Core.Entities;
-using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.Csharp;
 using Oraide.MiniYaml;
 
 namespace Oraide.LanguageServer.Caching
 {
-	// TODO: Make this mod-aware (and per-mod) instead of having dictionaries per mod. Then we can potentially also load/leave traits from loaded assemblies.
 	public class SymbolCache
 	{
-		public string ModId { get; }
-
-		public string ModFolder { get; }
-
-		/// <summary>
-		/// TraitInfo information grouped by TraitInfoName.
-		/// </summary>
-		// TODO: Populate this asynchronously from a separate thread because it can be very, very slow.
-		public ILookup<string, TraitInfo> TraitInfos { get; private set; }
-
-		/// <summary>
-		/// A collection of all actor definitions in YAML (including abstract ones) grouped by their key/name.
-		/// </summary>
-		public IReadOnlyDictionary<string, ILookup<string, ActorDefinition>> ActorDefinitionsPerMod { get; private set; }
-
-		/// <summary>
-		/// A collection of all weapon definitions in YAML (including abstract ones) grouped by their key/name.
-		/// </summary>
-		public IReadOnlyDictionary<string, ILookup<string, WeaponDefinition>> WeaponDefinitionsPerMod { get; private set; }
-
-		/// <summary>
-		/// A collection of all granted and consumed conditions and their usages in YAML grouped by their name.
-		/// </summary>
-		public IReadOnlyDictionary<string, ILookup<string, MemberLocation>> ConditionDefinitionsPerMod { get; private set; }
+		public IReadOnlyDictionary<string, ModSymbols> ModSymbols { get; private set; }
 
 		private readonly CodeInformationProvider codeInformationProvider;
 		private readonly YamlInformationProvider yamlInformationProvider;
-
-		public SymbolCache(string modId, string modFolder, ILookup<string, TraitInfo> traitInfos, ILookup<string, ActorDefinition> actorDefinitions,
-			ILookup<string, WeaponDefinition> weaponDefinitions, ILookup<string, MemberLocation> conditionDefinitions)
-		{
-			ModId = modId;
-			ModFolder = modFolder;
-			ActorDefinitionsPerMod = new Dictionary<string, ILookup<string, ActorDefinition>>
-			{
-				{ modId, actorDefinitions }
-			};
-
-			WeaponDefinitionsPerMod = new Dictionary<string, ILookup<string, WeaponDefinition>>
-			{
-				{ modId, weaponDefinitions }
-			};
-
-			ConditionDefinitionsPerMod = new Dictionary<string, ILookup<string, MemberLocation>>
-			{
-				{ modId, conditionDefinitions }
-			};
-		}
 
 		public SymbolCache(CodeInformationProvider codeInformationProvider, YamlInformationProvider yamlInformationProvider)
 		{
 			this.codeInformationProvider = codeInformationProvider;
 			this.yamlInformationProvider = yamlInformationProvider;
 
-			UpdateCodeSymbols();
-			UpdateYamlSymbols();
+			Update();
 		}
 
-		// Intentionally synchronous code so the client can't continue working with a stale cache while we work on the update.
-		// TODO: The way I see code symbol update happening is by the user manually triggering an update via an IDE command
-		// that prompts the extension/client to notify the server to update, because neither the server nor the text editor can guarantee
-		// that they would be watching the code files for changes.
-		public void UpdateCodeSymbols()
+		public void Update()
 		{
-			TraitInfos = codeInformationProvider.GetTraitInfos();
+			ModSymbols = CreateSymbolCachesPerMod();
 		}
 
-		public void UpdateYamlSymbols()
+		IReadOnlyDictionary<string, ModSymbols> CreateSymbolCachesPerMod()
 		{
-			ActorDefinitionsPerMod = yamlInformationProvider.GetActorDefinitions();
-			WeaponDefinitionsPerMod = yamlInformationProvider.GetWeaponDefinitions();
-			ConditionDefinitionsPerMod = yamlInformationProvider.GetConditionDefinitions();
+			var modFolders = yamlInformationProvider.GetModDirectories();
+			var mods = modFolders.ToDictionary(OpenRaFolderUtils.GetModId, y => y);
+
+			// TODO: Remove this flex when the code is stable and we're sure it won't need optimizing.
+			Console.Error.WriteLine("Start loading symbol information...");
+			var stopwatch = new Stopwatch();
+			stopwatch.Start();
+
+			// Intentionally synchronous code so the client can't continue working with a stale cache while we work on the update.
+			// TODO: The way I see code symbol update happening is by the user manually triggering an update via an IDE command
+			// that prompts the extension/client to notify the server to update, because neither the server nor the text editor can guarantee
+			// that they would be watching the code files for changes.
+			var traitInfos = codeInformationProvider.GetTraitInfos();
+
+			var elapsed = stopwatch.Elapsed;
+			Console.Error.WriteLine($"Loaded {traitInfos.Count} traitInfos in {elapsed}.");
+
+			var actorDefinitionsPerMod = yamlInformationProvider.GetActorDefinitions();
+			var weaponDefinitionsPerMod = yamlInformationProvider.GetWeaponDefinitions();
+			var conditionDefinitionsPerMod = yamlInformationProvider.GetConditionDefinitions();
+
+			elapsed = stopwatch.Elapsed;
+			Console.Error.WriteLine($"Loaded everything in {elapsed}.");
+
+			return mods.Select(x =>
+			{
+				return new ModSymbols(x.Key, x.Value,
+					traitInfos,
+					actorDefinitionsPerMod.ContainsKey(x.Key)
+						? actorDefinitionsPerMod[x.Key]
+						: Array.Empty<ActorDefinition>().ToLookup(y => y.Name, z => z),
+					weaponDefinitionsPerMod.ContainsKey(x.Key)
+						? weaponDefinitionsPerMod[x.Key]
+						: Array.Empty<WeaponDefinition>().ToLookup(y => y.Name, z => z),
+					conditionDefinitionsPerMod.ContainsKey(x.Key)
+						? conditionDefinitionsPerMod[x.Key]
+						: Array.Empty<MemberLocation>().ToLookup(y => string.Empty, z => z));
+			}).ToDictionary(x => x.ModId, y => y);
 		}
+
+		public ModSymbols this[string key] => ModSymbols[key];
 	}
 }

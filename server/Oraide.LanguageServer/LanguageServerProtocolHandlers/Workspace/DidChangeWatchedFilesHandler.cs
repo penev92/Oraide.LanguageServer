@@ -24,9 +24,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(request));
 					}
 
-					// Rebuild all cached collections of YAML symbols.
 					// TODO: Be smarter about which symbol collections we actually need to update so we don't do all.
-					symbolCache.UpdateYamlSymbols();
+					symbolCache.Update();
 
 					// Check if the affected file(s) are present in the "currently opened files" cache and invalidate/update that.
 					foreach (var requestChange in request.Changes)

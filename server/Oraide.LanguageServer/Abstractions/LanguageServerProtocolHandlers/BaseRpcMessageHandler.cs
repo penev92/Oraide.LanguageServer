@@ -122,12 +122,15 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 
 		protected bool TryGetTraitInfo(string traitName, out TraitInfo traitInfo, bool addInfoSuffix = true)
 		{
+			// TODO: HACK HACK HACK - There should be a better way to do this...
+			var cache = symbolCache.ModSymbols.First().Value;
+
 			var searchString = addInfoSuffix ? $"{traitName}Info" : traitName;
-			if (symbolCache.TraitInfos.Contains(searchString))
+			if (cache.TraitInfos.Contains(searchString))
 			{
 				// Using .First() is not great but we have no way to differentiate between traits of the same name
 				// until the server learns the concept of a mod and loaded assemblies.
-				traitInfo = symbolCache.TraitInfos[searchString].First();
+				traitInfo = cache.TraitInfos[searchString].First();
 				return true;
 			}
 
