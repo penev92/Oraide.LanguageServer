@@ -54,9 +54,7 @@ export function deactivate() {
         return undefined;
     }
 
-    if (utils.IS_DEBUG) {
-        logger.appendLine('client stopped.');
-    }
+    logger.appendLine('Client stopping...');
 
     return client.stop();
 }
