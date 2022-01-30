@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
+using Oraide.Core;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.MiniYaml;
 
@@ -29,7 +29,7 @@ namespace Oraide.MiniYaml.YamlParsers
 			{
 				var location = new MemberLocation(node.Location.FilePath, node.Location.LineNumber, node.Location.CharacterPosition);
 
-				var modId = GetModId(location.FilePath);
+				var modId = OpenRaFolderUtils.GetModId(location.FilePath);
 				if (!actorDefinitionsPerMod.ContainsKey(modId))
 					actorDefinitionsPerMod.Add(modId, new List<ActorDefinition>());
 
@@ -64,7 +64,7 @@ namespace Oraide.MiniYaml.YamlParsers
 			{
 				var location = new MemberLocation(node.Location.FilePath, node.Location.LineNumber, node.Location.CharacterPosition);
 
-				var modId = GetModId(location.FilePath);
+				var modId = OpenRaFolderUtils.GetModId(location.FilePath);
 				if (!weaponDefinitionsPerMod.ContainsKey(modId))
 					weaponDefinitionsPerMod.Add(modId, new List<WeaponDefinition>());
 
@@ -94,7 +94,7 @@ namespace Oraide.MiniYaml.YamlParsers
 				result.AddRange(conditions);
 			}
 
-			return result.GroupBy(x => GetModId(x.Value.FilePath))
+			return result.GroupBy(x => OpenRaFolderUtils.GetModId(x.Value.FilePath))
 				.ToDictionary(x => x.Key,
 					y => y.ToLookup(n => n.Key, m => m.Value));
 		}
@@ -137,13 +137,6 @@ namespace Oraide.MiniYaml.YamlParsers
 		static MemberLocation ToMemberLocation(this OpenRA.MiniYamlParser.MiniYamlNode.SourceLocation source)
 		{
 			return new MemberLocation(source.Filename, source.Line, source.Character);
-		}
-
-		static string GetModId(string filePath)
-		{
-			var fileUri = filePath.Replace("\\", "/");
-			var match = Regex.Match(fileUri, "(\\/mods\\/[^\\/]*\\/)").Value;
-			return match.Split('/')[2];
 		}
 	}
 }

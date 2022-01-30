@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Oraide.Core
 {
@@ -70,6 +71,16 @@ namespace Oraide.Core
 			       File.Exists(Path.Combine(folderPath, VersionFile)) &&
 			       Directory.Exists(modsFolder) &&
 			       IsModsFolder(modsFolder);
+		}
+
+		public static string GetModId(string filePath)
+		{
+			var fileUri = filePath.Replace("\\", "/");
+			var match = Regex.Match(fileUri, "(\\/mods\\/[^\\/]*\\/)").Value;
+			if (match == string.Empty)
+				match = Regex.Match(fileUri, "(\\/mods\\/[^\\/]*$)").Value;
+
+			return match.Split('/')[2];
 		}
 	}
 }
