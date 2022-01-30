@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using LspTypes;
 using Newtonsoft.Json.Linq;
@@ -29,6 +30,17 @@ namespace Oraide.LanguageServer
 		{
 			var sendingStream = Console.OpenStandardOutput();
 			var receivingStream = Console.OpenStandardInput();
+
+			var a = new Task(() =>
+			{
+				while(true)
+				{
+					Thread.Sleep(3000);
+					Console.Error.WriteLine("SERVER IS STILL ALIVE!!");
+				}
+			});
+
+			a.Start();
 
 			// Comment out to disable verbose editor-server message logging.
 			receivingStream = new Tee(receivingStream, new Dup("EDITOR"), Tee.StreamOwnership.OwnNone);
