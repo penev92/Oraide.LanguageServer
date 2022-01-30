@@ -35,7 +35,7 @@ namespace Oraide.LanguageServer
 			{
 				while(true)
 				{
-					Thread.Sleep(3000);
+					Thread.Sleep(10000);
 					Console.Error.WriteLine("SERVER IS STILL ALIVE!!");
 				}
 			});

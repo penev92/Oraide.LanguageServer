@@ -45,7 +45,7 @@ namespace Oraide.LanguageServer
 		{
 			var now = DateTime.Now;
 			var sb = new StringBuilder();
-			sb.AppendLine("\r\n----------------\r\nRaw message from " + _name + " " + now.ToString("MM/dd/yyyy hh:mm:ss.fff tt"));
+			sb.AppendLine("\r\n------BEFORE------\r\nRaw message from " + _name + " " + now.ToString("MM/dd/yyyy hh:mm:ss.fff tt"));
 
 			var truncatedArray = new byte[count];
 			for (var i = offset; i < offset + count; ++i)
@@ -54,6 +54,7 @@ namespace Oraide.LanguageServer
 			var str = Encoding.Default.GetString(truncatedArray);
 			sb.AppendLine("data (length " + str.Length + ")= '" + str + "'");
 			System.Console.Error.WriteLine(sb.ToString());
+			System.Console.Error.WriteLine("------AFTER------\r\n");
 		}
 	}
 }

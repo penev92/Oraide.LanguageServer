@@ -236,17 +236,18 @@ namespace Oraide.LanguageServer
 			}
 			else
 			{
-				try
-				{
 					m_slaveStream.Flush();
-				}
-				catch (Exception exc)
-				{
-					HandleSlaveException(
-						exc, SlaveFailMethod.Write,
-						m_writeFailAction
-					);
-				}
+				// try
+				// {
+				// 	m_slaveStream.Flush();
+				// }
+				// catch (Exception exc)
+				// {
+				// 	HandleSlaveException(
+				// 		exc, SlaveFailMethod.Write,
+				// 		m_writeFailAction
+				// 	);
+				// }
 			}
 		}
 
@@ -264,16 +265,17 @@ namespace Oraide.LanguageServer
 			}
 			else
 			{
-				try
-				{
 					m_slaveStream.SetLength(m_slaveStream.Length + diff);
-				}
-				catch (Exception exc)
-				{
-					HandleSlaveException(
-						exc, SlaveFailMethod.Seek, m_seekFailAction
-					);
-				}
+				// try
+				// {
+				// 	m_slaveStream.SetLength(m_slaveStream.Length + diff);
+				// }
+				// catch (Exception exc)
+				// {
+				// 	HandleSlaveException(
+				// 		exc, SlaveFailMethod.Seek, m_seekFailAction
+				// 	);
+				// }
 			}
 		}
 
@@ -288,16 +290,17 @@ namespace Oraide.LanguageServer
 				}
 				else
 				{
-					try
-					{
 						m_slaveStream.Write(buffer, offset, m_lastReadResult);
-					}
-					catch (Exception exc)
-					{
-						HandleSlaveException(
-							exc, SlaveFailMethod.Read, m_readFailAction
-						);
-					}
+					// try
+					// {
+					// 	m_slaveStream.Write(buffer, offset, m_lastReadResult);
+					// }
+					// catch (Exception exc)
+					// {
+					// 	HandleSlaveException(
+					// 		exc, SlaveFailMethod.Read, m_readFailAction
+					// 	);
+					// }
 				}
 			}
 
@@ -314,17 +317,18 @@ namespace Oraide.LanguageServer
 			}
 			else
 			{
-				try
-				{
 					m_slaveStream.Write(buffer, offset, count);
-				}
-				catch (Exception exc)
-				{
-					HandleSlaveException(
-						exc, SlaveFailMethod.Write,
-						m_writeFailAction
-					);
-				}
+				// try
+				// {
+				// 	m_slaveStream.Write(buffer, offset, count);
+				// }
+				// catch (Exception exc)
+				// {
+				// 	HandleSlaveException(
+				// 		exc, SlaveFailMethod.Write,
+				// 		m_writeFailAction
+				// 	);
+				// }
 			}
 		}
 
@@ -344,16 +348,17 @@ namespace Oraide.LanguageServer
 				}
 				else
 				{
-					try
-					{
 						m_slaveStream.Position += diff;
-					}
-					catch (Exception exc)
-					{
-						HandleSlaveException(
-							exc, SlaveFailMethod.Seek, m_seekFailAction
-						);
-					}
+					// try
+					// {
+					// 	m_slaveStream.Position += diff;
+					// }
+					// catch (Exception exc)
+					// {
+					// 	HandleSlaveException(
+					// 		exc, SlaveFailMethod.Seek, m_seekFailAction
+					// 	);
+					// }
 				}
 			}
 		}

@@ -257,12 +257,13 @@ namespace Oraide.Csharp.CodeParsers
 				         && valueKind != SyntaxKind.NumericLiteralExpression
 				         && valueKind != SyntaxKind.NullLiteralExpression
 				         && valueKind != SyntaxKind.InvocationExpression
-				         && valueKind != SyntaxKind.UnaryMinusExpression)
+				         && valueKind != SyntaxKind.UnaryMinusExpression
+				         && valueKind != SyntaxKind.MultiplyExpression)
 					throw new NotImplementedException($"unsupported type {valueKind}!");
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e);
+				Console.Error.WriteLine(e);
 			}
 
 			return defaultValue;

@@ -17,8 +17,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 			{
 				if (trace)
 				{
-					Console.Error.WriteLine("<-- Initialize");
-					Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(initializeParams));
+					Console.Error.WriteLine("<-- Initialize START");
+					// Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(initializeParams));
 				}
 
 				var capabilities = new ServerCapabilities
@@ -79,6 +79,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 					Capabilities = capabilities
 				};
 
+				if (trace)
+				{
+					Console.Error.WriteLine("<-- Initialize END");
+					// Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(result));
+				}
+
 				return result;
 			}
 		}
@@ -93,7 +99,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 					if (trace)
 					{
 						Console.Error.WriteLine("<-- Initialized");
-						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(initializedParams));
+						// Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(initializedParams));
 					}
 				}
 				catch (Exception)
