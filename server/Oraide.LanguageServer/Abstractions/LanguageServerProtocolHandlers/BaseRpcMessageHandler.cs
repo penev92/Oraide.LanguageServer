@@ -85,6 +85,10 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				return false;
 			}
 
+			// idk at this point
+			if (string.IsNullOrWhiteSpace(targetString))
+				targetString = sourceString;
+
 			TryGetModId(positionParams.TextDocument.Uri, out var modId);
 			TryGetTargetStringIndentation(targetNode, out var indentation);
 			target = new CursorTarget(modId, fileType, targetNode, targetType, targetString,
