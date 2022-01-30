@@ -174,7 +174,7 @@ namespace Oraide.Csharp.CodeParsers
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e);
+				Console.Error.WriteLine(e);
 			}
 
 			return propertyType;
