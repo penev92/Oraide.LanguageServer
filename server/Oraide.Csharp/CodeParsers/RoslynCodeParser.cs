@@ -262,7 +262,7 @@ namespace Oraide.Csharp.CodeParsers
 			}
 			catch (Exception e)
 			{
-				Console.Error.WriteLine(e);
+				Console.WriteLine(e);
 			}
 
 			return defaultValue;
