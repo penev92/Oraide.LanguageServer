@@ -26,8 +26,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(request));
 					}
 
-					var actors = symbolCache.ActorDefinitionsPerMod
-						.SelectMany(x => x.Value)
+					var actors = symbolCache.ModSymbols.SelectMany(x => x.Value.ActorDefinitions
 						.Select(actorDefinition =>
 						{
 							var loc = actorDefinition.First().Location;
@@ -46,10 +45,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 									}
 								}
 							};
-						});
+						}));
 
-					var weapons = symbolCache.WeaponDefinitionsPerMod
-						.SelectMany(x => x.Value)
+					var weapons = symbolCache.ModSymbols.SelectMany(x => x.Value.WeaponDefinitions
 						.Select(weaponDefinition =>
 						{
 							var loc = weaponDefinition.First().Location;
@@ -68,10 +66,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 									}
 								}
 							};
-						});
+						}));
 
-					var conditions = symbolCache.ConditionDefinitionsPerMod
-						.SelectMany(x => x.Value)
+					var conditions = symbolCache.ModSymbols.SelectMany(x => x.Value.ConditionDefinitions
 						.Select(condition =>
 						{
 							var loc = condition.First();
@@ -90,7 +87,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 									}
 								}
 							};
-						});
+						}));
 
 					return actors.Union(weapons).Union(conditions);
 				}

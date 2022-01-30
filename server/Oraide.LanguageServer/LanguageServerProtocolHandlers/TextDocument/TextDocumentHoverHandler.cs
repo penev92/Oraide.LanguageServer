@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
@@ -95,7 +96,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		private bool TryGetTargetYamlHoverInfo(CursorTarget target, out (string Content, Range Range) hoverInfo)
 		{
-			if (symbolCache.ActorDefinitionsPerMod[target.ModId].Any(x => x.Key == target.TargetString))
+			if (symbolCache[target.ModId].ActorDefinitions.Any(x => x.Key == target.TargetString))
 			{
 				hoverInfo = (
 					$"```csharp\nActor \"{target.TargetString}\"\n```", new Range
@@ -107,7 +108,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				return true;
 			}
 
-			if (symbolCache.WeaponDefinitionsPerMod[target.ModId].Any(x => x.Key == target.TargetString))
+			if (symbolCache[target.ModId].WeaponDefinitions.Any(x => x.Key == target.TargetString))
 			{
 				hoverInfo = (
 					$"```csharp\nWeapon \"{target.TargetString}\"\n```", new Range
@@ -119,7 +120,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				return true;
 			}
 
-			if (symbolCache.ConditionDefinitionsPerMod[target.ModId].Any(x => x.Key == target.TargetString))
+			if (symbolCache[target.ModId].ConditionDefinitions.Any(x => x.Key == target.TargetString))
 			{
 				hoverInfo = (
 					$"```csharp\nCondition \"{target.TargetString}\"\n```", new Range

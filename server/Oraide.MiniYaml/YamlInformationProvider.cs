@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.MiniYaml;
@@ -15,6 +16,15 @@ namespace Oraide.MiniYaml
 		public YamlInformationProvider(string yamlFolder)
 		{
 			this.yamlFolder = yamlFolder;
+		}
+
+		public IEnumerable<string> GetModDirectories()
+		{
+			var filePaths = Directory.EnumerateFiles(yamlFolder, "mod.yaml", SearchOption.AllDirectories).ToList();
+			if (!filePaths.Any())
+				filePaths.Add(yamlFolder);
+
+			return filePaths.Select(Path.GetDirectoryName);
 		}
 
 		public IReadOnlyDictionary<string, ILookup<string, ActorDefinition>> GetActorDefinitions()

@@ -19,7 +19,7 @@ namespace Oraide.LanguageServer.Extensions
 				.AddSingleton(new YamlInformationProvider(workspaceFolderPath));
 		}
 
-		public static IServiceCollection AddFileCaches(this IServiceCollection serviceCollection)
+		public static IServiceCollection AddCaches(this IServiceCollection serviceCollection)
 		{
 			return serviceCollection
 				.AddSingleton<SymbolCache>()

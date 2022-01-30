@@ -111,7 +111,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		IEnumerable<CompletionItem> GetCompletionItems(CursorTarget cursorTarget)
 		{
-			var traitNames = symbolCache.TraitInfos.Select(x => new CompletionItem
+			var traitNames = symbolCache[cursorTarget.ModId].TraitInfos.Select(x => new CompletionItem
 			{
 				// Using .First() is not great but we have no way to differentiate between traits of the same name
 				// until the server learns the concept of a mod and loaded assemblies.
@@ -122,7 +122,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				CommitCharacters = new[] { ":" }
 			});
 
-			var actorNames = symbolCache.ActorDefinitionsPerMod[cursorTarget.ModId].Select(x => new CompletionItem
+			var actorNames = symbolCache[cursorTarget.ModId].ActorDefinitions.Select(x => new CompletionItem
 			{
 				Label = x.Key,
 				Kind = CompletionItemKind.Unit,
@@ -130,7 +130,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				CommitCharacters = new[] { ":" }
 			});
 
-			var weaponNames = symbolCache.WeaponDefinitionsPerMod[cursorTarget.ModId].Select(x => new CompletionItem
+			var weaponNames = symbolCache[cursorTarget.ModId].WeaponDefinitions.Select(x => new CompletionItem
 			{
 				Label = x.Key,
 				Kind = CompletionItemKind.Unit,
@@ -138,7 +138,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				CommitCharacters = new[] { ":" }
 			});
 
-			var conditionNames = symbolCache.ConditionDefinitionsPerMod[cursorTarget.ModId].Select(x => new CompletionItem
+			var conditionNames = symbolCache[cursorTarget.ModId].ConditionDefinitions.Select(x => new CompletionItem
 			{
 				Label = x.Key,
 				Kind = CompletionItemKind.Value,
@@ -175,11 +175,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						// Get only trait properties.
 						var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
 						var traitInfoName = $"{traitName}Info";
-						var traits = symbolCache.TraitInfos[traitInfoName];
+						var traits = symbolCache[cursorTarget.ModId].TraitInfos[traitInfoName];
 						var presentProperties = cursorTarget.TargetNode.ParentNode.ChildNodes.Select(x => x.Key).ToHashSet();
 
 						var inheritedTraits = new List<TraitInfo>();
-						inheritedTraits.AddRange(GetInheritedTraitInfos(traits));
+						inheritedTraits.AddRange(GetInheritedTraitInfos(symbolCache[cursorTarget.ModId], traits));
 
 						// Getting all traits and then all their properties is not great but we have no way to differentiate between traits of the same name
 						// until the server learns the concept of a mod and loaded assemblies.
@@ -209,15 +209,15 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		}
 
 		// TODO: Go further than one level of inheritance down.
-		IEnumerable<TraitInfo> GetInheritedTraitInfos(IEnumerable<TraitInfo> traitInfos)
+		IEnumerable<TraitInfo> GetInheritedTraitInfos(ModSymbols modSymbols, IEnumerable<TraitInfo> traitInfos)
 		{
 			foreach (var traitInfo in traitInfos)
 			{
 				yield return traitInfo;
 
 				foreach (var inheritedTypeName in traitInfo.InheritedTypes)
-					if (symbolCache.TraitInfos.Contains(inheritedTypeName))
-						foreach (var inheritedTraitInfo in symbolCache.TraitInfos[inheritedTypeName])
+					if (modSymbols.TraitInfos.Contains(inheritedTypeName))
+						foreach (var inheritedTraitInfo in modSymbols.TraitInfos[inheritedTypeName])
 							yield return inheritedTraitInfo;
 			}
 		}
