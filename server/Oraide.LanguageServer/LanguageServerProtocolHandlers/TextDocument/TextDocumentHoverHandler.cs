@@ -137,7 +137,20 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		private bool TryGetTargetValueHoverInfo(CursorTarget target, out (string Content, Range Range) hoverInfo)
 		{
-			if (target.TargetType == "value")
+			if (target.TargetType == "key")
+			{
+				if (target.TargetString == "Inherits")
+				{
+					hoverInfo = ($"Inherits (and possibly overwrites) rules from {target.TargetNode.Value ?? (target.FileType == FileType.Rules ? "an actor" : "a weapon")}", new Range
+					{
+						Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
+						End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
+					});
+
+					return true;
+				}
+			}
+			else if (target.TargetType == "value")
 			{
 				if (Regex.IsMatch(target.TargetString, "[0-9]+c[0-9]+", RegexOptions.Compiled))
 				{
