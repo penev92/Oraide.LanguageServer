@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.Csharp;
@@ -13,6 +11,13 @@ namespace Oraide.LanguageServer.Caching
 	// TODO: Make this mod-aware (and per-mod) instead of having dictionaries per mod. Then we can potentially also load/leave traits from loaded assemblies.
 	public class SymbolCache
 	{
+		public string ModId { get; }
+
+		public string ModFolder { get; }
+
+		/// <summary>
+		/// TraitInfo information grouped by TraitInfoName.
+		/// </summary>
 		// TODO: Populate this asynchronously from a separate thread because it can be very, very slow.
 		public ILookup<string, TraitInfo> TraitInfos { get; private set; }
 
@@ -34,24 +39,34 @@ namespace Oraide.LanguageServer.Caching
 		private readonly CodeInformationProvider codeInformationProvider;
 		private readonly YamlInformationProvider yamlInformationProvider;
 
+		public SymbolCache(string modId, string modFolder, ILookup<string, TraitInfo> traitInfos, ILookup<string, ActorDefinition> actorDefinitions,
+			ILookup<string, WeaponDefinition> weaponDefinitions, ILookup<string, MemberLocation> conditionDefinitions)
+		{
+			ModId = modId;
+			ModFolder = modFolder;
+			ActorDefinitionsPerMod = new Dictionary<string, ILookup<string, ActorDefinition>>
+			{
+				{ modId, actorDefinitions }
+			};
+
+			WeaponDefinitionsPerMod = new Dictionary<string, ILookup<string, WeaponDefinition>>
+			{
+				{ modId, weaponDefinitions }
+			};
+
+			ConditionDefinitionsPerMod = new Dictionary<string, ILookup<string, MemberLocation>>
+			{
+				{ modId, conditionDefinitions }
+			};
+		}
+
 		public SymbolCache(CodeInformationProvider codeInformationProvider, YamlInformationProvider yamlInformationProvider)
 		{
 			this.codeInformationProvider = codeInformationProvider;
 			this.yamlInformationProvider = yamlInformationProvider;
 
-			Console.Error.WriteLine("Start loading symbol information...");
-			var stopwatch = new Stopwatch();
-			stopwatch.Start();
-
 			UpdateCodeSymbols();
-
-			var elapsed = stopwatch.Elapsed;
-			Console.Error.WriteLine($"Loaded {TraitInfos.Count} traitInfos in {elapsed}.");
-
 			UpdateYamlSymbols();
-
-			elapsed = stopwatch.Elapsed;
-			Console.Error.WriteLine($"Loaded everything in {elapsed}.");
 		}
 
 		// Intentionally synchronous code so the client can't continue working with a stale cache while we work on the update.
