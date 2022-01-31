@@ -28,5 +28,10 @@
 		}
 
 		public override string ToString() => $"{PropertyType} {PropertyName}";
+
+		public string ToMarkdownInfoString() => "```csharp\n" +
+		                                $"{PropertyName} ({PropertyType})" +
+		                                $"\n```\n" +
+		                                $"{Description}\n\nDefault value: {DefaultValue}";
 	}
 }

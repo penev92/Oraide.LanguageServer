@@ -64,17 +64,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 									if (target.TargetString == "Warhead" || target.TargetString.StartsWith("Warhead@"))
 										return HoverFromHoverInfo("Warhead used by this weapon.", range);
-									else
-									{
-										// Taken from TryGetTargetCodeHoverInfo
-										var prop = weaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
-										var content = "```csharp\n" +
-										          $"{prop.PropertyName} ({prop.PropertyType})" +
-										          $"\n```\n" +
-										          $"{prop.Description}\n\nDefault value: {prop.DefaultValue}";
 
-										return HoverFromHoverInfo(content, range);
-									}
+									// Maybe this is a property of WeaponInfo.
+									var prop = weaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
+									if (prop.PropertyName != null)
+										return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
 								}
 								else if (target.TargetType == "value")
 								{
@@ -87,15 +81,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									}
 									else if (nodeKey == "Projectile")
 									{
-										// Taken from TryGetTargetCodeHoverInfo
 										var projectileInfo = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == target.TargetString);
 										if (projectileInfo.Name != null)
 										{
-											var content = "```csharp\n" +
-											              $"class {projectileInfo.Name}" +
-											              $"\n```\n" +
-											              $"{projectileInfo.Description}\n\n" +
-											              "https://docs.openra.net/en/latest/release/weapons/#" + $"{projectileInfo.Name.ToLower()}";
+											var content = projectileInfo.ToMarkdownInfoString() +
+											              "\n\n" + "https://docs.openra.net/en/latest/release/weapons/#" + $"{projectileInfo.Name.ToLower()}";
 
 											return HoverFromHoverInfo(content, range);
 										}
@@ -105,12 +95,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 										var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == $"{target.TargetString}Warhead");
 										if (warheadInfo.Name != null)
 										{
-											// Taken from TryGetTargetCodeHoverInfo
-											var content = "```csharp\n" +
-											              $"class {warheadInfo.Name}" +
-											              $"\n```\n" +
-											              $"{warheadInfo.Description}\n\n" +
-														  "https://docs.openra.net/en/latest/release/weapons/#" + $"{warheadInfo.Name.ToLower()}";
+											var content = warheadInfo.ToMarkdownInfoString() +
+														  "\n\n" + "https://docs.openra.net/en/latest/release/weapons/#" + $"{warheadInfo.Name.ToLower()}";
 
 											return HoverFromHoverInfo(content, range);
 										}
@@ -125,14 +111,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									var projectileInfo = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == target.TargetNode.ParentNode.Value);
 									if (projectileInfo.Name != null)
 									{
-										// Taken from TryGetTargetCodeHoverInfo
 										var prop = projectileInfo.PropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
-										var content = "```csharp\n" +
-										          $"{prop.PropertyName} ({prop.PropertyType})" +
-										          $"\n```\n" +
-										          $"{prop.Description}\n\nDefault value: {prop.DefaultValue}";
-
-										return HoverFromHoverInfo(content, range);
+										if (prop.PropertyName != null)
+											return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
 									}
 								}
 								else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
@@ -140,14 +121,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == $"{target.TargetNode.ParentNode.Value}Warhead");
 									if (warheadInfo.Name != null)
 									{
-										// Taken from TryGetTargetCodeHoverInfo
 										var prop = warheadInfo.PropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
-										var content = "```csharp\n" +
-										              $"{prop.PropertyName} ({prop.PropertyType})" +
-										              $"\n```\n" +
-										              $"{prop.Description}\n\nDefault value: {prop.DefaultValue}";
-
-										return HoverFromHoverInfo(content, range);
+										if (prop.PropertyName != null)
+											return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
 									}
 								}
 							}
@@ -173,22 +149,16 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				return false;
 			}
 
-			string content;
+			var content = string.Empty;
 			if (traitInfo.TraitName == target.TargetString)
 			{
-				content = "```csharp\n" +
-				          $"class {traitInfo.TraitInfoName}" +
-				          $"\n```\n" +
-						  $"{traitInfo.TraitDescription}\n\n" +
-				          "https://docs.openra.net/en/latest/release/traits/#" + $"{traitInfo.TraitName.ToLower()}";
+				content = traitInfo.ToMarkdownInfoString() + "\n\n" + "https://docs.openra.net/en/latest/release/traits/#" + $"{traitInfo.TraitName.ToLower()}";
 			}
 			else
 			{
 				var prop = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
-				content = "```csharp\n" +
-				          $"{prop.PropertyName} ({prop.PropertyType})" +
-				          $"\n```\n" +
-						  $"{prop.Description}\n\nDefault value: {prop.DefaultValue}";
+				if (prop.PropertyName != null)
+					content = prop.ToMarkdownInfoString();
 			}
 
 			if (string.IsNullOrWhiteSpace(content))
