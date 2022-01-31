@@ -18,6 +18,11 @@ namespace Oraide.LanguageServer.Caching
 		public ILookup<string, TraitInfo> TraitInfos { get; }
 
 		/// <summary>
+		/// Information about the WeaponInfo class, all IProjectileInfo implementations and all IWarhead implementations.
+		/// </summary>
+		public WeaponInfo WeaponInfo { get; }
+
+		/// <summary>
 		/// A collection of all actor definitions in YAML (including abstract ones) grouped by their key/name.
 		/// </summary>
 		public ILookup<string, ActorDefinition> ActorDefinitions { get; }
@@ -32,12 +37,13 @@ namespace Oraide.LanguageServer.Caching
 		/// </summary>
 		public ILookup<string, MemberLocation> ConditionDefinitions { get; }
 
-		public ModSymbols(string modId, string modFolder, ILookup<string, TraitInfo> traitInfos, ILookup<string, ActorDefinition> actorDefinitions,
-			ILookup<string, WeaponDefinition> weaponDefinitions, ILookup<string, MemberLocation> conditionDefinitions)
+		public ModSymbols(string modId, string modFolder, ILookup<string, TraitInfo> traitInfos, WeaponInfo weaponInfo,
+			ILookup<string, ActorDefinition> actorDefinitions, ILookup<string, WeaponDefinition> weaponDefinitions, ILookup<string, MemberLocation> conditionDefinitions)
 		{
 			ModId = modId;
 			ModFolder = modFolder;
 			TraitInfos = traitInfos;
+			WeaponInfo = weaponInfo;
 			ActorDefinitions = actorDefinitions;
 			WeaponDefinitions = weaponDefinitions;
 			ConditionDefinitions = conditionDefinitions;

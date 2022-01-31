@@ -36,6 +36,7 @@ namespace Oraide.LanguageServer.Caching
 			var mods = modFolders.ToDictionary(OpenRaFolderUtils.GetModId, y => y);
 
 			// TODO: Remove this flex when the code is stable and we're sure it won't need optimizing.
+			Console.Error.WriteLine($"Found {mods.Count} mod(s): {string.Join(", ", mods.Keys)}.");
 			Console.Error.WriteLine("Start loading symbol information...");
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
@@ -45,21 +46,23 @@ namespace Oraide.LanguageServer.Caching
 			// that prompts the extension/client to notify the server to update, because neither the server nor the text editor can guarantee
 			// that they would be watching the code files for changes.
 			var traitInfos = codeInformationProvider.GetTraitInfos();
+			var weaponInfo = codeInformationProvider.GetWeaponInfo();
 
 			var elapsed = stopwatch.Elapsed;
-			Console.Error.WriteLine($"Loaded {traitInfos.Count} traitInfos in {elapsed}.");
+			Console.Error.WriteLine($"Took {elapsed} to load {traitInfos.Count} traitInfos, {weaponInfo.ProjectileInfos.Length} projectileInfos and {weaponInfo.WarheadInfos.Length} warheadInfos.");
 
 			var actorDefinitionsPerMod = yamlInformationProvider.GetActorDefinitions();
 			var weaponDefinitionsPerMod = yamlInformationProvider.GetWeaponDefinitions();
 			var conditionDefinitionsPerMod = yamlInformationProvider.GetConditionDefinitions();
 
 			elapsed = stopwatch.Elapsed;
-			Console.Error.WriteLine($"Loaded everything in {elapsed}.");
+			Console.Error.WriteLine($"Took {elapsed} to load everything.");
 
 			return mods.Select(x =>
 			{
 				return new ModSymbols(x.Key, x.Value,
 					traitInfos,
+					weaponInfo,
 					actorDefinitionsPerMod.ContainsKey(x.Key)
 						? actorDefinitionsPerMod[x.Key]
 						: Array.Empty<ActorDefinition>().ToLookup(y => y.Name, z => z),

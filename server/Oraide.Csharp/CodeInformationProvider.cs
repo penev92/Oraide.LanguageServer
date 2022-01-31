@@ -51,6 +51,11 @@ namespace Oraide.Csharp
 			return symbolGenerator.GetTraitInfos(openRaFolder);
 		}
 
+		public WeaponInfo GetWeaponInfo()
+		{
+			return symbolGenerator.GetWeaponInfo(openRaFolder);
+		}
+
 		string GetOpenRaFolder(string workspaceFolderPath, string defaultOpenRaFolderPath)
 		{
 			var oraFolderPath = "";
