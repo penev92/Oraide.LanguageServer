@@ -30,14 +30,128 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					if (TryGetCursorTarget(positionParams, out var target))
 					{
-						if (target.TargetType == "key"
-						    && (target.TargetNodeIndentation == 1 || target.TargetNodeIndentation == 2)
-						    && TryGetTargetCodeHoverInfo(target, out var codeHoverInfo))
-							return HoverFromHoverInfo(codeHoverInfo.Content, codeHoverInfo.Range);
+						var range = new Range
+						{
+							Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
+							End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
+						};
 
-						if ((target.TargetType == "value" || target.TargetNodeIndentation == 0)
-						    && TryGetTargetYamlHoverInfo(target, out var yamlHoverInfo))
-							return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
+						if (target.FileType == FileType.Rules)
+						{
+							if (target.TargetType == "key"
+							    && (target.TargetNodeIndentation == 1 || target.TargetNodeIndentation == 2)
+							    && TryGetTargetCodeHoverInfo(target, out var codeHoverInfo))
+								return HoverFromHoverInfo(codeHoverInfo.Content, codeHoverInfo.Range);
+
+							if ((target.TargetType == "value" || target.TargetNodeIndentation == 0)
+							    && TryGetTargetYamlHoverInfo(target, out var yamlHoverInfo))
+								return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
+						}
+						else if (target.FileType == FileType.Weapons)
+						{
+							var weaponInfo = symbolCache[target.ModId].WeaponInfo;
+
+							if (target.TargetNodeIndentation == 0 && target.TargetType == "key")
+								if (TryGetTargetYamlHoverInfo(target, out var yamlHoverInfo))
+									return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
+
+							if (target.TargetNodeIndentation == 1)
+							{
+								if (target.TargetType == "key")
+								{
+									if (target.TargetString == "Inherits")
+										return HoverFromHoverInfo("Inherits (and possibly overwrites) rules from a weapon", range);
+
+									if (target.TargetString == "Warhead" || target.TargetString.StartsWith("Warhead@"))
+										return HoverFromHoverInfo("Warhead used by this weapon.", range);
+									else
+									{
+										// Taken from TryGetTargetCodeHoverInfo
+										var prop = weaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
+										var content = "```csharp\n" +
+										          $"{prop.PropertyName} ({prop.PropertyType})" +
+										          $"\n```\n" +
+										          $"{prop.Description}\n\nDefault value: {prop.DefaultValue}";
+
+										return HoverFromHoverInfo(content, range);
+									}
+								}
+								else if (target.TargetType == "value")
+								{
+									var nodeKey = target.TargetNode.Key;
+
+									if (nodeKey == "Inherits")
+									{
+										if (symbolCache[target.ModId].WeaponDefinitions.Any(x => x.Key == target.TargetString))
+											return HoverFromHoverInfo($"```csharp\nWeapon \"{target.TargetString}\"\n```", range);
+									}
+									else if (nodeKey == "Projectile")
+									{
+										// Taken from TryGetTargetCodeHoverInfo
+										var projectileInfo = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == target.TargetString);
+										if (projectileInfo.Name != null)
+										{
+											var content = "```csharp\n" +
+											              $"class {projectileInfo.Name}" +
+											              $"\n```\n" +
+											              $"{projectileInfo.Description}\n\n" +
+											              "https://docs.openra.net/en/latest/release/weapons/#" + $"{projectileInfo.Name.ToLower()}";
+
+											return HoverFromHoverInfo(content, range);
+										}
+									}
+									else if (nodeKey == "Warhead" || nodeKey.StartsWith("Warhead@"))
+									{
+										var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == $"{target.TargetString}Warhead");
+										if (warheadInfo.Name != null)
+										{
+											// Taken from TryGetTargetCodeHoverInfo
+											var content = "```csharp\n" +
+											              $"class {warheadInfo.Name}" +
+											              $"\n```\n" +
+											              $"{warheadInfo.Description}\n\n" +
+														  "https://docs.openra.net/en/latest/release/weapons/#" + $"{warheadInfo.Name.ToLower()}";
+
+											return HoverFromHoverInfo(content, range);
+										}
+									}
+								}
+							}
+							else if (target.TargetNodeIndentation == 2)
+							{
+								var parentNode = target.TargetNode.ParentNode;
+								if (parentNode.Key == "Projectile")
+								{
+									var projectileInfo = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == target.TargetNode.ParentNode.Value);
+									if (projectileInfo.Name != null)
+									{
+										// Taken from TryGetTargetCodeHoverInfo
+										var prop = projectileInfo.PropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
+										var content = "```csharp\n" +
+										          $"{prop.PropertyName} ({prop.PropertyType})" +
+										          $"\n```\n" +
+										          $"{prop.Description}\n\nDefault value: {prop.DefaultValue}";
+
+										return HoverFromHoverInfo(content, range);
+									}
+								}
+								else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
+								{
+									var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == $"{target.TargetNode.ParentNode.Value}Warhead");
+									if (warheadInfo.Name != null)
+									{
+										// Taken from TryGetTargetCodeHoverInfo
+										var prop = warheadInfo.PropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
+										var content = "```csharp\n" +
+										              $"{prop.PropertyName} ({prop.PropertyType})" +
+										              $"\n```\n" +
+										              $"{prop.Description}\n\nDefault value: {prop.DefaultValue}";
+
+										return HoverFromHoverInfo(content, range);
+									}
+								}
+							}
+						}
 
 						if (TryGetTargetValueHoverInfo(target, out var valueHoverInfo))
 							return HoverFromHoverInfo(valueHoverInfo.Content, valueHoverInfo.Range);
