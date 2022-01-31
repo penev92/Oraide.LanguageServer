@@ -26,5 +26,7 @@
 			Description = description;
 			OtherAttribute = otherAttribute;
 		}
+
+		public override string ToString() => $"{PropertyType} {PropertyName}";
 	}
 }

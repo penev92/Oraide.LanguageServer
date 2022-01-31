@@ -15,9 +15,9 @@
 
 		public string[] InheritedTypes { get; }
 
-		public TraitPropertyInfo[] TraitPropertyInfos { get; }
+		public ClassFieldInfo[] TraitPropertyInfos { get; }
 
-		public TraitInfo(string traitName, string traitInfoName, string traitDescription, MemberLocation location, string[] inheritedTypes, TraitPropertyInfo[] traitPropertyInfos)
+		public TraitInfo(string traitName, string traitInfoName, string traitDescription, MemberLocation location, string[] inheritedTypes, ClassFieldInfo[] traitPropertyInfos)
 		{
 			TraitName = traitName;
 			TraitInfoName = traitInfoName;
@@ -26,5 +26,7 @@
 			InheritedTypes = inheritedTypes;
 			TraitPropertyInfos = traitPropertyInfos;
 		}
+
+		public override string ToString() => TraitName;
 	}
 }
