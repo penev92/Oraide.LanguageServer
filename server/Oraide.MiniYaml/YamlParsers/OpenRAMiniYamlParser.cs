@@ -16,7 +16,7 @@ namespace Oraide.MiniYaml.YamlParsers
 
 			// TODO: What about maps?
 			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories)
-				.Where(x => x.Contains("/rules/") || x.Contains("\\rules\\") || ((x.Contains("/maps/") || x.Contains("\\maps\\")) && !x.EndsWith("map.yaml")));
+				.Where(x => x.Contains("/rules/") || x.Contains("\\rules\\") || ((x.Contains("/maps/") || x.Contains("\\maps\\")) && !x.EndsWith("map.yaml") && !x.EndsWith("weapons.yaml")));
 
 			foreach (var filePath in filePaths)
 			{
@@ -51,7 +51,7 @@ namespace Oraide.MiniYaml.YamlParsers
 
 			// TODO: What about maps?
 			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories)
-				.Where(x => x.Contains("/weapons/") || x.Contains("\\weapons\\"));
+				.Where(x => x.Contains("/weapons/") || x.Contains("\\weapons\\") || ((x.Contains("/maps/") || x.Contains("\\maps\\")) && x.EndsWith("weapons.yaml")));
 
 			foreach (var filePath in filePaths)
 			{
