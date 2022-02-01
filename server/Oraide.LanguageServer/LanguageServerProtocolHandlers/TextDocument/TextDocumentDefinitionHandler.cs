@@ -26,14 +26,88 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					if (TryGetCursorTarget(positionParams, out var target))
 					{
-						if (target.TargetType == "key"
-						    && (target.TargetNodeIndentation == 1 || target.TargetNodeIndentation == 2)
-						    && TryGetTargetCodeDefinitionLocations(target, out var codeDefinitionLocations))
-							return codeDefinitionLocations;
+						if (target.FileType == FileType.Rules)
+						{
+							if (target.TargetType == "key"
+							    && (target.TargetNodeIndentation == 1 || target.TargetNodeIndentation == 2)
+							    && TryGetTargetCodeDefinitionLocations(target, out var codeDefinitionLocations))
+								return codeDefinitionLocations;
 
-						if ((target.TargetType == "value" || target.TargetNodeIndentation == 0)
-						    && TryGetTargetYamlDefinitionLocations(target, out var yamlDefinitionLocations))
-							return yamlDefinitionLocations;
+							if ((target.TargetType == "value" || target.TargetNodeIndentation == 0)
+							    && TryGetTargetYamlDefinitionLocations(target, out var yamlDefinitionLocations))
+								return yamlDefinitionLocations;
+						}
+						else if (target.FileType == FileType.Weapons)
+						{
+							var weaponInfo = symbolCache[target.ModId].WeaponInfo;
+
+							if (target.TargetNodeIndentation == 0)
+							{
+								var weaponDefinitions = symbolCache[target.ModId].WeaponDefinitions.FirstOrDefault(x => x.Key == target.TargetString);
+								if (weaponDefinitions != null)
+									return weaponDefinitions.Select(x => x.Location.ToLspLocation(weaponDefinitions.Key.Length));
+							}
+							else if (target.TargetNodeIndentation == 1)
+							{
+								if (target.TargetType == "key")
+								{
+									var targetString = target.TargetString;
+									if (target.TargetString == "Warhead")
+										targetString = "Warheads"; // Hacks!
+
+									var fieldInfo = weaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.PropertyName == targetString);
+									if (fieldInfo.PropertyName != null)
+										return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.PropertyName.Length) };
+								}
+								else if (target.TargetType == "value")
+								{
+									var targetNodeKey = target.TargetNode.Key;
+									if (targetNodeKey == "Inherits")
+									{
+										var weaponDefinitions = symbolCache[target.ModId].WeaponDefinitions.FirstOrDefault(x => x.Key == target.TargetString);
+										if (weaponDefinitions != null)
+											return weaponDefinitions.Select(x => x.Location.ToLspLocation(weaponDefinitions.Key.Length));
+									}
+									else if (targetNodeKey == "Projectile")
+									{
+										var projectile = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == target.TargetString);
+										if (projectile.Name != null)
+											return new[] { projectile.Location.ToLspLocation(projectile.Name.Length) };
+									}
+									else if (targetNodeKey == "Warhead" || targetNodeKey.StartsWith("Warhead@"))
+									{
+										var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == $"{target.TargetString}Warhead");
+										if (warhead.Name != null)
+											return new[] { warhead.Location.ToLspLocation(warhead.Name.Length) };
+									}
+								}
+							}
+							else if (target.TargetNodeIndentation == 2)
+							{
+								var parentNodeKey = target.TargetNode.ParentNode.Key;
+								if (parentNodeKey == "Projectile")
+								{
+									var projectile = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == target.TargetNode.ParentNode.Value);
+									if (projectile.Name != null)
+									{
+										var fieldInfo = projectile.PropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
+										if (fieldInfo.PropertyName != null)
+											return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.PropertyName.Length) };
+									}
+								}
+								else if (parentNodeKey == "Warhead" || parentNodeKey.StartsWith("Warhead@"))
+								{
+									var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == $"{target.TargetNode.ParentNode.Value}Warhead");
+									if (warhead.Name != null)
+									{
+										// TODO: Check base types for inherited properties.
+										var fieldInfo = warhead.PropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
+										if (fieldInfo.PropertyName != null)
+											return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.PropertyName.Length) };
+									}
+								}
+							}
+						}
 					}
 				}
 				catch (Exception e)
