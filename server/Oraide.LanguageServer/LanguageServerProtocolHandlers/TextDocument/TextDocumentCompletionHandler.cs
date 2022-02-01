@@ -7,6 +7,7 @@ using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
+using Oraide.LanguageServer.Extensions;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
@@ -120,40 +121,13 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		IEnumerable<CompletionItem> GetCompletionItems(CursorTarget cursorTarget)
 		{
 			var modId = cursorTarget.ModId;
-			var traitNames = symbolCache[modId].TraitInfos.Select(x => new CompletionItem
-			{
-				// Using .First() is not great but we have no way to differentiate between traits of the same name
-				// until the server learns the concept of a mod and loaded assemblies.
-				Label = x.First().TraitName,
-				Kind = CompletionItemKind.Class,
-				Detail = "Trait name. Expand for details >",
-				Documentation = x.First().TraitDescription,
-				CommitCharacters = new[] { ":" }
-			});
 
-			var actorNames = symbolCache[modId].ActorDefinitions.Select(x => new CompletionItem
-			{
-				Label = x.Key,
-				Kind = CompletionItemKind.Unit,
-				Detail = "Actor name",
-				CommitCharacters = new[] { ":" }
-			});
-
-			var weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => new CompletionItem
-			{
-				Label = x.Key,
-				Kind = CompletionItemKind.Unit,
-				Detail = "Weapon name",
-				CommitCharacters = new[] { ":" }
-			});
-
-			var conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => new CompletionItem
-			{
-				Label = x.Key,
-				Kind = CompletionItemKind.Value,
-				Detail = "Condition",
-				Documentation = "Conditions are arbitrary user-defined strings that are used across multiple actors/weapons/traits."
-			});
+			// Using .First() is not great but we have no way to differentiate between traits of the same name
+			// until the server learns the concept of a mod and loaded assemblies.
+			var traitNames = symbolCache[modId].TraitInfos.Select(x => x.First().ToCompletionItem());
+			var actorNames = symbolCache[modId].ActorDefinitions.Select(x => x.First().ToCompletionItem());
+			var weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => x.First().ToCompletionItem());
+			var conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => x.First().ToCompletionItem());
 
 			if (cursorTarget.FileType == FileType.Rules)
 			{
@@ -196,14 +170,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							.SelectMany(x => x.TraitPropertyInfos)
 							.DistinctBy(y => y.PropertyName)
 							.Where(x => !presentProperties.Contains(x.PropertyName))
-							.Select(z => new CompletionItem
-							{
-								Label = z.PropertyName,
-								Kind = CompletionItemKind.Field,
-								Detail = "Trait property. Expand for details >",
-								Documentation = z.Description,
-								CommitCharacters = new[] {":"}
-							});
+							.Select(z => z.ToCompletionItem());
 					}
 
 					if (cursorTarget.TargetType == "value")
@@ -217,25 +184,17 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			{
 				var weaponInfo = symbolCache[modId].WeaponInfo;
 
+				// Get only weapon definitions. Presumably for reference and for overriding purposes.
 				if (cursorTarget.TargetNodeIndentation == 0)
-				{
-					// Get only weapon definitions. Presumably for reference and for overriding purposes.
 					return weaponNames;
-				}
 
 				if (cursorTarget.TargetNodeIndentation == 1)
 				{
 					if (cursorTarget.TargetType == "key")
 					{
 						// Get only WeaponInfo fields (and "Inherits" and "Warhead").
-						return weaponInfo.WeaponPropertyInfos.Select(x => new CompletionItem
-							{
-								Label = x.PropertyName,
-								Kind = CompletionItemKind.Field,
-								Detail = "WeaponInfo property. Expand for details >",
-								Documentation = x.Description,
-								CommitCharacters = new[] {":"}
-							})
+						return weaponInfo.WeaponPropertyInfos
+							.Select(x => x.ToCompletionItem())
 							.Append(warheadCompletionItem)
 							.Append(inheritsCompletionItem);
 					}
@@ -249,28 +208,10 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							return weaponNames;
 
 						if (nodeKey == "Projectile")
-						{
-							return weaponInfo.ProjectileInfos.Select(x => new CompletionItem
-							{
-								Label = x.Name,
-								Kind = CompletionItemKind.Class,
-								Detail = "Type implementing IProjectileInfo",
-								Documentation = x.Description,
-								CommitCharacters = new[] { ":" }
-							});
-						}
+							return weaponInfo.ProjectileInfos.Select(x => x.ToCompletionItem("Type implementing IProjectileInfo"));
 
 						if (nodeKey == "Warhead" || nodeKey.StartsWith("Warhead@"))
-						{
-							return weaponInfo.WarheadInfos.Select(x => new CompletionItem
-							{
-								Label = x.Name,
-								Kind = CompletionItemKind.Class,
-								Detail = "Type implementing IWarhead",
-								Documentation = x.Description,
-								CommitCharacters = new[] { ":" }
-							});
-						}
+							return weaponInfo.WarheadInfos.Select(x => x.ToCompletionItem("Type implementing IWarhead"));
 					}
 				}
 
@@ -281,29 +222,13 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					{
 						var projectile = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == parentNode.Value);
 						if (projectile.Name != null)
-						{
-							return projectile.PropertyInfos.Select(x => new CompletionItem
-							{
-								Label = x.PropertyName,
-								Kind = CompletionItemKind.Field,
-								Detail = x.Description,
-								CommitCharacters = new[] { ":" }
-							});
-						}
+							return projectile.PropertyInfos.Select(x => x.ToCompletionItem());
 					}
 					else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
 					{
 						var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == parentNode.Value);
 						if (warhead.Name != null)
-						{
-							return warhead.PropertyInfos.Select(x => new CompletionItem
-							{
-								Label = x.PropertyName,
-								Kind = CompletionItemKind.Field,
-								Detail = x.Description,
-								CommitCharacters = new[] { ":" }
-							});
-						}
+							return warhead.PropertyInfos.Select(x => x.ToCompletionItem());
 					}
 				}
 			}
