@@ -4,7 +4,7 @@ using System.Linq;
 using LspTypes;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
-using Range = LspTypes.Range;
+using Oraide.LanguageServer.Extensions;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 {
@@ -35,15 +35,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 								Name = actorDefinition.Key,
 								Kind = SymbolKind.Struct,
 								Tags = Array.Empty<SymbolTag>(),
-								Location = new Location
-								{
-									Uri = new Uri(loc.FilePath).ToString(),
-									Range = new Range
-									{
-										Start = new Position((uint) loc.LineNumber - 1, (uint) loc.CharacterPosition),
-										End = new Position((uint)loc.LineNumber - 1, (uint)loc.CharacterPosition + (uint)actorDefinition.Key.Length)
-									}
-								}
+								Location = loc.ToLspLocation(actorDefinition.Key.Length)
 							};
 						}));
 
@@ -56,15 +48,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 								Name = weaponDefinition.Key,
 								Kind = SymbolKind.Struct,
 								Tags = Array.Empty<SymbolTag>(),
-								Location = new Location
-								{
-									Uri = new Uri(loc.FilePath).ToString(),
-									Range = new Range
-									{
-										Start = new Position((uint)loc.LineNumber - 1, (uint)loc.CharacterPosition),
-										End = new Position((uint)loc.LineNumber - 1, (uint)loc.CharacterPosition + (uint)weaponDefinition.Key.Length)
-									}
-								}
+								Location = loc.ToLspLocation(weaponDefinition.Key.Length)
 							};
 						}));
 
@@ -77,15 +61,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 								Name = condition.Key,
 								Kind = SymbolKind.String,
 								Tags = Array.Empty<SymbolTag>(),
-								Location = new Location
-								{
-									Uri = new Uri(loc.FilePath).ToString(),
-									Range = new Range
-									{
-										Start = new Position((uint)loc.LineNumber - 1, (uint)loc.CharacterPosition),
-										End = new Position((uint)loc.LineNumber - 1, (uint)loc.CharacterPosition + (uint)condition.Key.Length)
-									}
-								}
+								Location = loc.ToLspLocation(condition.Key.Length)
 							};
 						}));
 

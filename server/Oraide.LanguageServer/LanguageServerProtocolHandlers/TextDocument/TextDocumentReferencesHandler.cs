@@ -5,7 +5,7 @@ using LspTypes;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
-using Range = LspTypes.Range;
+using Oraide.LanguageServer.Extensions;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
@@ -33,19 +33,10 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						{
 							if (target.TargetNodeIndentation == 1)
 							{
-								var traitDefinitions = symbolCache[target.ModId].ActorDefinitions
+								return symbolCache[target.ModId].ActorDefinitions
 									.SelectMany(x =>
-										x.SelectMany(y => y.Traits.Where(z => z.Name == target.TargetString)));
-
-								return traitDefinitions.Select(x => new Location
-								{
-									Uri = new Uri(x.Location.FilePath).ToString(),
-									Range = new Range
-									{
-										Start = new Position((uint)x.Location.LineNumber - 1, (uint)x.Location.CharacterPosition),
-										End = new Position((uint)x.Location.LineNumber - 1, (uint)x.Location.CharacterPosition + (uint)target.TargetString.Length)
-									}
-								});
+										x.SelectMany(y => y.Traits.Where(z => z.Name == target.TargetString)))
+									.Select(x => x.Location.ToLspLocation(target.TargetString.Length));
 							}
 						}
 					}

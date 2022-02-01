@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
+using Oraide.LanguageServer.Extensions;
 using Range = LspTypes.Range;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
@@ -30,11 +30,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					if (TryGetCursorTarget(positionParams, out var target))
 					{
-						var range = new Range
-						{
-							Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
-							End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
-						};
+						var range = target.ToRange();
 
 						if (target.FileType == FileType.Rules)
 						{
@@ -167,71 +163,41 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				return false;
 			}
 
-			hoverInfo = (
-				content,
-				new Range
-				{
-					Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
-					End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
-				});
-
+			hoverInfo = (content, target.ToRange());
 			return true;
 		}
 
 		private bool TryGetTargetYamlHoverInfo(CursorTarget target, out (string Content, Range Range) hoverInfo)
 		{
-			if (symbolCache[target.ModId].ActorDefinitions.Any(x => x.Key == target.TargetString))
-			{
-				hoverInfo = (
-					$"```csharp\nActor \"{target.TargetString}\"\n```", new Range
-					{
-						Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
-						End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
-					});
+			var symbolType = string.Empty;
 
-				return true;
-			}
+			if (symbolCache[target.ModId].ActorDefinitions.Any(x => x.Key == target.TargetString))
+				symbolType = "Actor";
 
 			if (symbolCache[target.ModId].WeaponDefinitions.Any(x => x.Key == target.TargetString))
-			{
-				hoverInfo = (
-					$"```csharp\nWeapon \"{target.TargetString}\"\n```", new Range
-					{
-						Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
-						End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
-					});
-
-				return true;
-			}
+				symbolType = "Weapon";
 
 			if (symbolCache[target.ModId].ConditionDefinitions.Any(x => x.Key == target.TargetString))
-			{
-				hoverInfo = (
-					$"```csharp\nCondition \"{target.TargetString}\"\n```", new Range
-					{
-						Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
-						End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
-					});
+				symbolType = "Condition";
 
-				return true;
+			if (string.IsNullOrWhiteSpace(symbolType))
+			{
+				hoverInfo = (null, null);
+				return false;
 			}
 
-			hoverInfo = (null, null);
-			return false;
+			hoverInfo = ($"```csharp\n{symbolType} \"{target.TargetString}\"\n```", target.ToRange());
+			return true;
 		}
 
 		private bool TryGetTargetValueHoverInfo(CursorTarget target, out (string Content, Range Range) hoverInfo)
 		{
+			var range = target.ToRange();
 			if (target.TargetType == "key")
 			{
 				if (target.TargetString == "Inherits")
 				{
-					hoverInfo = ($"Inherits (and possibly overwrites) rules from {target.TargetNode.Value ?? (target.FileType == FileType.Rules ? "an actor" : "a weapon")}", new Range
-					{
-						Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
-						End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
-					});
-
+					hoverInfo = ($"Inherits (and possibly overwrites) rules from {target.TargetNode.Value ?? (target.FileType == FileType.Rules ? "an actor" : "a weapon")}", range);
 					return true;
 				}
 			}
@@ -240,11 +206,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				if (Regex.IsMatch(target.TargetString, "[0-9]+c[0-9]+", RegexOptions.Compiled))
 				{
 					var parts = target.TargetString.Split('c');
-					hoverInfo = ($"Range in world distance units equal to {parts[0]} cells and {parts[1]} distance units (where 1 cell has 1024 units)", new Range
-					{
-						Start = new Position((uint)target.TargetStart.LineNumber, (uint)target.TargetStart.CharacterPosition),
-						End = new Position((uint)target.TargetEnd.LineNumber, (uint)target.TargetEnd.CharacterPosition)
-					});
+					hoverInfo = ($"Range in world distance units equal to {parts[0]} cells and {parts[1]} distance units (where 1 cell has 1024 units)", range);
 
 					return true;
 				}

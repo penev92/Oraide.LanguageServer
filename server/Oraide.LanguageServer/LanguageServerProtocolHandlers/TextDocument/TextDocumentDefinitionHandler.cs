@@ -5,7 +5,7 @@ using LspTypes;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
-using Range = LspTypes.Range;
+using Oraide.LanguageServer.Extensions;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
@@ -57,19 +57,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				return false;
 			}
 
-			definitionLocations = new[]
-			{
-				new Location
-				{
-					Uri = new Uri(location.FilePath).ToString(),
-					Range = new Range
-					{
-						Start = new Position((uint) location.LineNumber - 1, (uint) location.CharacterPosition),
-						End = new Position((uint) location.LineNumber - 1, (uint) location.CharacterPosition + (uint)target.TargetString.Length)
-					}
-				}
-			};
-
+			definitionLocations = new[] { location.ToLspLocation(target.TargetString.Length) };
 			return true;
 		}
 
@@ -79,33 +67,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			// If it is a top-level node *and this is an actor-definition or a weapon-definition file* it definitely is a definition.
 			// If it is indented once we need to check if the target is the key or the value - keys are traits, but values *could* reference actor/weapon definitions.
 
-			definitionLocations = symbolCache[target.ModId].ActorDefinitions[target.TargetString].Select(x => new Location
-				{
-					Uri = new Uri(x.Location.FilePath).ToString(),
-					Range = new Range
-					{
-						Start = new Position((uint)x.Location.LineNumber - 1, (uint)x.Location.CharacterPosition),
-						End = new Position((uint)x.Location.LineNumber - 1, (uint)(x.Location.CharacterPosition + target.TargetString.Length))
-					}
-				})
-				.Union(symbolCache[target.ModId].WeaponDefinitions[target.TargetString].Select(x => new Location
-				{
-					Uri = new Uri(x.Location.FilePath).ToString(),
-					Range = new Range
-					{
-						Start = new Position((uint)x.Location.LineNumber - 1, (uint)x.Location.CharacterPosition),
-						End = new Position((uint)x.Location.LineNumber - 1, (uint)(x.Location.CharacterPosition + target.TargetString.Length))
-					}
-				}))
-				.Union(symbolCache[target.ModId].ConditionDefinitions[target.TargetString].Select(x => new Location
-				{
-					Uri = new Uri(x.FilePath).ToString(),
-					Range = new Range
-					{
-						Start = new Position((uint)x.LineNumber - 1, (uint) x.CharacterPosition),
-						End = new Position((uint)x.LineNumber - 1, (uint)(x.CharacterPosition + target.TargetString.Length))
-					}
-				}));
+			var targetLength = target.TargetString.Length;
+
+			definitionLocations =
+				symbolCache[target.ModId].ActorDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength))
+				.Union(symbolCache[target.ModId].WeaponDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength)))
+				.Union(symbolCache[target.ModId].ConditionDefinitions[target.TargetString].Select(x => x.ToLspLocation(targetLength)));
 
 			return true;
 		}
