@@ -104,5 +104,38 @@ namespace Oraide.LanguageServer.Extensions
 				CommitCharacters = new[] { ":" }
 			};
 		}
+
+		public static SymbolInformation ToSymbolInformation(this ActorDefinition actorDefinition)
+		{
+			return new SymbolInformation
+			{
+				Name = actorDefinition.Name,
+				Kind = SymbolKind.Struct,
+				Tags = Array.Empty<SymbolTag>(),
+				Location = actorDefinition.Location.ToLspLocation(actorDefinition.Name.Length)
+			};
+		}
+
+		public static SymbolInformation ToSymbolInformation(this WeaponDefinition weaponDefinition)
+		{
+			return new SymbolInformation
+			{
+				Name = weaponDefinition.Name,
+				Kind = SymbolKind.Struct,
+				Tags = Array.Empty<SymbolTag>(),
+				Location = weaponDefinition.Location.ToLspLocation(weaponDefinition.Name.Length)
+			};
+		}
+
+		public static SymbolInformation ToSymbolInformation(this ConditionDefinition conditionDefinition)
+		{
+			return new SymbolInformation
+			{
+				Name = conditionDefinition.Name,
+				Kind = SymbolKind.String,
+				Tags = Array.Empty<SymbolTag>(),
+				Location = conditionDefinition.Location.ToLspLocation(conditionDefinition.Name.Length)
+			};
+		}
 	}
 }

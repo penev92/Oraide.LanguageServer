@@ -27,43 +27,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 					}
 
 					var actors = symbolCache.ModSymbols.SelectMany(x => x.Value.ActorDefinitions
-						.Select(actorDefinition =>
-						{
-							var loc = actorDefinition.First().Location;
-							return new SymbolInformation
-							{
-								Name = actorDefinition.Key,
-								Kind = SymbolKind.Struct,
-								Tags = Array.Empty<SymbolTag>(),
-								Location = loc.ToLspLocation(actorDefinition.Key.Length)
-							};
-						}));
-
+						.Select(actorDefinition => actorDefinition.First().ToSymbolInformation()));
 					var weapons = symbolCache.ModSymbols.SelectMany(x => x.Value.WeaponDefinitions
-						.Select(weaponDefinition =>
-						{
-							var loc = weaponDefinition.First().Location;
-							return new SymbolInformation
-							{
-								Name = weaponDefinition.Key,
-								Kind = SymbolKind.Struct,
-								Tags = Array.Empty<SymbolTag>(),
-								Location = loc.ToLspLocation(weaponDefinition.Key.Length)
-							};
-						}));
-
+						.Select(weaponDefinition => weaponDefinition.First().ToSymbolInformation()));
 					var conditions = symbolCache.ModSymbols.SelectMany(x => x.Value.ConditionDefinitions
-						.Select(condition =>
-						{
-							var loc = condition.First().Location;
-							return new SymbolInformation
-							{
-								Name = condition.Key,
-								Kind = SymbolKind.String,
-								Tags = Array.Empty<SymbolTag>(),
-								Location = loc.ToLspLocation(condition.Key.Length)
-							};
-						}));
+						.Select(condition => condition.First().ToSymbolInformation()));
 
 					return actors.Union(weapons).Union(conditions);
 				}
