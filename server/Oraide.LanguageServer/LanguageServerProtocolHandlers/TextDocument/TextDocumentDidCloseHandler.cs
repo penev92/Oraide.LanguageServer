@@ -19,15 +19,14 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-					{
 						Console.Error.WriteLine("<-- TextDocument-DidClose");
-						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(request));
-					}
 
 					openFileCache.RemoveOpenFile(request.TextDocument.Uri);
 				}
 				catch (Exception e)
 				{
+					Console.Error.WriteLine("EXCEPTION!!!");
+					Console.Error.WriteLine(e.ToString());
 				}
 			}
 		}

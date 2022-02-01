@@ -28,5 +28,10 @@
 		}
 
 		public override string ToString() => TraitName;
+
+		public string ToMarkdownInfoString() => "```csharp\n" +
+		                                        $"class {TraitInfoName}" +
+		                                        $"\n```\n" +
+		                                        $"{TraitDescription}";
 	}
 }

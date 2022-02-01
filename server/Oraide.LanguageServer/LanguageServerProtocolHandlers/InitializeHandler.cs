@@ -15,10 +15,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 			lock (LockObject)
 			{
 				if (trace)
-				{
 					Console.Error.WriteLine("<-- Initialize");
-					Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(initializeParams));
-				}
 
 				var capabilities = new ServerCapabilities
 				{
@@ -90,13 +87,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 				try
 				{
 					if (trace)
-					{
 						Console.Error.WriteLine("<-- Initialized");
-						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(initializedParams));
-					}
 				}
-				catch (Exception)
+				catch (Exception e)
 				{
+					Console.Error.WriteLine("EXCEPTION!!!");
+					Console.Error.WriteLine(e.ToString());
 				}
 			}
 		}

@@ -18,9 +18,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 				try
 				{
 					if (trace)
-					{
 						System.Console.Error.WriteLine("<-- Shutdown");
-					}
 				}
 				catch (Exception)
 				{
@@ -38,9 +36,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 				try
 				{
 					if (trace)
-					{
 						Console.Error.WriteLine("<-- Exit");
-					}
 
 					// TODO:
 					// Exit();

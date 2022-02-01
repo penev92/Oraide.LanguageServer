@@ -7,16 +7,25 @@ using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
+using Oraide.LanguageServer.Extensions;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
 	public class TextDocumentCompletionHandler : BaseRpcMessageHandler
 	{
-		readonly CompletionItem inherits = new ()
+		readonly CompletionItem inheritsCompletionItem = new ()
 		{
 			Label = "Inherits",
 			Kind = CompletionItemKind.Constructor,
 			Detail = "Allows rule inheritance.",
+			CommitCharacters = new[] { ":" }
+		};
+
+		readonly CompletionItem warheadCompletionItem = new ()
+		{
+			Label = "Warhead",
+			Kind = CompletionItemKind.Constructor,
+			Detail = "A warhead to be used by this weapon. You can list several of these.",
 			CommitCharacters = new[] { ":" }
 		};
 
@@ -31,21 +40,20 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-					{
 						Console.Error.WriteLine("<-- TextDocument-Completion");
-						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(completionParams));
 
-						TryGetCursorTarget(completionParams, out var cursorTarget);
-						return new CompletionList
-						{
-							IsIncomplete = false,
-							Items = GetCompletionItems(cursorTarget).ToArray()
-						};
-					}
+					TryGetCursorTarget(completionParams, out var cursorTarget);
+					return new CompletionList
+					{
+						IsIncomplete = false,
+						Items = GetCompletionItems(cursorTarget).ToArray()
+					};
 
 				}
 				catch (Exception e)
 				{
+					Console.Error.WriteLine("EXCEPTION!!!");
+					Console.Error.WriteLine(e.ToString());
 				}
 
 				return null;
@@ -111,46 +119,20 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		IEnumerable<CompletionItem> GetCompletionItems(CursorTarget cursorTarget)
 		{
-			var traitNames = symbolCache[cursorTarget.ModId].TraitInfos.Select(x => new CompletionItem
-			{
-				// Using .First() is not great but we have no way to differentiate between traits of the same name
-				// until the server learns the concept of a mod and loaded assemblies.
-				Label = x.First().TraitName,
-				Kind = CompletionItemKind.Class,
-				Detail = "Trait name. Expand for details >",
-				Documentation = x.First().TraitDescription,
-				CommitCharacters = new[] { ":" }
-			});
+			var modId = cursorTarget.ModId;
 
-			var actorNames = symbolCache[cursorTarget.ModId].ActorDefinitions.Select(x => new CompletionItem
-			{
-				Label = x.Key,
-				Kind = CompletionItemKind.Unit,
-				Detail = "Actor name",
-				CommitCharacters = new[] { ":" }
-			});
-
-			var weaponNames = symbolCache[cursorTarget.ModId].WeaponDefinitions.Select(x => new CompletionItem
-			{
-				Label = x.Key,
-				Kind = CompletionItemKind.Unit,
-				Detail = "Weapon name",
-				CommitCharacters = new[] { ":" }
-			});
-
-			var conditionNames = symbolCache[cursorTarget.ModId].ConditionDefinitions.Select(x => new CompletionItem
-			{
-				Label = x.Key,
-				Kind = CompletionItemKind.Value,
-				Detail = "Condition",
-				Documentation = "Conditions are arbitrary user-defined strings that are used across multiple actors/weapons/traits."
-			});
+			// Using .First() is not great but we have no way to differentiate between traits of the same name
+			// until the server learns the concept of a mod and loaded assemblies.
+			var traitNames = symbolCache[modId].TraitInfos.Select(x => x.First().ToCompletionItem());
+			var actorNames = symbolCache[modId].ActorDefinitions.Select(x => x.First().ToCompletionItem());
+			var weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => x.First().ToCompletionItem());
+			var conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => x.First().ToCompletionItem());
 
 			if (cursorTarget.FileType == FileType.Rules)
 			{
 				if (cursorTarget.TargetNodeIndentation == 0)
 				{
-					// Get only actors. Presumably for reference and for overriding purposes.
+					// Get only actor definitions. Presumably for reference and for overriding purposes.
 					return actorNames;
 				}
 
@@ -159,12 +141,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					if (cursorTarget.TargetType == "key")
 					{
 						// Get only traits (and "Inherits").
-						return traitNames.Append(inherits);
+						return traitNames.Append(inheritsCompletionItem);
 					}
 
 					if (cursorTarget.TargetType == "value")
 					{
-						// Get actors (for inheriting).
+						// Get actor definitions (for inheriting).
 						return actorNames;
 					}
 				}
@@ -187,20 +169,65 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							.SelectMany(x => x.TraitPropertyInfos)
 							.DistinctBy(y => y.PropertyName)
 							.Where(x => !presentProperties.Contains(x.PropertyName))
-							.Select(z => new CompletionItem
-							{
-								Label = z.PropertyName,
-								Kind = CompletionItemKind.Property,
-								Detail = "Trait property. Expand for details >",
-								Documentation = z.Description,
-								CommitCharacters = new[] {":"}
-							});
+							.Select(z => z.ToCompletionItem());
 					}
 
 					if (cursorTarget.TargetType == "value")
 					{
 						// This would likely be a TraitInfo property's value, so at this point it's anyone's guess. Probably skip until we can give type-specific suggestions.
 						return traitNames.Union(actorNames).Union(weaponNames).Union(conditionNames);
+					}
+				}
+			}
+			else if (cursorTarget.FileType == FileType.Weapons)
+			{
+				var weaponInfo = symbolCache[modId].WeaponInfo;
+
+				// Get only weapon definitions. Presumably for reference and for overriding purposes.
+				if (cursorTarget.TargetNodeIndentation == 0)
+					return weaponNames;
+
+				if (cursorTarget.TargetNodeIndentation == 1)
+				{
+					if (cursorTarget.TargetType == "key")
+					{
+						// Get only WeaponInfo fields (and "Inherits" and "Warhead").
+						return weaponInfo.WeaponPropertyInfos
+							.Select(x => x.ToCompletionItem())
+							.Append(warheadCompletionItem)
+							.Append(inheritsCompletionItem);
+					}
+
+					if (cursorTarget.TargetType == "value")
+					{
+						var nodeKey = cursorTarget.TargetNode.Key;
+
+						// Get weapon definitions (for inheriting).
+						if (nodeKey == "Inherits" || nodeKey.StartsWith("Inherits@"))
+							return weaponNames;
+
+						if (nodeKey == "Projectile")
+							return weaponInfo.ProjectileInfos.Select(x => x.ToCompletionItem("Type implementing IProjectileInfo"));
+
+						if (nodeKey == "Warhead" || nodeKey.StartsWith("Warhead@"))
+							return weaponInfo.WarheadInfos.Select(x => x.ToCompletionItem("Type implementing IWarhead"));
+					}
+				}
+
+				if (cursorTarget.TargetNodeIndentation == 2)
+				{
+					var parentNode = cursorTarget.TargetNode.ParentNode;
+					if (parentNode.Key == "Projectile")
+					{
+						var projectile = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == parentNode.Value);
+						if (projectile.Name != null)
+							return projectile.PropertyInfos.Select(x => x.ToCompletionItem());
+					}
+					else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
+					{
+						var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == parentNode.Value);
+						if (warhead.Name != null)
+							return warhead.PropertyInfos.Select(x => x.ToCompletionItem());
 					}
 				}
 			}

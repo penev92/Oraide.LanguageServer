@@ -5,7 +5,7 @@ using LspTypes;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
-using Range = LspTypes.Range;
+using Oraide.LanguageServer.Extensions;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
@@ -22,10 +22,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-					{
 						Console.Error.WriteLine("<-- TextDocument-References");
-						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(positionParams));
-					}
 
 					if (TryGetCursorTarget(positionParams, out var target))
 					{
@@ -33,19 +30,41 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						{
 							if (target.TargetNodeIndentation == 1)
 							{
-								var traitDefinitions = symbolCache[target.ModId].ActorDefinitions
+								// Find where else the selected trait is used.
+								return symbolCache[target.ModId].ActorDefinitions
 									.SelectMany(x =>
-										x.SelectMany(y => y.Traits.Where(z => z.Name == target.TargetString)));
-
-								return traitDefinitions.Select(x => new Location
+										x.SelectMany(y => y.Traits.Where(z => z.Name == target.TargetString)))
+									.Select(x => x.Location.ToLspLocation(target.TargetString.Length));
+							}
+						}
+						else if (target.FileType == FileType.Weapons)
+						{
+							if (target.TargetNodeIndentation == 1)
+							{
+								if (target.TargetType == "key")
 								{
-									Uri = new Uri(x.Location.FilePath).ToString(),
-									Range = new Range
+									// TODO:
+								}
+								else if (target.TargetType == "value")
+								{
+									var targetNodeKey = target.TargetNode.Key;
+									if (targetNodeKey == "Projectile")
 									{
-										Start = new Position((uint)x.Location.LineNumber - 1, (uint)x.Location.CharacterPosition),
-										End = new Position((uint)x.Location.LineNumber - 1, (uint)x.Location.CharacterPosition + (uint)target.TargetString.Length)
+										// Find where else the selected projectile type is used.
+										return symbolCache[target.ModId].WeaponDefinitions
+											.SelectMany(x => x.Where(y => y.Projectile.Name == target.TargetString))
+											.Select(x => x.Projectile.Location.ToLspLocation(target.TargetString.Length));
 									}
-								});
+
+									if (targetNodeKey == "Warhead" || targetNodeKey.StartsWith("Warhead@"))
+									{
+										// Find where else the selected warhead type is used.
+										return symbolCache[target.ModId].WeaponDefinitions
+											.SelectMany(x =>
+												x.SelectMany(y => y.Warheads.Where(z => z.Name == target.TargetString)))
+											.Select(x => x.Location.ToLspLocation(target.TargetString.Length));
+									}
+								}
 							}
 						}
 					}

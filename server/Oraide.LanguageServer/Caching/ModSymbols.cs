@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Oraide.Core.Entities;
 using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 
@@ -35,10 +34,10 @@ namespace Oraide.LanguageServer.Caching
 		/// <summary>
 		/// A collection of all granted and consumed conditions and their usages in YAML grouped by their name.
 		/// </summary>
-		public ILookup<string, MemberLocation> ConditionDefinitions { get; }
+		public ILookup<string, ConditionDefinition> ConditionDefinitions { get; }
 
 		public ModSymbols(string modId, string modFolder, ILookup<string, TraitInfo> traitInfos, WeaponInfo weaponInfo,
-			ILookup<string, ActorDefinition> actorDefinitions, ILookup<string, WeaponDefinition> weaponDefinitions, ILookup<string, MemberLocation> conditionDefinitions)
+			ILookup<string, ActorDefinition> actorDefinitions, ILookup<string, WeaponDefinition> weaponDefinitions, ILookup<string, ConditionDefinition> conditionDefinitions)
 		{
 			ModId = modId;
 			ModFolder = modFolder;

@@ -68,15 +68,21 @@ namespace Oraide.MiniYaml.YamlParsers
 				if (!weaponDefinitionsPerMod.ContainsKey(modId))
 					weaponDefinitionsPerMod.Add(modId, new List<WeaponDefinition>());
 
-				weaponDefinitionsPerMod[modId].Add(new WeaponDefinition(node.Key, location));
+				var projectile = node.ChildNodes.FirstOrDefault(x => x.Key == "Projectile");
+				var warheads = node.ChildNodes.Where(x => x.Key == "Warhead" || x.Key.StartsWith("Warhead@"));
+
+				weaponDefinitionsPerMod[modId].Add(new WeaponDefinition(node.Key,
+					projectile == null ? default : new WeaponProjectileDefinition(projectile.Value, new MemberLocation(projectile.Location.FilePath, projectile.Location.LineNumber, projectile.Location.CharacterPosition)),
+					warheads.Select(x => new WeaponWarheadDefinition(x.Value, new MemberLocation(x.Location.FilePath, x.Location.LineNumber, x.Location.CharacterPosition))).ToArray(),
+					location));
 			}
 
 			return weaponDefinitionsPerMod.ToDictionary(x => x.Key, y => y.Value.ToLookup(n => n.Name, m => m));
 		}
 
-		public static IReadOnlyDictionary<string, ILookup<string, MemberLocation>> GetConditionDefinitions(in string modFolderPath)
+		public static IReadOnlyDictionary<string, ILookup<string, ConditionDefinition>> GetConditionDefinitions(in string modFolderPath)
 		{
-			var result = new List<KeyValuePair<string, MemberLocation>>();
+			var result = new List<ConditionDefinition>();
 
 			// TODO: What about maps?
 			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories)
@@ -89,14 +95,14 @@ namespace Oraide.MiniYaml.YamlParsers
 				var flattenedNodes = yamlNodes.SelectMany(FlattenChildNodes);
 				var conditions = flattenedNodes
 					.Where(x => x.Key.EndsWith("Condition") && !string.IsNullOrWhiteSpace(x.Value))
-					.Select(x => new KeyValuePair<string, MemberLocation>(x.Value.TrimStart('!'), x.Location));
+					.Select(x => new ConditionDefinition(x.Value.TrimStart('!'), x.Location));
 
 				result.AddRange(conditions);
 			}
 
-			return result.GroupBy(x => OpenRaFolderUtils.GetModId(x.Value.FilePath))
+			return result.GroupBy(x => OpenRaFolderUtils.GetModId(x.Location.FilePath))
 				.ToDictionary(x => x.Key,
-					y => y.ToLookup(n => n.Key, m => m.Value));
+					y => y.ToLookup(n => n.Name, m => m));
 		}
 
 		public static IEnumerable<YamlNode> ParseText(string text, bool flatten = false)

@@ -49,7 +49,6 @@ namespace Oraide.Csharp.CodeParsers
 								}
 								else if (filePath.Replace("\\", "/").EndsWith("GameRules/WeaponInfo.cs") && classDeclaration.Identifier.ValueText == "WeaponInfo")
 								{
-									// TODO: Parse WeaponInfo, IProjectileInfos and IWarheads
 									weaponInfoFields = ParseWeaponInfo(filePath, fileText, classDeclaration).ToArray();
 								}
 								else if (baseTypes.Any(x => x == "IProjectileInfo"))

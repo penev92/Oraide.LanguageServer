@@ -4,7 +4,7 @@ using System.Linq;
 using LspTypes;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
-using Range = LspTypes.Range;
+using Oraide.LanguageServer.Extensions;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 {
@@ -21,78 +21,21 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 				try
 				{
 					if (trace)
-					{
 						Console.Error.WriteLine("<-- Workspace-Symbols");
-						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(request));
-					}
 
 					var actors = symbolCache.ModSymbols.SelectMany(x => x.Value.ActorDefinitions
-						.Select(actorDefinition =>
-						{
-							var loc = actorDefinition.First().Location;
-							return new SymbolInformation
-							{
-								Name = actorDefinition.Key,
-								Kind = SymbolKind.Struct,
-								Tags = Array.Empty<SymbolTag>(),
-								Location = new Location
-								{
-									Uri = new Uri(loc.FilePath).ToString(),
-									Range = new Range
-									{
-										Start = new Position((uint) loc.LineNumber - 1, (uint) loc.CharacterPosition),
-										End = new Position((uint)loc.LineNumber - 1, (uint)loc.CharacterPosition + (uint)actorDefinition.Key.Length)
-									}
-								}
-							};
-						}));
-
+						.Select(actorDefinition => actorDefinition.First().ToSymbolInformation()));
 					var weapons = symbolCache.ModSymbols.SelectMany(x => x.Value.WeaponDefinitions
-						.Select(weaponDefinition =>
-						{
-							var loc = weaponDefinition.First().Location;
-							return new SymbolInformation
-							{
-								Name = weaponDefinition.Key,
-								Kind = SymbolKind.Struct,
-								Tags = Array.Empty<SymbolTag>(),
-								Location = new Location
-								{
-									Uri = new Uri(loc.FilePath).ToString(),
-									Range = new Range
-									{
-										Start = new Position((uint)loc.LineNumber - 1, (uint)loc.CharacterPosition),
-										End = new Position((uint)loc.LineNumber - 1, (uint)loc.CharacterPosition + (uint)weaponDefinition.Key.Length)
-									}
-								}
-							};
-						}));
-
+						.Select(weaponDefinition => weaponDefinition.First().ToSymbolInformation()));
 					var conditions = symbolCache.ModSymbols.SelectMany(x => x.Value.ConditionDefinitions
-						.Select(condition =>
-						{
-							var loc = condition.First();
-							return new SymbolInformation
-							{
-								Name = condition.Key,
-								Kind = SymbolKind.String,
-								Tags = Array.Empty<SymbolTag>(),
-								Location = new Location
-								{
-									Uri = new Uri(loc.FilePath).ToString(),
-									Range = new Range
-									{
-										Start = new Position((uint)loc.LineNumber - 1, (uint)loc.CharacterPosition),
-										End = new Position((uint)loc.LineNumber - 1, (uint)loc.CharacterPosition + (uint)condition.Key.Length)
-									}
-								}
-							};
-						}));
+						.Select(condition => condition.First().ToSymbolInformation()));
 
 					return actors.Union(weapons).Union(conditions);
 				}
 				catch (Exception e)
 				{
+					Console.Error.WriteLine("EXCEPTION!!!");
+					Console.Error.WriteLine(e.ToString());
 				}
 
 				return null;

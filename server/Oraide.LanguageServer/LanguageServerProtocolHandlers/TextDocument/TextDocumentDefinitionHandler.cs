@@ -5,7 +5,7 @@ using LspTypes;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
-using Range = LspTypes.Range;
+using Oraide.LanguageServer.Extensions;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
@@ -22,21 +22,92 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-					{
 						Console.Error.WriteLine("<-- TextDocument-Definition");
-						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(positionParams));
-					}
 
 					if (TryGetCursorTarget(positionParams, out var target))
 					{
-						if (target.TargetType == "key"
-						    && (target.TargetNodeIndentation == 1 || target.TargetNodeIndentation == 2)
-						    && TryGetTargetCodeDefinitionLocations(target, out var codeDefinitionLocations))
-							return codeDefinitionLocations;
+						if (target.FileType == FileType.Rules)
+						{
+							if (target.TargetType == "key"
+							    && (target.TargetNodeIndentation == 1 || target.TargetNodeIndentation == 2)
+							    && TryGetTargetCodeDefinitionLocations(target, out var codeDefinitionLocations))
+								return codeDefinitionLocations;
 
-						if ((target.TargetType == "value" || target.TargetNodeIndentation == 0)
-						    && TryGetTargetYamlDefinitionLocations(target, out var yamlDefinitionLocations))
-							return yamlDefinitionLocations;
+							if ((target.TargetType == "value" || target.TargetNodeIndentation == 0)
+							    && TryGetTargetYamlDefinitionLocations(target, out var yamlDefinitionLocations))
+								return yamlDefinitionLocations;
+						}
+						else if (target.FileType == FileType.Weapons)
+						{
+							var weaponInfo = symbolCache[target.ModId].WeaponInfo;
+
+							if (target.TargetNodeIndentation == 0)
+							{
+								var weaponDefinitions = symbolCache[target.ModId].WeaponDefinitions.FirstOrDefault(x => x.Key == target.TargetString);
+								if (weaponDefinitions != null)
+									return weaponDefinitions.Select(x => x.Location.ToLspLocation(weaponDefinitions.Key.Length));
+							}
+							else if (target.TargetNodeIndentation == 1)
+							{
+								if (target.TargetType == "key")
+								{
+									var targetString = target.TargetString;
+									if (target.TargetString == "Warhead")
+										targetString = "Warheads"; // Hacks!
+
+									var fieldInfo = weaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.PropertyName == targetString);
+									if (fieldInfo.PropertyName != null)
+										return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.PropertyName.Length) };
+								}
+								else if (target.TargetType == "value")
+								{
+									var targetNodeKey = target.TargetNode.Key;
+									if (targetNodeKey == "Inherits")
+									{
+										var weaponDefinitions = symbolCache[target.ModId].WeaponDefinitions.FirstOrDefault(x => x.Key == target.TargetString);
+										if (weaponDefinitions != null)
+											return weaponDefinitions.Select(x => x.Location.ToLspLocation(weaponDefinitions.Key.Length));
+									}
+									else if (targetNodeKey == "Projectile")
+									{
+										var projectile = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == target.TargetString);
+										if (projectile.Name != null)
+											return new[] { projectile.Location.ToLspLocation(projectile.Name.Length) };
+									}
+									else if (targetNodeKey == "Warhead" || targetNodeKey.StartsWith("Warhead@"))
+									{
+										var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == $"{target.TargetString}Warhead");
+										if (warhead.Name != null)
+											return new[] { warhead.Location.ToLspLocation(warhead.Name.Length) };
+									}
+								}
+							}
+							else if (target.TargetNodeIndentation == 2)
+							{
+								var parentNodeKey = target.TargetNode.ParentNode.Key;
+								if (parentNodeKey == "Projectile")
+								{
+									var projectile = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == target.TargetNode.ParentNode.Value);
+									if (projectile.Name != null)
+									{
+										var fieldInfo = projectile.PropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
+										if (fieldInfo.PropertyName != null)
+											return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.PropertyName.Length) };
+									}
+								}
+								else if (parentNodeKey == "Warhead" || parentNodeKey.StartsWith("Warhead@"))
+								{
+									var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == $"{target.TargetNode.ParentNode.Value}Warhead");
+									if (warhead.Name != null)
+									{
+										// TODO: Check base types for inherited properties.
+										var fieldInfo = warhead.PropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
+										if (fieldInfo.PropertyName != null)
+											return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.PropertyName.Length) };
+									}
+								}
+							}
+						}
 					}
 				}
 				catch (Exception e)
@@ -57,19 +128,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				return false;
 			}
 
-			definitionLocations = new[]
-			{
-				new Location
-				{
-					Uri = new Uri(location.FilePath).ToString(),
-					Range = new Range
-					{
-						Start = new Position((uint) location.LineNumber - 1, (uint) location.CharacterPosition),
-						End = new Position((uint) location.LineNumber - 1, (uint) location.CharacterPosition + (uint)target.TargetString.Length)
-					}
-				}
-			};
-
+			definitionLocations = new[] { location.ToLspLocation(target.TargetString.Length) };
 			return true;
 		}
 
@@ -79,33 +138,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			// If it is a top-level node *and this is an actor-definition or a weapon-definition file* it definitely is a definition.
 			// If it is indented once we need to check if the target is the key or the value - keys are traits, but values *could* reference actor/weapon definitions.
 
-			definitionLocations = symbolCache[target.ModId].ActorDefinitions[target.TargetString].Select(x => new Location
-				{
-					Uri = new Uri(x.Location.FilePath).ToString(),
-					Range = new Range
-					{
-						Start = new Position((uint)x.Location.LineNumber - 1, (uint)x.Location.CharacterPosition),
-						End = new Position((uint)x.Location.LineNumber - 1, (uint)(x.Location.CharacterPosition + target.TargetString.Length))
-					}
-				})
-				.Union(symbolCache[target.ModId].WeaponDefinitions[target.TargetString].Select(x => new Location
-				{
-					Uri = new Uri(x.Location.FilePath).ToString(),
-					Range = new Range
-					{
-						Start = new Position((uint)x.Location.LineNumber - 1, (uint)x.Location.CharacterPosition),
-						End = new Position((uint)x.Location.LineNumber - 1, (uint)(x.Location.CharacterPosition + target.TargetString.Length))
-					}
-				}))
-				.Union(symbolCache[target.ModId].ConditionDefinitions[target.TargetString].Select(x => new Location
-				{
-					Uri = new Uri(x.FilePath).ToString(),
-					Range = new Range
-					{
-						Start = new Position((uint)x.LineNumber - 1, (uint) x.CharacterPosition),
-						End = new Position((uint)x.LineNumber - 1, (uint)(x.CharacterPosition + target.TargetString.Length))
-					}
-				}));
+			var targetLength = target.TargetString.Length;
+
+			definitionLocations =
+				symbolCache[target.ModId].ActorDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength))
+				.Union(symbolCache[target.ModId].WeaponDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength)))
+				.Union(symbolCache[target.ModId].ConditionDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength)));
 
 			return true;
 		}

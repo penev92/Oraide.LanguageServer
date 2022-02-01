@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Oraide.Core.Entities;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.MiniYaml.YamlParsers;
 
@@ -37,7 +36,7 @@ namespace Oraide.MiniYaml
 			return OpenRAMiniYamlParser.GetWeaponDefinitions(yamlFolder);
 		}
 
-		public IReadOnlyDictionary<string, ILookup<string, MemberLocation>> GetConditionDefinitions()
+		public IReadOnlyDictionary<string, ILookup<string, ConditionDefinition>> GetConditionDefinitions()
 		{
 			return OpenRAMiniYamlParser.GetConditionDefinitions(yamlFolder);
 		}
