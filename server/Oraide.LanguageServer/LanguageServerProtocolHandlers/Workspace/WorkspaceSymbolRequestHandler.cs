@@ -55,7 +55,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 					var conditions = symbolCache.ModSymbols.SelectMany(x => x.Value.ConditionDefinitions
 						.Select(condition =>
 						{
-							var loc = condition.First();
+							var loc = condition.First().Location;
 							return new SymbolInformation
 							{
 								Name = condition.Key,

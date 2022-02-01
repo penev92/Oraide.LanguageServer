@@ -72,7 +72,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			definitionLocations =
 				symbolCache[target.ModId].ActorDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength))
 				.Union(symbolCache[target.ModId].WeaponDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength)))
-				.Union(symbolCache[target.ModId].ConditionDefinitions[target.TargetString].Select(x => x.ToLspLocation(targetLength)));
+				.Union(symbolCache[target.ModId].ConditionDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength)));
 
 			return true;
 		}

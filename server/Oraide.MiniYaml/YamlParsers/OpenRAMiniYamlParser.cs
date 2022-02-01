@@ -74,9 +74,9 @@ namespace Oraide.MiniYaml.YamlParsers
 			return weaponDefinitionsPerMod.ToDictionary(x => x.Key, y => y.Value.ToLookup(n => n.Name, m => m));
 		}
 
-		public static IReadOnlyDictionary<string, ILookup<string, MemberLocation>> GetConditionDefinitions(in string modFolderPath)
+		public static IReadOnlyDictionary<string, ILookup<string, ConditionDefinition>> GetConditionDefinitions(in string modFolderPath)
 		{
-			var result = new List<KeyValuePair<string, MemberLocation>>();
+			var result = new List<ConditionDefinition>();
 
 			// TODO: What about maps?
 			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories)
@@ -89,14 +89,14 @@ namespace Oraide.MiniYaml.YamlParsers
 				var flattenedNodes = yamlNodes.SelectMany(FlattenChildNodes);
 				var conditions = flattenedNodes
 					.Where(x => x.Key.EndsWith("Condition") && !string.IsNullOrWhiteSpace(x.Value))
-					.Select(x => new KeyValuePair<string, MemberLocation>(x.Value.TrimStart('!'), x.Location));
+					.Select(x => new ConditionDefinition(x.Value.TrimStart('!'), x.Location));
 
 				result.AddRange(conditions);
 			}
 
-			return result.GroupBy(x => OpenRaFolderUtils.GetModId(x.Value.FilePath))
+			return result.GroupBy(x => OpenRaFolderUtils.GetModId(x.Location.FilePath))
 				.ToDictionary(x => x.Key,
-					y => y.ToLookup(n => n.Key, m => m.Value));
+					y => y.ToLookup(n => n.Name, m => m));
 		}
 
 		public static IEnumerable<YamlNode> ParseText(string text, bool flatten = false)
