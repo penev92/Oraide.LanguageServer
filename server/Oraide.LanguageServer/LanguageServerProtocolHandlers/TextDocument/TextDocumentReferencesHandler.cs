@@ -30,10 +30,32 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						{
 							if (target.TargetNodeIndentation == 1)
 							{
+								// Find where else the selected trait is used.
 								return symbolCache[target.ModId].ActorDefinitions
 									.SelectMany(x =>
 										x.SelectMany(y => y.Traits.Where(z => z.Name == target.TargetString)))
 									.Select(x => x.Location.ToLspLocation(target.TargetString.Length));
+							}
+						}
+						else if (target.FileType == FileType.Weapons)
+						{
+							var weaponInfo = symbolCache[target.ModId].WeaponInfo;
+
+							if (target.TargetNodeIndentation == 1)
+							{
+								if (target.TargetType == "key")
+								{
+									// TODO:
+								}
+								else if (target.TargetType == "value")
+								{
+									if (target.TargetNode.Key == "Projectile")
+									{
+										// TODO: Finish when we have loaded all of WeaponDefinition.
+										// return symbolCache[target.ModId].WeaponDefinitions
+										// 	.SelectMany(x => x.Where(y => y.))
+									}
+								}
 							}
 						}
 					}
