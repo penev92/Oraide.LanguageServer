@@ -34,9 +34,9 @@ namespace Oraide.MiniYaml.YamlParsers
 					actorDefinitionsPerMod.Add(modId, new List<ActorDefinition>());
 
 				var actorTraits = node.ChildNodes == null
-					? Enumerable.Empty<TraitDefinition>()
+					? Enumerable.Empty<ActorTraitDefinition>()
 					: node.ChildNodes.Select(x =>
-						new TraitDefinition(x.Key, new MemberLocation(x.Location.FilePath, x.Location.LineNumber, 1))); // HACK HACK HACK: Until the YAML Loader learns about character positions, we hardcode 1 here (since this is all for traits on actor definitions).
+						new ActorTraitDefinition(x.Key, new MemberLocation(x.Location.FilePath, x.Location.LineNumber, 1))); // HACK HACK HACK: Until the YAML Loader learns about character positions, we hardcode 1 here (since this is all for traits on actor definitions).
 
 				actorDefinitionsPerMod[modId].Add(new ActorDefinition(node.Key, location, actorTraits.ToList()));
 			}
