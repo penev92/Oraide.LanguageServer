@@ -22,10 +22,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-					{
 						Console.Error.WriteLine("<-- TextDocument-Definition");
-						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(positionParams));
-					}
 
 					if (TryGetCursorTarget(positionParams, out var target))
 					{

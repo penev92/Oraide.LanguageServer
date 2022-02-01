@@ -40,21 +40,20 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-					{
 						Console.Error.WriteLine("<-- TextDocument-Completion");
-						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(completionParams));
 
-						TryGetCursorTarget(completionParams, out var cursorTarget);
-						return new CompletionList
-						{
-							IsIncomplete = false,
-							Items = GetCompletionItems(cursorTarget).ToArray()
-						};
-					}
+					TryGetCursorTarget(completionParams, out var cursorTarget);
+					return new CompletionList
+					{
+						IsIncomplete = false,
+						Items = GetCompletionItems(cursorTarget).ToArray()
+					};
 
 				}
 				catch (Exception e)
 				{
+					Console.Error.WriteLine("EXCEPTION!!!");
+					Console.Error.WriteLine(e.ToString());
 				}
 
 				return null;

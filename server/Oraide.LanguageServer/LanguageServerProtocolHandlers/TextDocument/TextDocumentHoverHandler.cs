@@ -23,10 +23,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-					{
 						Console.Error.WriteLine("<-- TextDocument-Hover");
-						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(positionParams));
-					}
 
 					if (TryGetCursorTarget(positionParams, out var target))
 					{
@@ -129,8 +126,10 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							return HoverFromHoverInfo(valueHoverInfo.Content, valueHoverInfo.Range);
 					}
 				}
-				catch (Exception)
+				catch (Exception e)
 				{
+					Console.Error.WriteLine("EXCEPTION!!!");
+					Console.Error.WriteLine(e.ToString());
 				}
 
 				return null;

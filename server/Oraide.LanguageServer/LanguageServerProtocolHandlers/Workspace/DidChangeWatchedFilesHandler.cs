@@ -19,10 +19,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 				try
 				{
 					if (trace)
-					{
 						Console.Error.WriteLine("<-- Workspace-DidChangeWatchedFiles");
-						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(request));
-					}
 
 					// TODO: Be smarter about which symbol collections we actually need to update so we don't do all.
 					symbolCache.Update();
@@ -41,6 +38,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 				}
 				catch (Exception e)
 				{
+					Console.Error.WriteLine("EXCEPTION!!!");
+					Console.Error.WriteLine(e.ToString());
 				}
 			}
 		}

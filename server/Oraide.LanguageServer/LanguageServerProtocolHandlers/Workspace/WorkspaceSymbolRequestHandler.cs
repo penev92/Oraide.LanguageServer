@@ -21,10 +21,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 				try
 				{
 					if (trace)
-					{
 						Console.Error.WriteLine("<-- Workspace-Symbols");
-						Console.Error.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(request));
-					}
 
 					var actors = symbolCache.ModSymbols.SelectMany(x => x.Value.ActorDefinitions
 						.Select(actorDefinition => actorDefinition.First().ToSymbolInformation()));
@@ -37,6 +34,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 				}
 				catch (Exception e)
 				{
+					Console.Error.WriteLine("EXCEPTION!!!");
+					Console.Error.WriteLine(e.ToString());
 				}
 
 				return null;
