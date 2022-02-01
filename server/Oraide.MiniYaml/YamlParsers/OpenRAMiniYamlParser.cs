@@ -68,7 +68,13 @@ namespace Oraide.MiniYaml.YamlParsers
 				if (!weaponDefinitionsPerMod.ContainsKey(modId))
 					weaponDefinitionsPerMod.Add(modId, new List<WeaponDefinition>());
 
-				weaponDefinitionsPerMod[modId].Add(new WeaponDefinition(node.Key, location));
+				var projectile = node.ChildNodes.FirstOrDefault(x => x.Key == "Projectile");
+				var warheads = node.ChildNodes.Where(x => x.Key == "Warhead" || x.Key.StartsWith("Warhead@"));
+
+				weaponDefinitionsPerMod[modId].Add(new WeaponDefinition(node.Key,
+					projectile == null ? default : new WeaponProjectileDefinition(projectile.Value, new MemberLocation(projectile.Location.FilePath, projectile.Location.LineNumber, projectile.Location.CharacterPosition)),
+					warheads.Select(x => new WeaponWarheadDefinition(x.Value, new MemberLocation(x.Location.FilePath, x.Location.LineNumber, x.Location.CharacterPosition))).ToArray(),
+					location));
 			}
 
 			return weaponDefinitionsPerMod.ToDictionary(x => x.Key, y => y.Value.ToLookup(n => n.Name, m => m));

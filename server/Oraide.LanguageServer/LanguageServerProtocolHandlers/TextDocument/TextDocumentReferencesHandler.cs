@@ -39,8 +39,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						}
 						else if (target.FileType == FileType.Weapons)
 						{
-							var weaponInfo = symbolCache[target.ModId].WeaponInfo;
-
 							if (target.TargetNodeIndentation == 1)
 							{
 								if (target.TargetType == "key")
@@ -49,11 +47,22 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 								}
 								else if (target.TargetType == "value")
 								{
-									if (target.TargetNode.Key == "Projectile")
+									var targetNodeKey = target.TargetNode.Key;
+									if (targetNodeKey == "Projectile")
 									{
-										// TODO: Finish when we have loaded all of WeaponDefinition.
-										// return symbolCache[target.ModId].WeaponDefinitions
-										// 	.SelectMany(x => x.Where(y => y.))
+										// Find where else the selected projectile type is used.
+										return symbolCache[target.ModId].WeaponDefinitions
+											.SelectMany(x => x.Where(y => y.Projectile.Name == target.TargetString))
+											.Select(x => x.Projectile.Location.ToLspLocation(target.TargetString.Length));
+									}
+
+									if (targetNodeKey == "Warhead" || targetNodeKey.StartsWith("Warhead@"))
+									{
+										// Find where else the selected warhead type is used.
+										return symbolCache[target.ModId].WeaponDefinitions
+											.SelectMany(x =>
+												x.SelectMany(y => y.Warheads.Where(z => z.Name == target.TargetString)))
+											.Select(x => x.Location.ToLspLocation(target.TargetString.Length));
 									}
 								}
 							}
