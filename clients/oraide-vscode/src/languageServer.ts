@@ -101,16 +101,5 @@ export async function spawnServerProcess(serverPath: string, workspaceFolderPath
         }
     });
 
-    if (utils.IS_DEBUG) {
-        serverProcess.stderr.setEncoding('utf8');
-        serverProcess.stderr.on('data', function (data) {
-            logger.appendLine('stderr: ' + data);
-        });
-
-        serverProcess.on('close', function (code) {
-            logger.appendLine('closing code: ' + code);
-        });
-    }
-
     return serverProcess;
 };

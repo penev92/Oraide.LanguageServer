@@ -4,9 +4,10 @@
 
 Current features include:
  - Hover info for Traits, Trait properties, actor and weapon definitions, conditions and more.
- - Navigating to Traits and Trait properties inside C# code (if available).
+ - Navigating to Traits, Trait properties, Projectiles, Warheads and more inside C# code (if available).
  - Navigating to actor and weapon definitions inside parsed MiniYAML files.
- - Context-aware IntelliSense to help with writing MiniYAML.
+ - Finding usages/references of Traits, Projectiles and Warheads inside parsed MiniYAML files.
+ - Context-aware IntelliSense to help with writing MiniYAML (both for actor and weapon definitions).
 
 *See the bottom of the document for illustrations.
 
@@ -23,7 +24,22 @@ This extension contributes the following settings:
 
 ## Release Notes
 
-### 0.0.8
+### 0.1.0 (server-v0.1.0)
+
+- Added support for weapons:
+    - Hover information and navigate to Weapons, Projectiles and Warheads in C# code (if available).
+    - IntelliSense for Weapon properties, Projectiles, Warheads and their properties.
+    - Find Projectile and Warhead references.
+- A lot less excessive debug logging in VSCode's Output window.
+- Better handling of map files.
+- Major refactorings.
+- Some bugfixes.
+
+### 0.0.9 (server-v0.0.6)
+
+- Mostly minor refactoring and bug hunting.
+
+### 0.0.8 (server-v0.0.5)
 
 - Added support for `GoToDeclaration` and `GoToImplementations`/`FindAllImplementations` (both redundant to `GoToDefinition`, but added for completeness).
 - Added limited support for `GoToReferences`/`FindAllReferences`.
@@ -32,7 +48,7 @@ This extension contributes the following settings:
 - Improved IntelliSense suggestions for trait properties.
 - Improved hover tooltip Trait and Trait property descriptions.
 
-### 0.0.7
+### 0.0.7 (server-v0.0.4)
 
  - Fixed language server sometimes not accepting a mod directory because of a missing `icon.png`.
  - Fixed the language server crashing when there are multiple traits with the same name across namespaces.
@@ -50,7 +66,7 @@ This extension contributes the following settings:
 
  - Fixed extension being broken after custom "miniyaml" language removal. 
 
-### 0.0.3
+### 0.0.3 (server-v0.0.3)
 
  - Started beautifying hover tooltips by using Markdown and by fixing parsing of Desc attributes on traits and trait properties.
  - Added links to online trait documentation.
