@@ -200,9 +200,9 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			MemberLocation? resultLocation = null;
 
 			// The property may be a field of the TraitInfo...
-			if (traitInfo.TraitPropertyInfos.Any(x => x.PropertyName == propertyName))
+			if (traitInfo.TraitPropertyInfos.Any(x => x.Name == propertyName))
 			{
-				var property = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.PropertyName == propertyName);
+				var property = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == propertyName);
 				resultTrait = traitInfo;
 				resultLocation = property.Location;
 			}

@@ -167,8 +167,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						// until the server learns the concept of a mod and loaded assemblies.
 						return inheritedTraits
 							.SelectMany(x => x.TraitPropertyInfos)
-							.DistinctBy(y => y.PropertyName)
-							.Where(x => !presentProperties.Contains(x.PropertyName))
+							.DistinctBy(y => y.Name)
+							.Where(x => !presentProperties.Contains(x.Name))
 							.Select(z => z.ToCompletionItem());
 					}
 

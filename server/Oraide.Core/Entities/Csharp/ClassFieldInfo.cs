@@ -5,9 +5,9 @@
 	/// </summary>
 	public readonly struct ClassFieldInfo
 	{
-		public readonly string PropertyName;
+		public readonly string Name;
 
-		public readonly string PropertyType;
+		public readonly string Type;
 
 		public readonly string DefaultValue;
 
@@ -17,20 +17,20 @@
 
 		public readonly string OtherAttribute;
 
-		public ClassFieldInfo(string propertyName, string propertyType, string defaultValue, MemberLocation location, string description, string otherAttribute)
+		public ClassFieldInfo(string name, string type, string defaultValue, MemberLocation location, string description, string otherAttribute)
 		{
-			PropertyName = propertyName;
-			PropertyType = propertyType;
+			Name = name;
+			Type = type;
 			DefaultValue = defaultValue;
 			Location = location;
 			Description = description;
 			OtherAttribute = otherAttribute;
 		}
 
-		public override string ToString() => $"{PropertyType} {PropertyName}";
+		public override string ToString() => $"{Type} {Name}";
 
 		public string ToMarkdownInfoString() => "```csharp\n" +
-		                                $"{PropertyName} ({PropertyType})" +
+		                                $"{Name} ({Type})" +
 		                                $"\n```\n" +
 		                                $"{Description}\n\nDefault value: {DefaultValue}";
 	}

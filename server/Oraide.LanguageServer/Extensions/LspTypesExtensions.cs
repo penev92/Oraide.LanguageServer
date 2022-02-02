@@ -52,7 +52,7 @@ namespace Oraide.LanguageServer.Extensions
 		{
 			return new CompletionItem
 			{
-				Label = classFieldInfo.PropertyName,
+				Label = classFieldInfo.Name,
 				Kind = CompletionItemKind.Field,
 				Detail = "Class property. Expand for details >",
 				Documentation = classFieldInfo.Description,

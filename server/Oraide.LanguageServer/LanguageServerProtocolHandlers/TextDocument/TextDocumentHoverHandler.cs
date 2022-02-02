@@ -59,8 +59,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 										return HoverFromHoverInfo("Warhead used by this weapon.", range);
 
 									// Maybe this is a property of WeaponInfo.
-									var prop = weaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
-									if (prop.PropertyName != null)
+									var prop = weaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.Name == target.TargetString);
+									if (prop.Name != null)
 										return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
 								}
 								else if (target.TargetType == "value")
@@ -104,8 +104,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									var projectileInfo = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == target.TargetNode.ParentNode.Value);
 									if (projectileInfo.Name != null)
 									{
-										var prop = projectileInfo.PropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
-										if (prop.PropertyName != null)
+										var prop = projectileInfo.PropertyInfos.FirstOrDefault(x => x.Name == target.TargetString);
+										if (prop.Name != null)
 											return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
 									}
 								}
@@ -114,8 +114,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == $"{target.TargetNode.ParentNode.Value}Warhead");
 									if (warheadInfo.Name != null)
 									{
-										var prop = warheadInfo.PropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
-										if (prop.PropertyName != null)
+										var prop = warheadInfo.PropertyInfos.FirstOrDefault(x => x.Name == target.TargetString);
+										if (prop.Name != null)
 											return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
 									}
 								}
@@ -151,8 +151,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			}
 			else
 			{
-				var prop = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
-				if (prop.PropertyName != null)
+				var prop = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == target.TargetString);
+				if (prop.Name != null)
 					content = prop.ToMarkdownInfoString();
 			}
 

@@ -55,9 +55,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									if (target.TargetString == "Warhead")
 										targetString = "Warheads"; // Hacks!
 
-									var fieldInfo = weaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.PropertyName == targetString);
-									if (fieldInfo.PropertyName != null)
-										return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.PropertyName.Length) };
+									var fieldInfo = weaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.Name == targetString);
+									if (fieldInfo.Name != null)
+										return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.Name.Length) };
 								}
 								else if (target.TargetType == "value")
 								{
@@ -90,9 +90,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									var projectile = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == target.TargetNode.ParentNode.Value);
 									if (projectile.Name != null)
 									{
-										var fieldInfo = projectile.PropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
-										if (fieldInfo.PropertyName != null)
-											return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.PropertyName.Length) };
+										var fieldInfo = projectile.PropertyInfos.FirstOrDefault(x => x.Name == target.TargetString);
+										if (fieldInfo.Name != null)
+											return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.Name.Length) };
 									}
 								}
 								else if (parentNodeKey == "Warhead" || parentNodeKey.StartsWith("Warhead@"))
@@ -101,9 +101,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									if (warhead.Name != null)
 									{
 										// TODO: Check base types for inherited properties.
-										var fieldInfo = warhead.PropertyInfos.FirstOrDefault(x => x.PropertyName == target.TargetString);
-										if (fieldInfo.PropertyName != null)
-											return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.PropertyName.Length) };
+										var fieldInfo = warhead.PropertyInfos.FirstOrDefault(x => x.Name == target.TargetString);
+										if (fieldInfo.Name != null)
+											return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.Name.Length) };
 									}
 								}
 							}
