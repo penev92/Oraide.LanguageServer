@@ -15,16 +15,16 @@
 
 		public readonly string Description;
 
-		public readonly string OtherAttribute;
+		public readonly (string Name, string Value)[] OtherAttributes;
 
-		public ClassFieldInfo(string name, string type, string defaultValue, MemberLocation location, string description, string otherAttribute)
+		public ClassFieldInfo(string name, string type, string defaultValue, MemberLocation location, string description, (string Name, string Value)[] otherAttributes)
 		{
 			Name = name;
 			Type = type;
 			DefaultValue = defaultValue;
 			Location = location;
 			Description = description;
-			OtherAttribute = otherAttribute;
+			OtherAttributes = otherAttributes;
 		}
 
 		public override string ToString() => $"{Type} {Name}";

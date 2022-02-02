@@ -145,54 +145,63 @@ namespace Oraide.Csharp.CodeParsers
 			foreach (var variableDeclaratorSyntax in fieldDeclarationSyntax.Declaration.Variables)
 			{
 				var fieldDesc = "";
-				var loadUsing = "";
+				var otherAttributes = new List<(string Name, string Value)>();
 				foreach (var attributeList in fieldDeclarationSyntax.AttributeLists)
 				{
 					foreach (var attribute in attributeList.Attributes)
 					{
-						if (attribute.Name.GetText().ToString() == "Desc")
+						var attributeName = attribute.Name.GetText().ToString();
+						var attributeValue = attribute.ArgumentList?.Arguments.ToString();
+
+						if (attributeName == "Desc")
 						{
-							var strings = attribute.ArgumentList.Arguments
+							var strings = attribute.ArgumentList?.Arguments
 								.Select(x => x.GetText().ToString())
 								.Select(x => x.Substring(x.IndexOf('"') + 1))
 								.Select(x => x.Substring(0, x.Length - 1));
 
-							fieldDesc = string.Join(" ", strings);
+							if (strings != null)
+								fieldDesc = string.Join(" ", strings);
+
+							// Resolve `nameof(...)`.
+							fieldDesc = Regex.Replace(fieldDesc, "(\"\\s*\\+\\s*nameof\\(([A-Za-z0-9.\\S]*)\\)\\s*\\+\\s*\")", "$2");
 						}
-						else if (attribute.Name.GetText().ToString() == "FieldLoader.LoadUsing")
+
+						// Full set of attributes on trait properties for future reference.
+						else if (attributeName == "FieldLoader.LoadUsing"
+						         || attributeName == "FieldLoader.Require"
+						         || attributeName == "FieldLoader.Ignore"
+						         || attributeName == "ActorReference"
+						         || attributeName == "VoiceReference"
+						         || attributeName == "VoiceSetReference"
+						         || attributeName == "CursorReference"
+						         || attributeName == "WeaponReference"
+						         || attributeName == "PaletteReference"
+						         || attributeName == "PaletteDefinition"
+						         || attributeName == "SequenceReference"
+						         || attributeName == "NotificationReference"
+						         || attributeName == "GrantedConditionReference"
+						         || attributeName == "ConsumedConditionReference"
+						         || attributeName == "LocomotorReference")
 						{
-							loadUsing = attribute.ArgumentList.Arguments.ToString();
+							// Try to resolve `nameof(...)`.
+							if (attributeValue != null)
+								attributeValue = Regex.Replace(attributeValue, "(nameof\\(([A-Za-z0-9.\\S]*)\\))", "$2");
+
+							otherAttributes.Add((attributeName, attributeValue));
 						}
 						else
 						{
-							// Full set of attributes on trait properties for future reference.
-							if (attribute.Name.GetText().ToString() != "FieldLoader.Require"
-								&& attribute.Name.GetText().ToString() != "FieldLoader.Ignore"
-								&& attribute.Name.GetText().ToString() != "ActorReference"
-								&& attribute.Name.GetText().ToString() != "VoiceReference"
-								&& attribute.Name.GetText().ToString() != "VoiceSetReference"
-								&& attribute.Name.GetText().ToString() != "CursorReference"
-								&& attribute.Name.GetText().ToString() != "WeaponReference"
-								&& attribute.Name.GetText().ToString() != "PaletteReference"
-								&& attribute.Name.GetText().ToString() != "PaletteDefinition"
-								&& attribute.Name.GetText().ToString() != "SequenceReference"
-								&& attribute.Name.GetText().ToString() != "NotificationReference"
-								&& attribute.Name.GetText().ToString() != "GrantedConditionReference"
-								&& attribute.Name.GetText().ToString() != "ConsumedConditionReference"
-								&& attribute.Name.GetText().ToString() != "LocomotorReference")
-								fieldDesc = fieldDesc;
+							Console.Error.WriteLine($"Unknown field attribute {attributeName} in {filePath}");
 						}
 					}
 				}
-
-				// Resolve `nameof(...)`.
-				fieldDesc = Regex.Replace(fieldDesc, "(\"\\s*\\+\\s*nameof\\(([A-Za-z0-9.\\S]*)\\)\\s*\\+\\s*\")", "$2");
 
 				var propertyName = variableDeclaratorSyntax.Identifier.ValueText;
 				var propertyType = HumanReadablePropertyType(fieldDeclarationSyntax.Declaration.Type);
 				var defaultValue = HumanReadablePropertyDefaultValue(variableDeclaratorSyntax);
 				var location = FindPropertyLocationInText(filePath, fileText, variableDeclaratorSyntax.GetLocation().SourceSpan.Start);
-				yield return new ClassFieldInfo(propertyName, propertyType, defaultValue, location, fieldDesc, loadUsing);
+				yield return new ClassFieldInfo(propertyName, propertyType, defaultValue, location, fieldDesc, otherAttributes.ToArray());
 			}
 		}
 
