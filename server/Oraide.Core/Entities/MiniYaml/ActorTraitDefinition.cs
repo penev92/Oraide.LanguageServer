@@ -2,16 +2,19 @@
 {
 	public readonly struct ActorTraitDefinition
 	{
-		public string Name { get; }
+		public readonly string NameWithIdentifier;
 
-		public string FullName { get; }
+		public readonly string Name;
 
-		public MemberLocation Location { get; }
+		// TODO:
+		// public readonly ActorTraitPropertyDefinition[] Properties;
 
-		public ActorTraitDefinition(string name, MemberLocation location)
+		public readonly MemberLocation Location;
+
+		public ActorTraitDefinition(string nameWithIdentifier, MemberLocation location)
 		{
-			FullName = name;
-			Name = name.Split('@')[0];
+			NameWithIdentifier = nameWithIdentifier;
+			Name = nameWithIdentifier.Split('@')[0];
 			Location = location;
 		}
 	}

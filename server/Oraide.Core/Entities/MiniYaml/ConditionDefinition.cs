@@ -1,10 +1,10 @@
 ﻿namespace Oraide.Core.Entities.MiniYaml
 {
-	public struct ConditionDefinition
+	public readonly struct ConditionDefinition
 	{
-		public string Name { get; set; }
+		public readonly string Name;
 
-		public MemberLocation Location { get; }
+		public readonly MemberLocation Location;
 
 		public ConditionDefinition(string name, MemberLocation location)
 		{

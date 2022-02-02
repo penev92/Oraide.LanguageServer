@@ -22,22 +22,22 @@ namespace Oraide.Core.Entities.MiniYaml
 
 	public readonly struct CursorTarget
 	{
-		public string ModId { get; }
+		public readonly string ModId;
 
-		public FileType FileType { get; }
+		public readonly FileType FileType;
 
-		public YamlNode TargetNode { get; }
+		public readonly YamlNode TargetNode;
 
 		// TODO: Change to enum.
-		public string TargetType { get; }
+		public readonly string TargetType;
 
-		public string TargetString { get; }
+		public readonly string TargetString;
 
-		public MemberLocation TargetStart { get; }
+		public readonly MemberLocation TargetStart;
 
-		public MemberLocation TargetEnd { get; }
+		public readonly MemberLocation TargetEnd;
 
-		public int TargetNodeIndentation { get; }
+		public readonly int TargetNodeIndentation;
 
 		public CursorTarget(string modId, FileType fileType, YamlNode targetNode, string targetType, string targetString,
 			MemberLocation targetStart, MemberLocation targetEnd, int targetNodeIndentation)

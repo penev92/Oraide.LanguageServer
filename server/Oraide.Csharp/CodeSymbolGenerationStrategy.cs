@@ -27,7 +27,7 @@ namespace Oraide.Csharp
 
 		public override WeaponInfo GetWeaponInfo(string openRaFolder)
 		{
-			if (weaponInfo == null)
+			if (weaponInfo.WeaponPropertyInfos == null)
 				Parse(openRaFolder);
 
 			return weaponInfo;

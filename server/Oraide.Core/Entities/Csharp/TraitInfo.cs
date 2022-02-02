@@ -5,17 +5,17 @@
 	/// </summary>
 	public readonly struct TraitInfo
 	{
-		public string TraitName { get; }
+		public readonly string TraitName;
 
-		public string TraitInfoName { get; }
+		public readonly string TraitInfoName;
 
-		public string TraitDescription { get; }
+		public readonly string TraitDescription;
 
-		public MemberLocation Location { get; }
+		public readonly MemberLocation Location;
 
-		public string[] InheritedTypes { get; }
+		public readonly string[] InheritedTypes;
 
-		public ClassFieldInfo[] TraitPropertyInfos { get; }
+		public readonly ClassFieldInfo[] TraitPropertyInfos;
 
 		public TraitInfo(string traitName, string traitInfoName, string traitDescription, MemberLocation location, string[] inheritedTypes, ClassFieldInfo[] traitPropertyInfos)
 		{

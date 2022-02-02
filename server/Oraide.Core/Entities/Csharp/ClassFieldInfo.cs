@@ -5,17 +5,17 @@
 	/// </summary>
 	public readonly struct ClassFieldInfo
 	{
-		public string PropertyName { get; }
+		public readonly string PropertyName;
 
-		public string PropertyType { get; }
+		public readonly string PropertyType;
 
-		public string DefaultValue { get; }
+		public readonly string DefaultValue;
 
-		public MemberLocation Location { get; }
+		public readonly MemberLocation Location;
 
-		public string Description { get; }
+		public readonly string Description;
 
-		public string OtherAttribute { get; }
+		public readonly string OtherAttribute;
 
 		public ClassFieldInfo(string propertyName, string propertyType, string defaultValue, MemberLocation location, string description, string otherAttribute)
 		{

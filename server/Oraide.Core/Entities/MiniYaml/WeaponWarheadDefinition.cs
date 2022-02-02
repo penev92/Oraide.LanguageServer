@@ -1,10 +1,10 @@
 ﻿namespace Oraide.Core.Entities.MiniYaml
 {
-	public struct WeaponWarheadDefinition
+	public readonly struct WeaponWarheadDefinition
 	{
-		public string Name { get; set; }
+		public readonly string Name;
 
-		public MemberLocation Location { get; }
+		public readonly MemberLocation Location;
 
 		public WeaponWarheadDefinition(string name, MemberLocation location)
 		{

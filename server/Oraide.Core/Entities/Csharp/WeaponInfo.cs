@@ -4,16 +4,16 @@
 	/// Represents information about OpenRA's WeaponInfo class and related classes - implementations of IProjectile and IWarhead.
 	/// Holds information about the C# side of things, to be used for navigation to code and for autocomplete.
 	/// </summary>
-	public class WeaponInfo
+	public readonly struct WeaponInfo
 	{
 		// WeaponInfo properties.
-		public ClassFieldInfo[] WeaponPropertyInfos { get; }
+		public readonly ClassFieldInfo[] WeaponPropertyInfos;
 
 		// List of all implementations of IProjectileInfo and their properties.
-		public SimpleClassInfo[] ProjectileInfos { get; }
+		public readonly SimpleClassInfo[] ProjectileInfos;
 
 		// List of all implementations of IWarhead and their properties.
-		public SimpleClassInfo[] WarheadInfos { get; }
+		public readonly SimpleClassInfo[] WarheadInfos;
 
 		public WeaponInfo(ClassFieldInfo[] weaponPropertyInfos, SimpleClassInfo[] projectileInfos, SimpleClassInfo[] warheadInfos)
 		{

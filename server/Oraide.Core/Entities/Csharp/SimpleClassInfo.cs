@@ -5,17 +5,17 @@
 	/// </summary>
 	public readonly struct SimpleClassInfo
 	{
-		public string Name { get; }
+		public readonly string Name;
 
-		public string InfoName { get; }
+		public readonly string InfoName;
 
-		public string Description { get; }
+		public readonly string Description;
 
-		public MemberLocation Location { get; }
+		public readonly MemberLocation Location;
 
-		public string[] InheritedTypes { get; }
+		public readonly string[] InheritedTypes;
 
-		public ClassFieldInfo[] PropertyInfos { get; }
+		public readonly ClassFieldInfo[] PropertyInfos;
 
 		public SimpleClassInfo(string name, string infoName, string description, MemberLocation location, string[] inheritedTypes, ClassFieldInfo[] propertyInfos)
 		{

@@ -2,11 +2,11 @@
 {
 	public readonly struct MemberLocation
 	{
-		public string FilePath { get; }
+		public readonly string FilePath;
 
-		public int LineNumber { get; }
+		public readonly int LineNumber;
 
-		public int CharacterPosition { get; }
+		public readonly int CharacterPosition;
 
 		public MemberLocation(string filePath, int lineNumber, int characterPosition)
 		{

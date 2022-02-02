@@ -2,13 +2,13 @@
 
 namespace Oraide.Core.Entities.MiniYaml
 {
-	public struct ActorDefinition
+	public readonly struct ActorDefinition
 	{
-		public string Name { get; set; }
+		public readonly string Name;
 
-		public MemberLocation Location { get; }
+		public readonly MemberLocation Location;
 
-		public List<ActorTraitDefinition> Traits { get; } // This is redundant for the navigatable definitions list.
+		public readonly List<ActorTraitDefinition> Traits; // This is redundant for the navigatable definitions list.
 
 		public ActorDefinition(string name, MemberLocation location, List<ActorTraitDefinition> traits)
 		{
