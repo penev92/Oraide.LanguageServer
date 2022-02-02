@@ -242,7 +242,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			{
 				yield return traitInfo;
 
-				foreach (var inheritedTypeName in traitInfo.InheritedTypes)
+				foreach (var inheritedTypeName in traitInfo.BaseTypes)
 					if (modSymbols.TraitInfos.Contains(inheritedTypeName))
 						foreach (var inheritedTraitInfo in modSymbols.TraitInfos[inheritedTypeName])
 							yield return inheritedTraitInfo;

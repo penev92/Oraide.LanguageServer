@@ -45,7 +45,7 @@ namespace Oraide.Csharp.CodeParsers
 									&& (classDeclaration.Identifier.ValueText.EndsWith("Info") || classDeclaration.Identifier.ValueText.EndsWith("InfoBase")))
 									|| baseTypes.Any(x => x == "TraitInfo" || x.StartsWith("TraitInfo<")))
 								{
-									traitInfos.AddRange(ParseTraitInfo(filePath, fileText, classDeclaration));
+									traitInfos.AddRange(ParseTraitInfo(filePath, fileText, classDeclaration, baseTypes));
 								}
 								else if (filePath.Replace("\\", "/").EndsWith("GameRules/WeaponInfo.cs") && classDeclaration.Identifier.ValueText == "WeaponInfo")
 								{
@@ -69,18 +69,26 @@ namespace Oraide.Csharp.CodeParsers
 				}
 			}
 
+			var finalTraitInfos = new List<TraitInfo>(traitInfos.Count);
+			foreach (var ti in traitInfos)
+			{
+				var baseTypes = GetBaseTypes(traitInfos, ti.TraitInfoName).ToArray();
+				if (baseTypes.Any(x => x == "TraitInfo"))
+					finalTraitInfos.Add(new TraitInfo(ti.TraitName, ti.TraitInfoName, ti.TraitDescription, ti.Location, baseTypes, ti.TraitPropertyInfos));
+			}
+
 			var weaponInfo = new WeaponInfo(weaponInfoFields, projectileInfos.ToArray(), warheadInfos.ToArray());
-			return (traitInfos.ToLookup(x => x.TraitInfoName, y => y), weaponInfo);
+			return (finalTraitInfos.ToLookup(x => x.TraitInfoName, y => y), weaponInfo);
 		}
 
 		// Files can potentially contain multiple TraitInfos.
-		static IEnumerable<TraitInfo> ParseTraitInfo(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
+		static IEnumerable<TraitInfo> ParseTraitInfo(string filePath, string fileText, ClassDeclarationSyntax classDeclaration, string[] baseTypes)
 		{
 			var traitProperties = new List<ClassFieldInfo>();
 			var traitInfoName = classDeclaration.Identifier.ValueText;
 
-			// Skip classes that are not TraitInfos.
-			if (!traitInfoName.EndsWith("Info"))
+			// Skip classes that are not TraitInfos. Make a special case exception for TooltipInfoBase.
+			if (!traitInfoName.EndsWith("Info") && !traitInfoName.EndsWith("InfoBase"))
 				yield break;
 
 			// Get trait's DescAttribute.
@@ -95,10 +103,8 @@ namespace Oraide.Csharp.CodeParsers
 			var classStart = classDeclaration.GetLocation().SourceSpan.Start;
 			var classLocation = FindClassLocationInText(filePath, fileText, traitInfoName, classStart);
 
-			// Get inherited/implemented types.
-			var baseTypes = ParseBaseTypes(classDeclaration).ToArray();
-
-			yield return new TraitInfo(traitInfoName.Substring(0, traitInfoName.Length - 4), traitInfoName, traitDesc, classLocation, baseTypes, traitProperties.ToArray());
+			yield return new TraitInfo(traitInfoName.Substring(0, traitInfoName.Length - 4), traitInfoName,
+				traitDesc, classLocation, baseTypes, traitProperties.ToArray());
 		}
 
 		static IEnumerable<ClassFieldInfo> ParseWeaponInfo(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
@@ -371,6 +377,24 @@ namespace Oraide.Csharp.CodeParsers
 			}
 
 			return defaultValue;
+		}
+
+		static IEnumerable<string> GetBaseTypes(List<TraitInfo> traitInfos, string traitInfoName)
+		{
+			if (traitInfoName == "TraitInfo" || traitInfoName == "Requires" || (traitInfoName.StartsWith("I") && !traitInfoName.EndsWith("Info")))
+				return Enumerable.Empty<string>();
+
+			var traitInfo = traitInfos.FirstOrDefault(x => x.TraitInfoName == traitInfoName);
+			if (traitInfo.TraitInfoName == null)
+				return Enumerable.Empty<string>();
+
+			var traitInfoNames = new List<string>();
+			traitInfoNames.AddRange(traitInfo.BaseTypes);
+
+			foreach (var baseType in traitInfo.BaseTypes)
+				traitInfoNames.AddRange(GetBaseTypes(traitInfos, baseType));
+
+			return traitInfoNames;
 		}
 	}
 }

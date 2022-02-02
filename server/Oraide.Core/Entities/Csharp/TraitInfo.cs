@@ -13,17 +13,17 @@
 
 		public readonly MemberLocation Location;
 
-		public readonly string[] InheritedTypes;
+		public readonly string[] BaseTypes;
 
 		public readonly ClassFieldInfo[] TraitPropertyInfos;
 
-		public TraitInfo(string traitName, string traitInfoName, string traitDescription, MemberLocation location, string[] inheritedTypes, ClassFieldInfo[] traitPropertyInfos)
+		public TraitInfo(string traitName, string traitInfoName, string traitDescription, MemberLocation location, string[] baseTypes, ClassFieldInfo[] traitPropertyInfos)
 		{
 			TraitName = traitName;
 			TraitInfoName = traitInfoName;
 			TraitDescription = traitDescription;
 			Location = location;
-			InheritedTypes = inheritedTypes;
+			BaseTypes = baseTypes;
 			TraitPropertyInfos = traitPropertyInfos;
 		}
 

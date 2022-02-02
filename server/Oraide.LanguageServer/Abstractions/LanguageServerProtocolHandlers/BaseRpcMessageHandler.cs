@@ -209,7 +209,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			else
 			{
 				// ... or it could be inherited.
-				foreach (var inheritedType in traitInfo.InheritedTypes)
+				foreach (var inheritedType in traitInfo.BaseTypes)
 					if (TryGetTraitInfo(inheritedType, out var inheritedTraitInfo, false))
 						if (CheckTraitInheritanceTree(inheritedTraitInfo, propertyName, out targetTrait, out var inheritedLocation))
 						{
