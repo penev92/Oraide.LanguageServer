@@ -69,12 +69,42 @@ namespace Oraide.Csharp.CodeParsers
 				}
 			}
 
+			// Resolve trait inheritance - load base types and a full list in fields - inherited or not.
 			var finalTraitInfos = new List<TraitInfo>(traitInfos.Count);
 			foreach (var ti in traitInfos)
 			{
+				if (ti.TraitInfoName == "TraitInfo")
+					continue;
+
 				var baseTypes = GetBaseTypes(traitInfos, ti.TraitInfoName).ToArray();
-				if (baseTypes.Any(x => x == "TraitInfo"))
-					finalTraitInfos.Add(new TraitInfo(ti.TraitName, ti.TraitInfoName, ti.TraitDescription, ti.Location, baseTypes, ti.TraitPropertyInfos));
+				if (baseTypes.Any(x => x.TypeName == "TraitInfo"))
+				{
+					var fieldInfos = new List<ClassFieldInfo>();
+					foreach (var (className, classFieldNames) in baseTypes)
+					{
+						foreach (var typeFieldName in classFieldNames)
+						{
+							var fi = ti.TraitPropertyInfos.FirstOrDefault(z => z.Name == typeFieldName);
+							if (fi.Name != null)
+								fieldInfos.Add(new ClassFieldInfo(fi.Name, fi.Type, fi.DefaultValue, className, fi.Location, fi.Description, fi.OtherAttributes));
+							else
+							{
+								var otherFieldInfo = traitInfos.First(x => x.TraitInfoName == className).TraitPropertyInfos.First(x => x.Name == typeFieldName);
+								fieldInfos.Add(new ClassFieldInfo(otherFieldInfo.Name, otherFieldInfo.Type, otherFieldInfo.DefaultValue, className, otherFieldInfo.Location, otherFieldInfo.Description, otherFieldInfo.OtherAttributes));
+							}
+						}
+					}
+
+					var traitInfo = new TraitInfo(
+							ti.TraitName,
+							ti.TraitInfoName,
+							ti.TraitDescription,
+							ti.Location,
+							baseTypes.Where(x => x.TypeName != ti.TraitInfoName).Select(x => x.TypeName).ToArray(),
+							fieldInfos.ToArray());
+
+					finalTraitInfos.Add(traitInfo);
+				}
 			}
 
 			var weaponInfo = new WeaponInfo(weaponInfoFields, projectileInfos.ToArray(), warheadInfos.ToArray());
@@ -207,7 +237,9 @@ namespace Oraide.Csharp.CodeParsers
 				var propertyType = HumanReadablePropertyType(fieldDeclarationSyntax.Declaration.Type);
 				var defaultValue = HumanReadablePropertyDefaultValue(variableDeclaratorSyntax);
 				var location = FindPropertyLocationInText(filePath, fileText, variableDeclaratorSyntax.GetLocation().SourceSpan.Start);
-				yield return new ClassFieldInfo(propertyName, propertyType, defaultValue, location, fieldDesc, otherAttributes.ToArray());
+
+				// Using "???" as class name here as a temporary placeholder. That should be replaced later when resolving inheritance and inherited fields.
+				yield return new ClassFieldInfo(propertyName, propertyType, defaultValue, "???", location, fieldDesc, otherAttributes.ToArray());
 			}
 		}
 
@@ -241,6 +273,7 @@ namespace Oraide.Csharp.CodeParsers
 			// Get inherited/implemented types.
 			if (classDeclaration.BaseList != null)
 			{
+				// TODO: It would be useful to know what the `Requires` requires.
 				foreach (var baseTypeSyntax in classDeclaration.BaseList.Types)
 				{
 					if (baseTypeSyntax.Type is IdentifierNameSyntax identifierNameSyntax)
@@ -369,7 +402,9 @@ namespace Oraide.Csharp.CodeParsers
 				         && valueKind != SyntaxKind.NullLiteralExpression
 				         && valueKind != SyntaxKind.InvocationExpression
 				         && valueKind != SyntaxKind.UnaryMinusExpression)
+				{
 					throw new NotImplementedException($"unsupported type {valueKind}!");
+				}
 			}
 			catch (Exception e)
 			{
@@ -379,22 +414,25 @@ namespace Oraide.Csharp.CodeParsers
 			return defaultValue;
 		}
 
-		static IEnumerable<string> GetBaseTypes(List<TraitInfo> traitInfos, string traitInfoName)
+		static IEnumerable<(string TypeName, IEnumerable<string> ClassFields)> GetBaseTypes(List<TraitInfo> traitInfos, string traitInfoName)
 		{
+			// TODO: It would be useful to know what the `Requires` requires.
 			if (traitInfoName == "TraitInfo" || traitInfoName == "Requires" || (traitInfoName.StartsWith("I") && !traitInfoName.EndsWith("Info")))
-				return Enumerable.Empty<string>();
+				return new[] { (traitInfoName, Enumerable.Empty<string>()) };
 
 			var traitInfo = traitInfos.FirstOrDefault(x => x.TraitInfoName == traitInfoName);
 			if (traitInfo.TraitInfoName == null)
-				return Enumerable.Empty<string>();
+				return Enumerable.Empty<(string, IEnumerable<string>)>();
 
-			var traitInfoNames = new List<string>();
-			traitInfoNames.AddRange(traitInfo.BaseTypes);
+			var result = new List<(string TypeName, IEnumerable<string> ClassFieldInfos)>
+			{
+				(traitInfoName, traitInfo.TraitPropertyInfos.Select(x => x.Name))
+			};
 
 			foreach (var baseType in traitInfo.BaseTypes)
-				traitInfoNames.AddRange(GetBaseTypes(traitInfos, baseType));
+				result.AddRange(GetBaseTypes(traitInfos, baseType));
 
-			return traitInfoNames;
+			return result;
 		}
 	}
 }

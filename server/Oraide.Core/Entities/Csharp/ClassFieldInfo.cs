@@ -13,17 +13,20 @@ namespace Oraide.Core.Entities.Csharp
 
 		public readonly string DefaultValue;
 
+		public readonly string ClassName;
+
 		public readonly MemberLocation Location;
 
 		public readonly string Description;
 
 		public readonly (string Name, string Value)[] OtherAttributes;
 
-		public ClassFieldInfo(string name, string type, string defaultValue, MemberLocation location, string description, (string Name, string Value)[] otherAttributes)
+		public ClassFieldInfo(string name, string type, string defaultValue, string className, MemberLocation location, string description, (string Name, string Value)[] otherAttributes)
 		{
 			Name = name;
 			Type = type;
 			DefaultValue = defaultValue;
+			ClassName = className;
 			Location = location;
 			Description = description;
 			OtherAttributes = otherAttributes;
