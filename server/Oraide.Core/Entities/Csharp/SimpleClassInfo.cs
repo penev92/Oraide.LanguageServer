@@ -30,7 +30,7 @@
 		public override string ToString() => InfoName;
 
 		public string ToMarkdownInfoString() => "```csharp\n" +
-		                                        $"class {Name}" +
+		                                        $"class {InfoName}" +
 		                                        $"\n```\n" +
 		                                        $"{Description}";
 	}

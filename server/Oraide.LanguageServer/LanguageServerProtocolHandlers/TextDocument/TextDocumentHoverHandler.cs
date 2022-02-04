@@ -85,7 +85,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									}
 									else if (nodeKey == "Warhead" || nodeKey.StartsWith("Warhead@"))
 									{
-										var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == $"{target.TargetString}Warhead");
+										var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == target.TargetString);
 										if (warheadInfo.Name != null)
 										{
 											var content = warheadInfo.ToMarkdownInfoString() +
@@ -111,7 +111,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 								}
 								else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
 								{
-									var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == $"{target.TargetNode.ParentNode.Value}Warhead");
+									var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == target.TargetNode.ParentNode.Value);
 									if (warheadInfo.Name != null)
 									{
 										var prop = warheadInfo.PropertyInfos.FirstOrDefault(x => x.Name == target.TargetString);

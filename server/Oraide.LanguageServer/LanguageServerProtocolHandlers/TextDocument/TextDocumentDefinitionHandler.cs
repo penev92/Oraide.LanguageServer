@@ -76,7 +76,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									}
 									else if (targetNodeKey == "Warhead" || targetNodeKey.StartsWith("Warhead@"))
 									{
-										var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == $"{target.TargetString}Warhead");
+										var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == target.TargetString);
 										if (warhead.Name != null)
 											return new[] { warhead.Location.ToLspLocation(warhead.Name.Length) };
 									}
@@ -97,7 +97,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 								}
 								else if (parentNodeKey == "Warhead" || parentNodeKey.StartsWith("Warhead@"))
 								{
-									var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == $"{target.TargetNode.ParentNode.Value}Warhead");
+									var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == target.TargetNode.ParentNode.Value);
 									if (warhead.Name != null)
 									{
 										// TODO: Check base types for inherited properties.
