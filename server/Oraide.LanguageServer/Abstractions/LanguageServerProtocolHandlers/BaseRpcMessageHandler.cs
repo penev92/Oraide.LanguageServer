@@ -98,12 +98,16 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			return true;
 		}
 
+		protected virtual void Initialize(CursorTarget cursorTarget) { }
+
 		#region CursorTarget handlers
 
 		protected virtual object HandlePositionalRequest(TextDocumentPositionParams positionParams)
 		{
 			if (!TryGetCursorTarget(positionParams, out var cursorTarget))
 				return null;
+
+			Initialize(cursorTarget);
 
 			if (cursorTarget.FileType == FileType.Rules)
 				return HandleRulesFile(cursorTarget);

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
+using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
@@ -12,6 +13,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
 	public class TextDocumentHoverHandler : BaseRpcMessageHandler
 	{
+		Range range;
+		WeaponInfo weaponInfo;
+
 		public TextDocumentHoverHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
 			: base(symbolCache, openFileCache) { }
 
@@ -41,6 +45,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			}
 		}
 
+		protected override void Initialize(CursorTarget cursorTarget)
+		{
+			range = cursorTarget.ToRange();
+			weaponInfo = symbolCache[cursorTarget.ModId].WeaponInfo;
+		}
+
 		#region CursorTarget handlers
 
 		// TODO:
@@ -66,9 +76,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		protected override Hover HandleWeaponKey(CursorTarget cursorTarget)
 		{
-			var weaponInfo = symbolCache[cursorTarget.ModId].WeaponInfo;
-			var range = cursorTarget.ToRange();
-
 			switch (cursorTarget.TargetNodeIndentation)
 			{
 				case 0:
@@ -127,9 +134,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		protected override Hover HandleWeaponValue(CursorTarget cursorTarget)
 		{
-			var weaponInfo = symbolCache[cursorTarget.ModId].WeaponInfo;
-			var range = cursorTarget.ToRange();
-
 			switch (cursorTarget.TargetNodeIndentation)
 			{
 				case 0:

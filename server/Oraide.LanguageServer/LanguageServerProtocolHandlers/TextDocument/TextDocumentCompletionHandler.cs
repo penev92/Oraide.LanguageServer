@@ -13,6 +13,13 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
 	public class TextDocumentCompletionHandler : BaseRpcMessageHandler
 	{
+		string modId;
+		IEnumerable<CompletionItem> traitNames;
+		IEnumerable<CompletionItem> actorNames;
+		IEnumerable<CompletionItem> weaponNames;
+		IEnumerable<CompletionItem> conditionNames;
+		WeaponInfo weaponInfo;
+
 		readonly CompletionItem inheritsCompletionItem = new ()
 		{
 			Label = "Inherits",
@@ -117,19 +124,24 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			return true;
 		}
 
+		protected override void Initialize(CursorTarget cursorTarget)
+		{
+			modId = cursorTarget.ModId;
+
+			// Using .First() is not great but we have no way to differentiate between traits of the same name
+			// until the server learns the concept of a mod and loaded assemblies.
+			traitNames = symbolCache[modId].TraitInfos.Select(x => x.First().ToCompletionItem());
+			actorNames = symbolCache[modId].ActorDefinitions.Select(x => x.First().ToCompletionItem());
+			weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => x.First().ToCompletionItem());
+			conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => x.First().ToCompletionItem());
+
+			weaponInfo = symbolCache[modId].WeaponInfo;
+		}
+
 		#region CursorTarget handlers
 
 		protected override IEnumerable<CompletionItem> HandleRulesKey(CursorTarget cursorTarget)
 		{
-			var modId = cursorTarget.ModId;
-
-			// Using .First() is not great but we have no way to differentiate between traits of the same name
-			// until the server learns the concept of a mod and loaded assemblies.
-			var traitNames = symbolCache[modId].TraitInfos.Select(x => x.First().ToCompletionItem());
-			var actorNames = symbolCache[modId].ActorDefinitions.Select(x => x.First().ToCompletionItem());
-			var weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => x.First().ToCompletionItem());
-			var conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => x.First().ToCompletionItem());
-
 			switch (cursorTarget.TargetNodeIndentation)
 			{
 				case 0:
@@ -145,11 +157,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					// Get only trait properties.
 					var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
 					var traitInfoName = $"{traitName}Info";
-					var traits = symbolCache[cursorTarget.ModId].TraitInfos[traitInfoName];
+					var traits = symbolCache[modId].TraitInfos[traitInfoName];
 					var presentProperties = cursorTarget.TargetNode.ParentNode.ChildNodes.Select(x => x.Key).ToHashSet();
 
 					var inheritedTraits = new List<TraitInfo>();
-					inheritedTraits.AddRange(GetInheritedTraitInfos(symbolCache[cursorTarget.ModId], traits));
+					inheritedTraits.AddRange(GetInheritedTraitInfos(symbolCache[modId], traits));
 
 					// Getting all traits and then all their properties is not great but we have no way to differentiate between traits of the same name
 					// until the server learns the concept of a mod and loaded assemblies.
@@ -167,15 +179,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		protected override IEnumerable<CompletionItem> HandleRulesValue(CursorTarget cursorTarget)
 		{
-			var modId = cursorTarget.ModId;
-
-			// Using .First() is not great but we have no way to differentiate between traits of the same name
-			// until the server learns the concept of a mod and loaded assemblies.
-			var traitNames = symbolCache[modId].TraitInfos.Select(x => x.First().ToCompletionItem());
-			var actorNames = symbolCache[modId].ActorDefinitions.Select(x => x.First().ToCompletionItem());
-			var weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => x.First().ToCompletionItem());
-			var conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => x.First().ToCompletionItem());
-
 			switch (cursorTarget.TargetNodeIndentation)
 			{
 				case 0:
@@ -200,17 +203,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		protected override IEnumerable<CompletionItem> HandleWeaponKey(CursorTarget cursorTarget)
 		{
-			var modId = cursorTarget.ModId;
-
-			// Using .First() is not great but we have no way to differentiate between traits of the same name
-			// until the server learns the concept of a mod and loaded assemblies.
-			var traitNames = symbolCache[modId].TraitInfos.Select(x => x.First().ToCompletionItem());
-			var actorNames = symbolCache[modId].ActorDefinitions.Select(x => x.First().ToCompletionItem());
-			var weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => x.First().ToCompletionItem());
-			var conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => x.First().ToCompletionItem());
-
-			var weaponInfo = symbolCache[modId].WeaponInfo;
-
 			switch (cursorTarget.TargetNodeIndentation)
 			{
 				case 0:
@@ -250,17 +242,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		protected override IEnumerable<CompletionItem> HandleWeaponValue(CursorTarget cursorTarget)
 		{
-			var modId = cursorTarget.ModId;
-
-			// Using .First() is not great but we have no way to differentiate between traits of the same name
-			// until the server learns the concept of a mod and loaded assemblies.
-			var traitNames = symbolCache[modId].TraitInfos.Select(x => x.First().ToCompletionItem());
-			var actorNames = symbolCache[modId].ActorDefinitions.Select(x => x.First().ToCompletionItem());
-			var weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => x.First().ToCompletionItem());
-			var conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => x.First().ToCompletionItem());
-
-			var weaponInfo = symbolCache[modId].WeaponInfo;
-
 			switch (cursorTarget.TargetNodeIndentation)
 			{
 				case 0:

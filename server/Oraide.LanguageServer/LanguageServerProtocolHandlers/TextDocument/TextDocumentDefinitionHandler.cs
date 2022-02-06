@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using LspTypes;
+using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
@@ -11,6 +12,10 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
 	public class TextDocumentDefinitionHandler : BaseRpcMessageHandler
 	{
+		string modId;
+		WeaponInfo weaponInfo;
+		ModSymbols modSymbols;
+
 		public TextDocumentDefinitionHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
 			: base(symbolCache, openFileCache) { }
 
@@ -34,6 +39,13 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 				return Enumerable.Empty<Location>();
 			}
+		}
+
+		protected override void Initialize(CursorTarget cursorTarget)
+		{
+			modId = cursorTarget.ModId;
+			modSymbols = symbolCache[modId];
+			weaponInfo = symbolCache[modId].WeaponInfo;
 		}
 
 		#region CursorTarget handlers
@@ -60,13 +72,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		protected override IEnumerable<Location> HandleWeaponKey(CursorTarget cursorTarget)
 		{
-			var weaponInfo = symbolCache[cursorTarget.ModId].WeaponInfo;
-
 			switch (cursorTarget.TargetNodeIndentation)
 			{
 				case 0:
 				{
-					var weaponDefinitions = symbolCache[cursorTarget.ModId].WeaponDefinitions.FirstOrDefault(x => x.Key == cursorTarget.TargetString);
+					var weaponDefinitions = modSymbols.WeaponDefinitions.FirstOrDefault(x => x.Key == cursorTarget.TargetString);
 					if (weaponDefinitions != null)
 						return weaponDefinitions.Select(x => x.Location.ToLspLocation(weaponDefinitions.Key.Length));
 
@@ -121,8 +131,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		protected override IEnumerable<Location> HandleWeaponValue(CursorTarget cursorTarget)
 		{
-			var weaponInfo = symbolCache[cursorTarget.ModId].WeaponInfo;
-
 			switch (cursorTarget.TargetNodeIndentation)
 			{
 				case 0:
@@ -133,7 +141,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					var targetNodeKey = cursorTarget.TargetNode.Key;
 					if (targetNodeKey == "Inherits")
 					{
-						var weaponDefinitions = symbolCache[cursorTarget.ModId].WeaponDefinitions.FirstOrDefault(x => x.Key == cursorTarget.TargetString);
+						var weaponDefinitions = modSymbols.WeaponDefinitions.FirstOrDefault(x => x.Key == cursorTarget.TargetString);
 						if (weaponDefinitions != null)
 							return weaponDefinitions.Select(x => x.Location.ToLspLocation(weaponDefinitions.Key.Length));
 					}
@@ -184,9 +192,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			var targetLength = target.TargetString.Length;
 
 			definitionLocations =
-				symbolCache[target.ModId].ActorDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength))
-				.Union(symbolCache[target.ModId].WeaponDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength)))
-				.Union(symbolCache[target.ModId].ConditionDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength)));
+				modSymbols.ActorDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength))
+				.Union(modSymbols.WeaponDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength)))
+				.Union(modSymbols.ConditionDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength)));
 
 			return true;
 		}
