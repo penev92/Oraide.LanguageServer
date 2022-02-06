@@ -42,11 +42,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					if (trace)
 						Console.Error.WriteLine("<-- TextDocument-Completion");
 
-					TryGetCursorTarget(completionParams, out var cursorTarget);
+					var completionItems = HandlePositionalRequest(completionParams) as IEnumerable<CompletionItem>;
 					return new CompletionList
 					{
 						IsIncomplete = false,
-						Items = GetCompletionItems(cursorTarget).ToArray()
+						Items = completionItems?.ToArray()
 					};
 
 				}
@@ -117,7 +117,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			return true;
 		}
 
-		IEnumerable<CompletionItem> GetCompletionItems(CursorTarget cursorTarget)
+		#region CursorTarget handlers
+
+		protected override IEnumerable<CompletionItem> HandleRulesKey(CursorTarget cursorTarget)
 		{
 			var modId = cursorTarget.ModId;
 
@@ -128,93 +130,101 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			var weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => x.First().ToCompletionItem());
 			var conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => x.First().ToCompletionItem());
 
-			if (cursorTarget.FileType == FileType.Rules)
+			switch (cursorTarget.TargetNodeIndentation)
 			{
-				if (cursorTarget.TargetNodeIndentation == 0)
-				{
+				case 0:
 					// Get only actor definitions. Presumably for reference and for overriding purposes.
 					return actorNames;
-				}
 
-				if (cursorTarget.TargetNodeIndentation == 1)
+				case 1:
+					// Get only traits (and "Inherits").
+					return traitNames.Append(inheritsCompletionItem);
+
+				case 2:
 				{
-					if (cursorTarget.TargetType == "key")
-					{
-						// Get only traits (and "Inherits").
-						return traitNames.Append(inheritsCompletionItem);
-					}
+					// Get only trait properties.
+					var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
+					var traitInfoName = $"{traitName}Info";
+					var traits = symbolCache[cursorTarget.ModId].TraitInfos[traitInfoName];
+					var presentProperties = cursorTarget.TargetNode.ParentNode.ChildNodes.Select(x => x.Key).ToHashSet();
 
-					if (cursorTarget.TargetType == "value")
-					{
-						// Get actor definitions (for inheriting).
-						return actorNames;
-					}
+					var inheritedTraits = new List<TraitInfo>();
+					inheritedTraits.AddRange(GetInheritedTraitInfos(symbolCache[cursorTarget.ModId], traits));
+
+					// Getting all traits and then all their properties is not great but we have no way to differentiate between traits of the same name
+					// until the server learns the concept of a mod and loaded assemblies.
+					return inheritedTraits
+						.SelectMany(x => x.TraitPropertyInfos)
+						.DistinctBy(y => y.Name)
+						.Where(x => !presentProperties.Contains(x.Name))
+						.Select(z => z.ToCompletionItem());
 				}
-				else if (cursorTarget.TargetNodeIndentation == 2)
-				{
-					if (cursorTarget.TargetType == "key")
-					{
-						// Get only trait properties.
-						var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
-						var traitInfoName = $"{traitName}Info";
-						var traits = symbolCache[cursorTarget.ModId].TraitInfos[traitInfoName];
-						var presentProperties = cursorTarget.TargetNode.ParentNode.ChildNodes.Select(x => x.Key).ToHashSet();
 
-						var inheritedTraits = new List<TraitInfo>();
-						inheritedTraits.AddRange(GetInheritedTraitInfos(symbolCache[cursorTarget.ModId], traits));
-
-						// Getting all traits and then all their properties is not great but we have no way to differentiate between traits of the same name
-						// until the server learns the concept of a mod and loaded assemblies.
-						return inheritedTraits
-							.SelectMany(x => x.TraitPropertyInfos)
-							.DistinctBy(y => y.Name)
-							.Where(x => !presentProperties.Contains(x.Name))
-							.Select(z => z.ToCompletionItem());
-					}
-
-					if (cursorTarget.TargetType == "value")
-					{
-						// This would likely be a TraitInfo property's value, so at this point it's anyone's guess. Probably skip until we can give type-specific suggestions.
-						return traitNames.Union(actorNames).Union(weaponNames).Union(conditionNames);
-					}
-				}
+				default:
+					return Enumerable.Empty<CompletionItem>();
 			}
-			else if (cursorTarget.FileType == FileType.Weapons)
-			{
-				var weaponInfo = symbolCache[modId].WeaponInfo;
+		}
 
-				// Get only weapon definitions. Presumably for reference and for overriding purposes.
-				if (cursorTarget.TargetNodeIndentation == 0)
+		protected override IEnumerable<CompletionItem> HandleRulesValue(CursorTarget cursorTarget)
+		{
+			var modId = cursorTarget.ModId;
+
+			// Using .First() is not great but we have no way to differentiate between traits of the same name
+			// until the server learns the concept of a mod and loaded assemblies.
+			var traitNames = symbolCache[modId].TraitInfos.Select(x => x.First().ToCompletionItem());
+			var actorNames = symbolCache[modId].ActorDefinitions.Select(x => x.First().ToCompletionItem());
+			var weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => x.First().ToCompletionItem());
+			var conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => x.First().ToCompletionItem());
+
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+					return Enumerable.Empty<CompletionItem>();
+
+				case 1:
+					// Get actor definitions (for inheriting).
+					// TODO:
+					return actorNames;
+
+				case 2:
+				{
+					// This would likely be a TraitInfo property's value, so at this point it's anyone's guess. Probably skip until we can give type-specific suggestions.
+					// TODO:
+					return traitNames.Union(actorNames).Union(weaponNames).Union(conditionNames);
+				}
+
+				default:
+					return Enumerable.Empty<CompletionItem>();
+			}
+		}
+
+		protected override IEnumerable<CompletionItem> HandleWeaponKey(CursorTarget cursorTarget)
+		{
+			var modId = cursorTarget.ModId;
+
+			// Using .First() is not great but we have no way to differentiate between traits of the same name
+			// until the server learns the concept of a mod and loaded assemblies.
+			var traitNames = symbolCache[modId].TraitInfos.Select(x => x.First().ToCompletionItem());
+			var actorNames = symbolCache[modId].ActorDefinitions.Select(x => x.First().ToCompletionItem());
+			var weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => x.First().ToCompletionItem());
+			var conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => x.First().ToCompletionItem());
+
+			var weaponInfo = symbolCache[modId].WeaponInfo;
+
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+					// Get only weapon definitions. Presumably for reference and for overriding purposes.
 					return weaponNames;
 
-				if (cursorTarget.TargetNodeIndentation == 1)
-				{
-					if (cursorTarget.TargetType == "key")
-					{
-						// Get only WeaponInfo fields (and "Inherits" and "Warhead").
-						return weaponInfo.WeaponPropertyInfos
-							.Select(x => x.ToCompletionItem())
-							.Append(warheadCompletionItem)
-							.Append(inheritsCompletionItem);
-					}
+				case 1:
+					// Get only WeaponInfo fields (and "Inherits" and "Warhead").
+					return weaponInfo.WeaponPropertyInfos
+						.Select(x => x.ToCompletionItem())
+						.Append(warheadCompletionItem)
+						.Append(inheritsCompletionItem);
 
-					if (cursorTarget.TargetType == "value")
-					{
-						var nodeKey = cursorTarget.TargetNode.Key;
-
-						// Get weapon definitions (for inheriting).
-						if (nodeKey == "Inherits" || nodeKey.StartsWith("Inherits@"))
-							return weaponNames;
-
-						if (nodeKey == "Projectile")
-							return weaponInfo.ProjectileInfos.Select(x => x.ToCompletionItem("Type implementing IProjectileInfo"));
-
-						if (nodeKey == "Warhead" || nodeKey.StartsWith("Warhead@"))
-							return weaponInfo.WarheadInfos.Select(x => x.ToCompletionItem("Type implementing IWarhead"));
-					}
-				}
-
-				if (cursorTarget.TargetNodeIndentation == 2)
+				case 2:
 				{
 					var parentNode = cursorTarget.TargetNode.ParentNode;
 					if (parentNode.Key == "Projectile")
@@ -229,11 +239,59 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						if (warhead.Name != null)
 							return warhead.PropertyInfos.Select(x => x.ToCompletionItem());
 					}
-				}
-			}
 
-			return Enumerable.Empty<CompletionItem>();
+					return Enumerable.Empty<CompletionItem>();
+				}
+
+				default:
+					return Enumerable.Empty<CompletionItem>();
+			}
 		}
+
+		protected override IEnumerable<CompletionItem> HandleWeaponValue(CursorTarget cursorTarget)
+		{
+			var modId = cursorTarget.ModId;
+
+			// Using .First() is not great but we have no way to differentiate between traits of the same name
+			// until the server learns the concept of a mod and loaded assemblies.
+			var traitNames = symbolCache[modId].TraitInfos.Select(x => x.First().ToCompletionItem());
+			var actorNames = symbolCache[modId].ActorDefinitions.Select(x => x.First().ToCompletionItem());
+			var weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => x.First().ToCompletionItem());
+			var conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => x.First().ToCompletionItem());
+
+			var weaponInfo = symbolCache[modId].WeaponInfo;
+
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+					return Enumerable.Empty<CompletionItem>();
+
+				case 1:
+				{
+					var nodeKey = cursorTarget.TargetNode.Key;
+
+					// Get weapon definitions (for inheriting).
+					if (nodeKey == "Inherits" || nodeKey.StartsWith("Inherits@"))
+						return weaponNames;
+
+					if (nodeKey == "Projectile")
+						return weaponInfo.ProjectileInfos.Select(x => x.ToCompletionItem("Type implementing IProjectileInfo"));
+
+					if (nodeKey == "Warhead" || nodeKey.StartsWith("Warhead@"))
+						return weaponInfo.WarheadInfos.Select(x => x.ToCompletionItem("Type implementing IWarhead"));
+
+					return Enumerable.Empty<CompletionItem>();
+				}
+
+				case 2:
+					return Enumerable.Empty<CompletionItem>();
+
+				default:
+					return Enumerable.Empty<CompletionItem>();
+			}
+		}
+
+		#endregion
 
 		// TODO: Go further than one level of inheritance down.
 		IEnumerable<TraitInfo> GetInheritedTraitInfos(ModSymbols modSymbols, IEnumerable<TraitInfo> traitInfos)

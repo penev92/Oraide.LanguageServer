@@ -25,106 +25,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					if (trace)
 						Console.Error.WriteLine("<-- TextDocument-Hover");
 
-					if (TryGetCursorTarget(positionParams, out var target))
-					{
-						var range = target.ToRange();
+					return HandlePositionalRequest(positionParams) as Hover;
 
-						if (target.FileType == FileType.Rules)
-						{
-							if (target.TargetType == "key"
-							    && (target.TargetNodeIndentation == 1 || target.TargetNodeIndentation == 2)
-							    && TryGetTargetCodeHoverInfo(target, out var codeHoverInfo))
-								return HoverFromHoverInfo(codeHoverInfo.Content, codeHoverInfo.Range);
-
-							if ((target.TargetType == "value" || target.TargetNodeIndentation == 0)
-							    && TryGetTargetYamlHoverInfo(target, out var yamlHoverInfo))
-								return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
-						}
-						else if (target.FileType == FileType.Weapons)
-						{
-							var weaponInfo = symbolCache[target.ModId].WeaponInfo;
-
-							if (target.TargetNodeIndentation == 0 && target.TargetType == "key")
-								if (TryGetTargetYamlHoverInfo(target, out var yamlHoverInfo))
-									return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
-
-							if (target.TargetNodeIndentation == 1)
-							{
-								if (target.TargetType == "key")
-								{
-									if (target.TargetString == "Inherits")
-										return HoverFromHoverInfo("Inherits (and possibly overwrites) rules from a weapon", range);
-
-									if (target.TargetString == "Warhead" || target.TargetString.StartsWith("Warhead@"))
-										return HoverFromHoverInfo("Warhead used by this weapon.", range);
-
-									// Maybe this is a property of WeaponInfo.
-									var prop = weaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.Name == target.TargetString);
-									if (prop.Name != null)
-										return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
-								}
-								else if (target.TargetType == "value")
-								{
-									var nodeKey = target.TargetNode.Key;
-
-									if (nodeKey == "Inherits")
-									{
-										if (symbolCache[target.ModId].WeaponDefinitions.Any(x => x.Key == target.TargetString))
-											return HoverFromHoverInfo($"```csharp\nWeapon \"{target.TargetString}\"\n```", range);
-									}
-									else if (nodeKey == "Projectile")
-									{
-										var projectileInfo = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == target.TargetString);
-										if (projectileInfo.Name != null)
-										{
-											var content = projectileInfo.ToMarkdownInfoString() +
-											              "\n\n" + "https://docs.openra.net/en/latest/release/weapons/#" + $"{projectileInfo.Name.ToLower()}";
-
-											return HoverFromHoverInfo(content, range);
-										}
-									}
-									else if (nodeKey == "Warhead" || nodeKey.StartsWith("Warhead@"))
-									{
-										var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == target.TargetString);
-										if (warheadInfo.Name != null)
-										{
-											var content = warheadInfo.ToMarkdownInfoString() +
-														  "\n\n" + "https://docs.openra.net/en/latest/release/weapons/#" + $"{warheadInfo.Name.ToLower()}";
-
-											return HoverFromHoverInfo(content, range);
-										}
-									}
-								}
-							}
-							else if (target.TargetNodeIndentation == 2)
-							{
-								var parentNode = target.TargetNode.ParentNode;
-								if (parentNode.Key == "Projectile")
-								{
-									var projectileInfo = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == target.TargetNode.ParentNode.Value);
-									if (projectileInfo.Name != null)
-									{
-										var prop = projectileInfo.PropertyInfos.FirstOrDefault(x => x.Name == target.TargetString);
-										if (prop.Name != null)
-											return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
-									}
-								}
-								else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
-								{
-									var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == target.TargetNode.ParentNode.Value);
-									if (warheadInfo.Name != null)
-									{
-										var prop = warheadInfo.PropertyInfos.FirstOrDefault(x => x.Name == target.TargetString);
-										if (prop.Name != null)
-											return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
-									}
-								}
-							}
-						}
-
-						if (TryGetTargetValueHoverInfo(target, out var valueHoverInfo))
-							return HoverFromHoverInfo(valueHoverInfo.Content, valueHoverInfo.Range);
-					}
+					// TODO:
+					// if (TryGetTargetValueHoverInfo(target, out var valueHoverInfo))
+					// 	return HoverFromHoverInfo(valueHoverInfo.Content, valueHoverInfo.Range);
 				}
 				catch (Exception e)
 				{
@@ -135,6 +40,145 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				return null;
 			}
 		}
+
+		#region CursorTarget handlers
+
+		// TODO:
+		protected override Hover HandleRulesKey(CursorTarget cursorTarget)
+		{
+			if (cursorTarget.TargetType == "key"
+			    && (cursorTarget.TargetNodeIndentation == 1 || cursorTarget.TargetNodeIndentation == 2)
+			    && TryGetTargetCodeHoverInfo(cursorTarget, out var codeHoverInfo))
+				return HoverFromHoverInfo(codeHoverInfo.Content, codeHoverInfo.Range);
+
+			return null;
+		}
+
+		// TODO:
+		protected override Hover HandleRulesValue(CursorTarget cursorTarget)
+		{
+			if ((cursorTarget.TargetType == "value" || cursorTarget.TargetNodeIndentation == 0)
+			    && TryGetTargetYamlHoverInfo(cursorTarget, out var yamlHoverInfo))
+				return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
+
+			return null;
+		}
+
+		protected override Hover HandleWeaponKey(CursorTarget cursorTarget)
+		{
+			var weaponInfo = symbolCache[cursorTarget.ModId].WeaponInfo;
+			var range = cursorTarget.ToRange();
+
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+					if (TryGetTargetYamlHoverInfo(cursorTarget, out var yamlHoverInfo))
+						return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
+
+					return null;
+
+				case 1:
+				{
+					if (cursorTarget.TargetString == "Inherits")
+						return HoverFromHoverInfo("Inherits (and possibly overwrites) rules from a weapon", range);
+
+					if (cursorTarget.TargetString == "Warhead" || cursorTarget.TargetString.StartsWith("Warhead@"))
+						return HoverFromHoverInfo("Warhead used by this weapon.", range);
+
+					// Maybe this is a property of WeaponInfo.
+					var prop = weaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+					if (prop.Name != null)
+						return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
+
+					return null;
+				}
+
+				case 2:
+				{
+					var parentNode = cursorTarget.TargetNode.ParentNode;
+					if (parentNode.Key == "Projectile")
+					{
+						var projectileInfo = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+						if (projectileInfo.Name != null)
+						{
+							var prop = projectileInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+							if (prop.Name != null)
+								return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
+						}
+					}
+					else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
+					{
+						var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+						if (warheadInfo.Name != null)
+						{
+							var prop = warheadInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+							if (prop.Name != null)
+								return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
+						}
+					}
+
+					return null;
+				}
+
+				default:
+					return null;
+			}
+		}
+
+		protected override Hover HandleWeaponValue(CursorTarget cursorTarget)
+		{
+			var weaponInfo = symbolCache[cursorTarget.ModId].WeaponInfo;
+			var range = cursorTarget.ToRange();
+
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+					return null;
+
+				case 1:
+				{
+					var nodeKey = cursorTarget.TargetNode.Key;
+
+					if (nodeKey == "Inherits")
+					{
+						if (symbolCache[cursorTarget.ModId].WeaponDefinitions.Any(x => x.Key == cursorTarget.TargetString))
+							return HoverFromHoverInfo($"```csharp\nWeapon \"{cursorTarget.TargetString}\"\n```", range);
+					}
+					else if (nodeKey == "Projectile")
+					{
+						var projectileInfo = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+						if (projectileInfo.Name != null)
+						{
+							var content = projectileInfo.ToMarkdownInfoString() +
+							              "\n\n" + "https://docs.openra.net/en/latest/release/weapons/#" + $"{projectileInfo.Name.ToLower()}";
+
+							return HoverFromHoverInfo(content, range);
+						}
+					}
+					else if (nodeKey == "Warhead" || nodeKey.StartsWith("Warhead@"))
+					{
+						var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+						if (warheadInfo.Name != null)
+						{
+							var content = warheadInfo.ToMarkdownInfoString() +
+							              "\n\n" + "https://docs.openra.net/en/latest/release/weapons/#" + $"{warheadInfo.Name.ToLower()}";
+
+							return HoverFromHoverInfo(content, range);
+						}
+					}
+
+					return null;
+				}
+
+				case 2:
+					return null;
+
+				default:
+					return null;
+			}
+		}
+
+		#endregion
 
 		private bool TryGetTargetCodeHoverInfo(CursorTarget target, out (string Content, Range Range) hoverInfo)
 		{

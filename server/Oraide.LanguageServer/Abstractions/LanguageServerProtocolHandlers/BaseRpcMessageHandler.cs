@@ -98,6 +98,54 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			return true;
 		}
 
+		#region CursorTarget handlers
+
+		protected virtual object HandlePositionalRequest(TextDocumentPositionParams positionParams)
+		{
+			if (!TryGetCursorTarget(positionParams, out var cursorTarget))
+				return null;
+
+			if (cursorTarget.FileType == FileType.Rules)
+				return HandleRulesFile(cursorTarget);
+
+			if (cursorTarget.FileType == FileType.Weapons)
+				return HandleWeaponFile(cursorTarget);
+
+			return null;
+		}
+
+		protected virtual object HandleRulesFile(CursorTarget cursorTarget)
+		{
+			if (cursorTarget.TargetType == "key")
+				return HandleRulesKey(cursorTarget);
+
+			if (cursorTarget.TargetType == "value")
+				return HandleRulesValue(cursorTarget);
+
+			return null;
+		}
+
+		protected virtual object HandleWeaponFile(CursorTarget cursorTarget)
+		{
+			if (cursorTarget.TargetType == "key")
+				return HandleWeaponKey(cursorTarget);
+
+			if (cursorTarget.TargetType == "value")
+				return HandleWeaponValue(cursorTarget);
+
+			return null;
+		}
+
+		protected virtual object HandleRulesKey(CursorTarget cursorTarget) { return null; }
+
+		protected virtual object HandleRulesValue(CursorTarget cursorTarget) { return null; }
+
+		protected virtual object HandleWeaponKey(CursorTarget cursorTarget) { return null; }
+
+		protected virtual object HandleWeaponValue(CursorTarget cursorTarget) { return null; }
+
+		#endregion
+
 		protected bool TryGetCodeMemberLocation(YamlNode targetNode, string targetString, out TraitInfo traitInfo, out MemberLocation location)
 		{
 			// Try treating the target string as a trait name.

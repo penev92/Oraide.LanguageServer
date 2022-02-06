@@ -24,50 +24,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					if (trace)
 						Console.Error.WriteLine("<-- TextDocument-References");
 
-					if (TryGetCursorTarget(positionParams, out var target))
-					{
-						if (target.FileType == FileType.Rules)
-						{
-							if (target.TargetNodeIndentation == 1)
-							{
-								// Find where else the selected trait is used.
-								return symbolCache[target.ModId].ActorDefinitions
-									.SelectMany(x =>
-										x.SelectMany(y => y.Traits.Where(z => z.Name == target.TargetString)))
-									.Select(x => x.Location.ToLspLocation(target.TargetString.Length));
-							}
-						}
-						else if (target.FileType == FileType.Weapons)
-						{
-							if (target.TargetNodeIndentation == 1)
-							{
-								if (target.TargetType == "key")
-								{
-									// TODO:
-								}
-								else if (target.TargetType == "value")
-								{
-									var targetNodeKey = target.TargetNode.Key;
-									if (targetNodeKey == "Projectile")
-									{
-										// Find where else the selected projectile type is used.
-										return symbolCache[target.ModId].WeaponDefinitions
-											.SelectMany(x => x.Where(y => y.Projectile.Name == target.TargetString))
-											.Select(x => x.Projectile.Location.ToLspLocation(target.TargetString.Length));
-									}
-
-									if (targetNodeKey == "Warhead" || targetNodeKey.StartsWith("Warhead@"))
-									{
-										// Find where else the selected warhead type is used.
-										return symbolCache[target.ModId].WeaponDefinitions
-											.SelectMany(x =>
-												x.SelectMany(y => y.Warheads.Where(z => z.Name == target.TargetString)))
-											.Select(x => x.Location.ToLspLocation(target.TargetString.Length));
-									}
-								}
-							}
-						}
-					}
+					return HandlePositionalRequest(positionParams) as IEnumerable<Location>;
 				}
 				catch (Exception e)
 				{
@@ -78,5 +35,59 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				return Enumerable.Empty<Location>();
 			}
 		}
+
+		#region CursorTarget handlers
+
+		protected override IEnumerable<Location> HandleRulesKey(CursorTarget cursorTarget)
+		{
+			if (cursorTarget.TargetNodeIndentation == 1)
+			{
+				// Find where else the selected trait is used.
+				return symbolCache[cursorTarget.ModId].ActorDefinitions
+					.SelectMany(x =>
+						x.SelectMany(y => y.Traits.Where(z => z.Name == cursorTarget.TargetString)))
+					.Select(x => x.Location.ToLspLocation(cursorTarget.TargetString.Length));
+			}
+
+			return Enumerable.Empty<Location>();
+		}
+
+		protected override IEnumerable<Location> HandleRulesValue(CursorTarget cursorTarget)
+		{
+			return Enumerable.Empty<Location>();
+		}
+
+		protected override IEnumerable<Location> HandleWeaponKey(CursorTarget cursorTarget)
+		{
+			return Enumerable.Empty<Location>();
+		}
+
+		protected override IEnumerable<Location> HandleWeaponValue(CursorTarget cursorTarget)
+		{
+			if (cursorTarget.TargetNodeIndentation == 1)
+			{
+				var targetNodeKey = cursorTarget.TargetNode.Key;
+				if (targetNodeKey == "Projectile")
+				{
+					// Find where else the selected projectile type is used.
+					return symbolCache[cursorTarget.ModId].WeaponDefinitions
+						.SelectMany(x => x.Where(y => y.Projectile.Name == cursorTarget.TargetString))
+						.Select(x => x.Projectile.Location.ToLspLocation(cursorTarget.TargetString.Length));
+				}
+
+				if (targetNodeKey == "Warhead" || targetNodeKey.StartsWith("Warhead@"))
+				{
+					// Find where else the selected warhead type is used.
+					return symbolCache[cursorTarget.ModId].WeaponDefinitions
+						.SelectMany(x =>
+							x.SelectMany(y => y.Warheads.Where(z => z.Name == cursorTarget.TargetString)))
+						.Select(x => x.Location.ToLspLocation(cursorTarget.TargetString.Length));
+				}
+			}
+
+			return Enumerable.Empty<Location>();
+		}
+
+		#endregion
 	}
 }
