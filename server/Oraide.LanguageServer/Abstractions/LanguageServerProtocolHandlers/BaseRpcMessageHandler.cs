@@ -109,35 +109,32 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 
 			Initialize(cursorTarget);
 
-			if (cursorTarget.FileType == FileType.Rules)
-				return HandleRulesFile(cursorTarget);
-
-			if (cursorTarget.FileType == FileType.Weapons)
-				return HandleWeaponFile(cursorTarget);
-
-			return null;
+			return cursorTarget.FileType switch
+			{
+				FileType.Rules => HandleRulesFile(cursorTarget),
+				FileType.Weapons => HandleWeaponFile(cursorTarget),
+				_ => null
+			};
 		}
 
 		protected virtual object HandleRulesFile(CursorTarget cursorTarget)
 		{
-			if (cursorTarget.TargetType == "key")
-				return HandleRulesKey(cursorTarget);
-
-			if (cursorTarget.TargetType == "value")
-				return HandleRulesValue(cursorTarget);
-
-			return null;
+			return cursorTarget.TargetType switch
+			{
+				"key" => HandleRulesKey(cursorTarget),
+				"value" => HandleRulesValue(cursorTarget),
+				_ => null
+			};
 		}
 
 		protected virtual object HandleWeaponFile(CursorTarget cursorTarget)
 		{
-			if (cursorTarget.TargetType == "key")
-				return HandleWeaponKey(cursorTarget);
-
-			if (cursorTarget.TargetType == "value")
-				return HandleWeaponValue(cursorTarget);
-
-			return null;
+			return cursorTarget.TargetType switch
+			{
+				"key" => HandleWeaponKey(cursorTarget),
+				"value" => HandleWeaponValue(cursorTarget),
+				_ => null
+			};
 		}
 
 		protected virtual object HandleRulesKey(CursorTarget cursorTarget) { return null; }

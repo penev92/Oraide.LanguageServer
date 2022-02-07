@@ -157,15 +157,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					// Get only trait properties.
 					var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
 					var traitInfoName = $"{traitName}Info";
-					var traits = symbolCache[modId].TraitInfos[traitInfoName];
 					var presentProperties = cursorTarget.TargetNode.ParentNode.ChildNodes.Select(x => x.Key).ToHashSet();
-
-					var inheritedTraits = new List<TraitInfo>();
-					inheritedTraits.AddRange(GetInheritedTraitInfos(symbolCache[modId], traits));
 
 					// Getting all traits and then all their properties is not great but we have no way to differentiate between traits of the same name
 					// until the server learns the concept of a mod and loaded assemblies.
-					return inheritedTraits
+					return symbolCache[modId].TraitInfos[traitInfoName]
 						.SelectMany(x => x.TraitPropertyInfos)
 						.DistinctBy(y => y.Name)
 						.Where(x => !presentProperties.Contains(x.Name))
@@ -185,15 +181,37 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					return Enumerable.Empty<CompletionItem>();
 
 				case 1:
+				{
 					// Get actor definitions (for inheriting).
-					// TODO:
-					return actorNames;
+					if (cursorTarget.TargetNode.Key == "Inherits" || cursorTarget.TargetNode.Key.StartsWith("Inherits@"))
+						return actorNames;
+
+					return Enumerable.Empty<CompletionItem>();
+				}
 
 				case 2:
 				{
-					// This would likely be a TraitInfo property's value, so at this point it's anyone's guess. Probably skip until we can give type-specific suggestions.
-					// TODO:
-					return traitNames.Union(actorNames).Union(weaponNames).Union(conditionNames);
+					var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
+					var traitInfoName = $"{traitName}Info";
+
+					// Using .First() is not great but we have no way to differentiate between traits of the same name
+					// until the server learns the concept of a mod and loaded assemblies.
+					var traitInfo = symbolCache[modId].TraitInfos[traitInfoName].First();
+					var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+
+					if (fieldInfo.OtherAttributes.Any(x => x.Name == "ActorReference"))
+						return actorNames;
+
+					if (fieldInfo.OtherAttributes.Any(x => x.Name == "WeaponReference"))
+						return weaponNames;
+
+					if (fieldInfo.OtherAttributes.Any(x => x.Name == "GrantedConditionReference"))
+						return conditionNames;
+
+					if (fieldInfo.OtherAttributes.Any(x => x.Name == "ConsumedConditionReference"))
+						return conditionNames;
+
+					return Enumerable.Empty<CompletionItem>();
 				}
 
 				default:
@@ -273,19 +291,5 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		}
 
 		#endregion
-
-		// TODO: Go further than one level of inheritance down.
-		IEnumerable<TraitInfo> GetInheritedTraitInfos(ModSymbols modSymbols, IEnumerable<TraitInfo> traitInfos)
-		{
-			foreach (var traitInfo in traitInfos)
-			{
-				yield return traitInfo;
-
-				foreach (var inheritedTypeName in traitInfo.BaseTypes)
-					if (modSymbols.TraitInfos.Contains(inheritedTypeName))
-						foreach (var inheritedTraitInfo in modSymbols.TraitInfos[inheritedTypeName])
-							yield return inheritedTraitInfo;
-			}
-		}
 	}
 }

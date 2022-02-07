@@ -44,7 +44,7 @@ namespace Oraide.Core.Entities.Csharp
 			if (!string.IsNullOrWhiteSpace(DefaultValue))
 				content += $"\n\nDefault value: {DefaultValue}";
 
-			if (OtherAttributes.Length != 0)
+			if (OtherAttributes != null && OtherAttributes.Length != 0)
 				content += "\n" +
 				           "```yaml\n\n" +
 						   "Field Attributes\n" +

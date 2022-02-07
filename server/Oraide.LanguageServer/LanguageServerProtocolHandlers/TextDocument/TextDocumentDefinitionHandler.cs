@@ -12,7 +12,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
 	public class TextDocumentDefinitionHandler : BaseRpcMessageHandler
 	{
-		string modId;
 		WeaponInfo weaponInfo;
 		ModSymbols modSymbols;
 
@@ -43,31 +42,107 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		protected override void Initialize(CursorTarget cursorTarget)
 		{
-			modId = cursorTarget.ModId;
-			modSymbols = symbolCache[modId];
-			weaponInfo = symbolCache[modId].WeaponInfo;
+			modSymbols = symbolCache[cursorTarget.ModId];
+			weaponInfo = symbolCache[cursorTarget.ModId].WeaponInfo;
 		}
 
 		#region CursorTarget handlers
 
-		// TODO:
 		protected override IEnumerable<Location> HandleRulesKey(CursorTarget cursorTarget)
 		{
-			if ((cursorTarget.TargetNodeIndentation == 1 || cursorTarget.TargetNodeIndentation == 2)
-			    && TryGetTargetCodeDefinitionLocations(cursorTarget, out var codeDefinitionLocations))
-				return codeDefinitionLocations;
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+					return Enumerable.Empty<Location>();
 
-			return Enumerable.Empty<Location>();
+				case 1:
+				{
+					var traitName = cursorTarget.TargetNode.Key.Split('@')[0];
+					var traitInfoName = $"{traitName}Info";
+
+					// Using .First() is not great but we have no way to differentiate between traits of the same name
+					// until the server learns the concept of a mod and loaded assemblies.
+					var traitInfo = modSymbols.TraitInfos[traitInfoName].FirstOrDefault();
+					if (traitInfo.TraitName != null)
+						return new[] { traitInfo.Location.ToLspLocation(cursorTarget.TargetString.Length) };
+
+					return Enumerable.Empty<Location>();
+				}
+
+				case 2:
+				{
+					var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
+					var traitInfoName = $"{traitName}Info";
+
+					// Using .First() is not great but we have no way to differentiate between traits of the same name
+					// until the server learns the concept of a mod and loaded assemblies.
+					var traitInfo = modSymbols.TraitInfos[traitInfoName].FirstOrDefault();
+					if (traitInfo.TraitName != null)
+					{
+						var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+						if (fieldInfo.Name != null)
+							return new[] { fieldInfo.Location.ToLspLocation(cursorTarget.TargetString.Length) };
+					}
+
+					return Enumerable.Empty<Location>();
+				}
+
+				default:
+					return Enumerable.Empty<Location>();
+			}
 		}
 
-		// TODO:
 		protected override IEnumerable<Location> HandleRulesValue(CursorTarget cursorTarget)
 		{
-			if ((cursorTarget.TargetType == "value" || cursorTarget.TargetNodeIndentation == 0)
-			    && TryGetTargetYamlDefinitionLocations(cursorTarget, out var yamlDefinitionLocations))
-				return yamlDefinitionLocations;
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+					return Enumerable.Empty<Location>();
 
-			return Enumerable.Empty<Location>();
+				case 1:
+				{
+					// Get actor definitions (for inheriting).
+					if (cursorTarget.TargetNode.Key == "Inherits" || cursorTarget.TargetNode.Key.StartsWith("Inherits@"))
+						return modSymbols.ActorDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
+
+					return Enumerable.Empty<Location>();
+				}
+
+				case 2:
+				{
+					var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
+					var traitInfoName = $"{traitName}Info";
+
+					// Using .First() is not great but we have no way to differentiate between traits of the same name
+					// until the server learns the concept of a mod and loaded assemblies.
+					var traitInfo = modSymbols.TraitInfos[traitInfoName].FirstOrDefault();
+					if (traitInfo.TraitName != null)
+					{
+						var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+						if (fieldInfo.Name != null)
+						{
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "ActorReference"))
+								return modSymbols.ActorDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
+
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "WeaponReference"))
+								return modSymbols.WeaponDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
+
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "GrantedConditionReference"))
+								return modSymbols.ConditionDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
+
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "ConsumedConditionReference"))
+								return modSymbols.ConditionDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
+						}
+
+						return new[] { fieldInfo.Location.ToLspLocation(cursorTarget.TargetString.Length) };
+					}
+
+					return Enumerable.Empty<Location>();
+				}
+
+				default:
+					return Enumerable.Empty<Location>();
+			}
 		}
 
 		protected override IEnumerable<Location> HandleWeaponKey(CursorTarget cursorTarget)
@@ -114,7 +189,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
 						if (warhead.Name != null)
 						{
-							// TODO: Check base types for inherited properties.
 							var fieldInfo = warhead.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
 							if (fieldInfo.Name != null)
 								return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.Name.Length) };
@@ -170,33 +244,5 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		}
 
 		#endregion
-
-		private bool TryGetTargetCodeDefinitionLocations(CursorTarget target, out IEnumerable<Location> definitionLocations)
-		{
-			if (!TryGetCodeMemberLocation(target.TargetNode, target.TargetString, out var traitInfo, out var location))
-			{
-				definitionLocations = default;
-				return false;
-			}
-
-			definitionLocations = new[] { location.ToLspLocation(target.TargetString.Length) };
-			return true;
-		}
-
-		private bool TryGetTargetYamlDefinitionLocations(CursorTarget target, out IEnumerable<Location> definitionLocations)
-		{
-			// Check targetNode node type - probably via IndentationLevel enum.
-			// If it is a top-level node *and this is an actor-definition or a weapon-definition file* it definitely is a definition.
-			// If it is indented once we need to check if the target is the key or the value - keys are traits, but values *could* reference actor/weapon definitions.
-
-			var targetLength = target.TargetString.Length;
-
-			definitionLocations =
-				modSymbols.ActorDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength))
-				.Union(modSymbols.WeaponDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength)))
-				.Union(modSymbols.ConditionDefinitions[target.TargetString].Select(x => x.Location.ToLspLocation(targetLength)));
-
-			return true;
-		}
 	}
 }

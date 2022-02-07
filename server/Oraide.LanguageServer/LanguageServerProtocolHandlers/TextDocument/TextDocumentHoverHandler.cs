@@ -15,6 +15,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 	{
 		Range range;
 		WeaponInfo weaponInfo;
+		ModSymbols modSymbols;
 
 		public TextDocumentHoverHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
 			: base(symbolCache, openFileCache) { }
@@ -30,10 +31,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						Console.Error.WriteLine("<-- TextDocument-Hover");
 
 					return HandlePositionalRequest(positionParams) as Hover;
-
-					// TODO:
-					// if (TryGetTargetValueHoverInfo(target, out var valueHoverInfo))
-					// 	return HoverFromHoverInfo(valueHoverInfo.Content, valueHoverInfo.Range);
 				}
 				catch (Exception e)
 				{
@@ -48,30 +45,118 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		protected override void Initialize(CursorTarget cursorTarget)
 		{
 			range = cursorTarget.ToRange();
+			modSymbols = symbolCache[cursorTarget.ModId];
 			weaponInfo = symbolCache[cursorTarget.ModId].WeaponInfo;
 		}
 
 		#region CursorTarget handlers
 
-		// TODO:
 		protected override Hover HandleRulesKey(CursorTarget cursorTarget)
 		{
-			if (cursorTarget.TargetType == "key"
-			    && (cursorTarget.TargetNodeIndentation == 1 || cursorTarget.TargetNodeIndentation == 2)
-			    && TryGetTargetCodeHoverInfo(cursorTarget, out var codeHoverInfo))
-				return HoverFromHoverInfo(codeHoverInfo.Content, codeHoverInfo.Range);
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+				{
+					if (modSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
+						return HoverFromHoverInfo($"```csharp\nActor \"{cursorTarget.TargetString}\"\n```", range);
 
-			return null;
+					return null;
+				}
+
+				case 1:
+				{
+					if (cursorTarget.TargetString == "Inherits")
+						return HoverFromHoverInfo($"Inherits (and possibly overwrites) rules from actor {cursorTarget.TargetNode.Value}", range);
+
+					var traitInfoName = $"{cursorTarget.TargetString}Info";
+					if (modSymbols.TraitInfos.Contains(traitInfoName))
+					{
+						// Using .First() is not great but we have no way to differentiate between traits of the same name
+						// until the server learns the concept of a mod and loaded assemblies.
+						var traitInfo = modSymbols.TraitInfos[traitInfoName].First();
+						var content = traitInfo.ToMarkdownInfoString() + "\n\n" + "https://docs.openra.net/en/latest/release/traits/#" + $"{traitInfo.TraitName.ToLower()}";
+						return HoverFromHoverInfo(content, range);
+					}
+
+					return null;
+				}
+
+				case 2:
+				{
+					var traitInfoName = $"{cursorTarget.TargetNode.ParentNode.Key.Split("@")[0]}Info";
+					if (modSymbols.TraitInfos.Contains(traitInfoName))
+					{
+						// Using .First() is not great but we have no way to differentiate between traits of the same name
+						// until the server learns the concept of a mod and loaded assemblies.
+						var traitInfo = modSymbols.TraitInfos[traitInfoName].First();
+						var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+						var content = fieldInfo.ToMarkdownInfoString();
+						return HoverFromHoverInfo(content, range);
+					}
+
+					return null;
+				}
+
+				default:
+					return null;
+			}
 		}
 
-		// TODO:
 		protected override Hover HandleRulesValue(CursorTarget cursorTarget)
 		{
-			if ((cursorTarget.TargetType == "value" || cursorTarget.TargetNodeIndentation == 0)
-			    && TryGetTargetYamlHoverInfo(cursorTarget, out var yamlHoverInfo))
-				return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+					return null;
 
-			return null;
+				case 1:
+				{
+					if (cursorTarget.TargetNode.Key == "Inherits" || cursorTarget.TargetNode.Key.StartsWith("Inherits@"))
+						if (modSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
+							return HoverFromHoverInfo($"```csharp\nActor \"{cursorTarget.TargetString}\"\n```", range);
+
+					return null;
+				}
+
+				case 2:
+				{
+					var traitInfoName = $"{cursorTarget.TargetNode.ParentNode.Key.Split("@")[0]}Info";
+					if (modSymbols.TraitInfos.Contains(traitInfoName))
+					{
+						// Using .First() is not great but we have no way to differentiate between traits of the same name
+						// until the server learns the concept of a mod and loaded assemblies.
+						var traitInfo = modSymbols.TraitInfos[traitInfoName].First();
+						var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+						if (fieldInfo.Name != null)
+						{
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "ActorReference") && modSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
+								return HoverFromHoverInfo($"```csharp\nActor \"{cursorTarget.TargetString}\"\n```", range);
+
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "WeaponReference") && modSymbols.WeaponDefinitions.Contains(cursorTarget.TargetString))
+								return HoverFromHoverInfo($"```csharp\nWeapon \"{cursorTarget.TargetString}\"\n```", range);
+
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "GrantedConditionReference") && modSymbols.ConditionDefinitions.Contains(cursorTarget.TargetString))
+								return HoverFromHoverInfo($"```csharp\nCondition \"{cursorTarget.TargetString}\"\n```", range);
+
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "ConsumedConditionReference") && modSymbols.ConditionDefinitions.Contains(cursorTarget.TargetString))
+								return HoverFromHoverInfo($"```csharp\nCondition \"{cursorTarget.TargetString}\"\n```", range);
+						}
+
+						// Show explanation for world range value.
+						if(Regex.IsMatch(cursorTarget.TargetString, "[0-9]+c[0-9]+", RegexOptions.Compiled))
+						{
+							var parts = cursorTarget.TargetString.Split('c');
+							var content = $"Range in world distance units equal to {parts[0]} cells and {parts[1]} distance units (where 1 cell has 1024 units)";
+							return HoverFromHoverInfo(content, range);
+						}
+					}
+
+					return null;
+				}
+
+				default:
+					return null;
+			}
 		}
 
 		protected override Hover HandleWeaponKey(CursorTarget cursorTarget)
@@ -79,15 +164,17 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			switch (cursorTarget.TargetNodeIndentation)
 			{
 				case 0:
-					if (TryGetTargetYamlHoverInfo(cursorTarget, out var yamlHoverInfo))
-						return HoverFromHoverInfo(yamlHoverInfo.Content, yamlHoverInfo.Range);
+				{
+					if (modSymbols.WeaponDefinitions.Contains(cursorTarget.TargetString))
+						return HoverFromHoverInfo($"```csharp\nWeapon \"{cursorTarget.TargetString}\"\n```", range);
 
 					return null;
+				}
 
 				case 1:
 				{
 					if (cursorTarget.TargetString == "Inherits")
-						return HoverFromHoverInfo("Inherits (and possibly overwrites) rules from a weapon", range);
+						return HoverFromHoverInfo($"Inherits (and possibly overwrites) rules from weapon {cursorTarget.TargetNode.Value}", range);
 
 					if (cursorTarget.TargetString == "Warhead" || cursorTarget.TargetString.StartsWith("Warhead@"))
 						return HoverFromHoverInfo("Warhead used by this weapon.", range);
@@ -171,11 +258,30 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						}
 					}
 
+
+					// Show explanation for world range value.
+					if (Regex.IsMatch(cursorTarget.TargetString, "[0-9]+c[0-9]+", RegexOptions.Compiled))
+					{
+						var parts = cursorTarget.TargetString.Split('c');
+						var content = $"Range in world distance units equal to {parts[0]} cells and {parts[1]} distance units (where 1 cell has 1024 units)";
+						return HoverFromHoverInfo(content, range);
+					}
+
 					return null;
 				}
 
 				case 2:
+				{
+					// Show explanation for world range value.
+					if (Regex.IsMatch(cursorTarget.TargetString, "[0-9]+c[0-9]+", RegexOptions.Compiled))
+					{
+						var parts = cursorTarget.TargetString.Split('c');
+						var content = $"Range in world distance units equal to {parts[0]} cells and {parts[1]} distance units (where 1 cell has 1024 units)";
+						return HoverFromHoverInfo(content, range);
+					}
+
 					return null;
+				}
 
 				default:
 					return null;
@@ -183,85 +289,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		}
 
 		#endregion
-
-		private bool TryGetTargetCodeHoverInfo(CursorTarget target, out (string Content, Range Range) hoverInfo)
-		{
-			if (!TryGetCodeMemberLocation(target.TargetNode, target.TargetString, out var traitInfo, out _))
-			{
-				hoverInfo = (null, null);
-				return false;
-			}
-
-			var content = string.Empty;
-			if (traitInfo.TraitName == target.TargetString)
-			{
-				content = traitInfo.ToMarkdownInfoString() + "\n\n" + "https://docs.openra.net/en/latest/release/traits/#" + $"{traitInfo.TraitName.ToLower()}";
-			}
-			else
-			{
-				var prop = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == target.TargetString);
-				if (prop.Name != null)
-					content = prop.ToMarkdownInfoString();
-			}
-
-			if (string.IsNullOrWhiteSpace(content))
-			{
-				hoverInfo = (null, null);
-				return false;
-			}
-
-			hoverInfo = (content, target.ToRange());
-			return true;
-		}
-
-		private bool TryGetTargetYamlHoverInfo(CursorTarget target, out (string Content, Range Range) hoverInfo)
-		{
-			var symbolType = string.Empty;
-
-			if (symbolCache[target.ModId].ActorDefinitions.Any(x => x.Key == target.TargetString))
-				symbolType = "Actor";
-
-			if (symbolCache[target.ModId].WeaponDefinitions.Any(x => x.Key == target.TargetString))
-				symbolType = "Weapon";
-
-			if (symbolCache[target.ModId].ConditionDefinitions.Any(x => x.Key == target.TargetString))
-				symbolType = "Condition";
-
-			if (string.IsNullOrWhiteSpace(symbolType))
-			{
-				hoverInfo = (null, null);
-				return false;
-			}
-
-			hoverInfo = ($"```csharp\n{symbolType} \"{target.TargetString}\"\n```", target.ToRange());
-			return true;
-		}
-
-		private bool TryGetTargetValueHoverInfo(CursorTarget target, out (string Content, Range Range) hoverInfo)
-		{
-			var range = target.ToRange();
-			if (target.TargetType == "key")
-			{
-				if (target.TargetString == "Inherits")
-				{
-					hoverInfo = ($"Inherits (and possibly overwrites) rules from {target.TargetNode.Value ?? (target.FileType == FileType.Rules ? "an actor" : "a weapon")}", range);
-					return true;
-				}
-			}
-			else if (target.TargetType == "value")
-			{
-				if (Regex.IsMatch(target.TargetString, "[0-9]+c[0-9]+", RegexOptions.Compiled))
-				{
-					var parts = target.TargetString.Split('c');
-					hoverInfo = ($"Range in world distance units equal to {parts[0]} cells and {parts[1]} distance units (where 1 cell has 1024 units)", range);
-
-					return true;
-				}
-			}
-
-			hoverInfo = (null, null);
-			return false;
-		}
 
 		private static Hover HoverFromHoverInfo(string content, Range range)
 		{
