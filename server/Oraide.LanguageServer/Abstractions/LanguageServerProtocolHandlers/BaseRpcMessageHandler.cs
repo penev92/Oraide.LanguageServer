@@ -147,50 +147,6 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 
 		#endregion
 
-		protected bool TryGetCodeMemberLocation(YamlNode targetNode, string targetString, out TraitInfo traitInfo, out MemberLocation location)
-		{
-			// Try treating the target string as a trait name.
-			var traitName = targetString.Split('@')[0];
-			if (TryGetTraitInfo(traitName, out traitInfo))
-			{
-				location = traitInfo.Location;
-				return trace;
-			}
-
-			// Assuming we are targeting a trait property, search for a trait based on the parent node.
-			traitName = targetNode.ParentNode?.Key.Split('@')[0];
-			if (TryGetTraitInfo(traitName, out traitInfo))
-			{
-				if (CheckTraitInheritanceTree(traitInfo, targetString, out var inheritedTraitInfo, out var propertyLocation))
-				{
-					traitInfo = inheritedTraitInfo;
-					location = propertyLocation;
-					return true;
-				}
-			}
-
-			location = default;
-			return false;
-		}
-
-		protected bool TryGetTraitInfo(string traitName, out TraitInfo traitInfo, bool addInfoSuffix = true)
-		{
-			// TODO: HACK HACK HACK - There should be a better way to do this...
-			var cache = symbolCache.ModSymbols.First().Value;
-
-			var searchString = addInfoSuffix ? $"{traitName}Info" : traitName;
-			if (cache.TraitInfos.Contains(searchString))
-			{
-				// Using .First() is not great but we have no way to differentiate between traits of the same name
-				// until the server learns the concept of a mod and loaded assemblies.
-				traitInfo = cache.TraitInfos[searchString].First();
-				return true;
-			}
-
-			traitInfo = default;
-			return false;
-		}
-
 		protected bool TryGetModId(string fileUri, out string modId)
 		{
 			var match = Regex.Match(fileUri, "(\\/mods\\/[^\\/]*\\/)").Value;
@@ -240,42 +196,6 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 
 			startIndex = targetLine.IndexOf(targetString, StringComparison.InvariantCulture);
 			endIndex = startIndex + targetString.Length;
-			return true;
-		}
-
-		bool CheckTraitInheritanceTree(TraitInfo traitInfo, string propertyName, out TraitInfo targetTrait, out MemberLocation location)
-		{
-			TraitInfo? resultTrait = null;
-			MemberLocation? resultLocation = null;
-
-			// The property may be a field of the TraitInfo...
-			if (traitInfo.TraitPropertyInfos.Any(x => x.Name == propertyName))
-			{
-				var property = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == propertyName);
-				resultTrait = traitInfo;
-				resultLocation = property.Location;
-			}
-			else
-			{
-				// ... or it could be inherited.
-				foreach (var inheritedType in traitInfo.BaseTypes)
-					if (TryGetTraitInfo(inheritedType, out var inheritedTraitInfo, false))
-						if (CheckTraitInheritanceTree(inheritedTraitInfo, propertyName, out targetTrait, out var inheritedLocation))
-						{
-							resultTrait = targetTrait;
-							resultLocation = inheritedLocation;
-						}
-			}
-
-			if (resultLocation == null)
-			{
-				targetTrait = default;
-				location = default;
-				return false;
-			}
-
-			targetTrait = resultTrait.Value;
-			location = resultLocation.Value;
 			return true;
 		}
 	}
