@@ -53,7 +53,8 @@
 			"icon": {
 				"dark": "images/icon.png",
 				"light": "images/icon.png"
-			}
+			},
+			"configuration": "./language-configuration.json"
 		}],
 		"grammars": [
 			{
