@@ -79,7 +79,7 @@ function start(context: vscode.ExtensionContext, serverPath: string, workspaceFo
     const serverOptions: vscodelc.ServerOptions = async () => languageServer.spawnServerProcess(serverPath, workspaceFolderPath, defaultOpenRaPath);
 
     const clientOptions: vscodelc.LanguageClientOptions = {
-        // Register the server for 'yaml' (.yaml) files. This uses the definition for 'miniyaml' found in package.json under 'contributes.languages'. (not any more)
+        // Register the server for 'yaml' (.yaml) files. This uses the definition for 'miniyaml' found in package.json under 'contributes.languages'.
         documentSelector: [
             {
                 language: 'miniyaml',
