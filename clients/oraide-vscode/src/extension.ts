@@ -46,6 +46,16 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     start(context, serverPath, workspaceFolderPath, gameFolderPath!);
+
+    // Detect if a file identified as YAML is actually MiniYAML and switch if so.
+    vscode.workspace.onDidOpenTextDocument(e => {
+        if (e.languageId == 'yaml') {
+            const text = e.getText();
+            if (text.includes('\t')) {
+                vscode.languages.setTextDocumentLanguage(e, 'miniyaml');
+            }
+        }
+    })
 }
 
 // this method is called when your extension is deactivated
@@ -69,14 +79,14 @@ function start(context: vscode.ExtensionContext, serverPath: string, workspaceFo
     const serverOptions: vscodelc.ServerOptions = async () => languageServer.spawnServerProcess(serverPath, workspaceFolderPath, defaultOpenRaPath);
 
     const clientOptions: vscodelc.LanguageClientOptions = {
-        // Register the server for 'yaml' (.yaml) files. This uses the definition for 'miniyaml' found in package.json under 'contributes.languages'. (not any more)
+        // Register the server for 'yaml' (.yaml) files. This uses the definition for 'miniyaml' found in package.json under 'contributes.languages'.
         documentSelector: [
             {
-                language: 'yaml',
+                language: 'miniyaml',
                 scheme: 'file',
             },
             {
-                language: 'yaml',
+                language: 'miniyaml',
                 scheme: 'untitled',
             },
         ],

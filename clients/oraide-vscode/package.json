@@ -46,7 +46,23 @@
 					"description": "Path to the default OpenRA repository or installation folder.\nThis is used as a fallback when looking for engine information if none is found."
 				}
 			}
-		}
+		},
+		"languages": [{
+			"id": "miniyaml",
+			"aliases": ["MiniYAML"],
+			"icon": {
+				"dark": "images/icon.png",
+				"light": "images/icon.png"
+			},
+			"configuration": "./language-configuration.json"
+		}],
+		"grammars": [
+			{
+				"language": "miniyaml",
+				"scopeName": "source.miniyaml",
+				"path": "./syntaxes/miniyaml.tmLanguage.json"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
