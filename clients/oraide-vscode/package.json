@@ -65,7 +65,7 @@
 		]
 	},
 	"scripts": {
-		"prepare": "@powershell copy ../../MiniYAML.tmbundle/Syntaxes/MiniYAML.tmLanguage ./syntaxes/MiniYAML.tmLanguage",
+		"prepare": "npx copyfiles ../../MiniYAML.tmbundle/Syntaxes/*.* ./syntaxes -flat",
 		"vscode:prepublish": "npm run compile",
 		"compile": "npm run prepare && tsc -p ./",
 		"watch": "npm run prepare && tsc -watch -p ./",
