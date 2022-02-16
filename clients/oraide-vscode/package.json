@@ -60,14 +60,15 @@
 			{
 				"language": "miniyaml",
 				"scopeName": "source.miniyaml",
-				"path": "./syntaxes/miniyaml.tmLanguage.json"
+				"path": "./syntaxes/MiniYAML.tmLanguage"
 			}
 		]
 	},
 	"scripts": {
+		"prepare": "@powershell copy ../../MiniYAML.tmbundle/Syntaxes/MiniYAML.tmLanguage ./syntaxes/MiniYAML.tmLanguage",
 		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
+		"compile": "npm run prepare && tsc -p ./",
+		"watch": "npm run prepare && tsc -watch -p ./",
 		"pretest": "npm run compile && npm run lint",
 		"lint": "eslint src --ext ts",
 		"test": "node ./out/test/runTest.js"
