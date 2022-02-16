@@ -47,15 +47,19 @@
 				}
 			}
 		},
-		"languages": [{
-			"id": "miniyaml",
-			"aliases": ["MiniYAML"],
-			"icon": {
-				"dark": "images/icon.png",
-				"light": "images/icon.png"
-			},
-			"configuration": "./language-configuration.json"
-		}],
+		"languages": [
+			{
+				"id": "miniyaml",
+				"aliases": [
+					"MiniYAML"
+				],
+				"icon": {
+					"dark": "images/icon.png",
+					"light": "images/icon.png"
+				},
+				"configuration": "./language-configuration.json"
+			}
+		],
 		"grammars": [
 			{
 				"language": "miniyaml",
