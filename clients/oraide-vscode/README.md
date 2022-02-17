@@ -24,6 +24,10 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.1.2
+
+ - Reintroduced MiniYAML as a custom language for OpenRA .yaml files.
+
 ### 0.1.1
 
  - Improved parsing of C# files:
