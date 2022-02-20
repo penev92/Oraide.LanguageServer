@@ -54,8 +54,8 @@
 					"MiniYAML"
 				],
 				"icon": {
-					"dark": "images/icon.png",
-					"light": "images/icon.png"
+					"dark": "images/miniyaml-icon.svg",
+					"light": "images/miniyaml-icon.svg"
 				},
 				"configuration": "./language-configuration.json"
 			}
