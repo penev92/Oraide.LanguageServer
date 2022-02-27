@@ -23,17 +23,18 @@ namespace Oraide.LanguageServer.Caching
 
 		public (ReadOnlyCollection<string>, ReadOnlyCollection<YamlNode>) this[string filePath] => openFiles[filePath];
 
-		public void AddOrUpdateOpenFile(string filePath)
+		public void AddOrUpdateOpenFile(string fileUri)
 		{
+			var filePath = fileUri.Replace("file:///", string.Empty).Replace("%3A", ":");
 			var text = File.ReadAllText(filePath);
-			AddOrUpdateOpenFile(filePath, text);
+			AddOrUpdateOpenFile(fileUri, text);
 		}
 
-		public void AddOrUpdateOpenFile(string filePath, string content)
+		public void AddOrUpdateOpenFile(string fileUri, string content)
 		{
 			var lines = content.Split(new[] {"\r\n", "\n"}, StringSplitOptions.None);
 			var nodes = yamlInformationProvider.ParseText(content, true);
-			openFiles[filePath] = (new ReadOnlyCollection<string>(lines), new ReadOnlyCollection<YamlNode>(nodes.ToArray()));
+			openFiles[fileUri] = (new ReadOnlyCollection<string>(lines), new ReadOnlyCollection<YamlNode>(nodes.ToArray()));
 		}
 
 		public void RemoveOpenFile(string filePath)
