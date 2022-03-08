@@ -24,6 +24,13 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.1.3
+
+ - Added a "custom" language icon for MiniYAML to match the official YAML icon.
+ - Fixed weapon parsing crashing on empty weapons.
+ - Fixed symbol cache updating crashing due wrongly handled file paths/urls.
+ - Switched to OpenRA/MiniYAML.tmbundle for the MiniYAML language.
+
 ### 0.1.2
 
  - Reintroduced MiniYAML as a custom language for OpenRA .yaml files.
