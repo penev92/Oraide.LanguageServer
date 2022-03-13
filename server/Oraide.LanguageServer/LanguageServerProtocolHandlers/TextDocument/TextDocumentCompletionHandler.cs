@@ -18,6 +18,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		IEnumerable<CompletionItem> actorNames;
 		IEnumerable<CompletionItem> weaponNames;
 		IEnumerable<CompletionItem> conditionNames;
+		IEnumerable<CompletionItem> cursorNames;
 		WeaponInfo weaponInfo;
 
 		readonly CompletionItem inheritsCompletionItem = new ()
@@ -134,6 +135,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			actorNames = symbolCache[modId].ActorDefinitions.Select(x => x.First().ToCompletionItem());
 			weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => x.First().ToCompletionItem());
 			conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => x.First().ToCompletionItem());
+			cursorNames = symbolCache[modId].CursorDefinitions.Select(x => x.First().ToCompletionItem());
 
 			weaponInfo = symbolCache[modId].WeaponInfo;
 		}
@@ -210,6 +212,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					if (fieldInfo.OtherAttributes.Any(x => x.Name == "ConsumedConditionReference"))
 						return conditionNames;
+
+					if (fieldInfo.OtherAttributes.Any(x => x.Name == "CursorReference"))
+						return cursorNames;
 
 					return Enumerable.Empty<CompletionItem>();
 				}

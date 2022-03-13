@@ -53,6 +53,7 @@ namespace Oraide.LanguageServer.Caching
 			var actorDefinitionsPerMod = yamlInformationProvider.GetActorDefinitions();
 			var weaponDefinitionsPerMod = yamlInformationProvider.GetWeaponDefinitions();
 			var conditionDefinitionsPerMod = yamlInformationProvider.GetConditionDefinitions();
+			var cursorDefinitionsPerMod = yamlInformationProvider.GetCursorDefinitions();
 
 			elapsed = stopwatch.Elapsed;
 			Console.Error.WriteLine($"Took {elapsed} to load everything.");
@@ -70,7 +71,10 @@ namespace Oraide.LanguageServer.Caching
 						: Array.Empty<WeaponDefinition>().ToLookup(y => y.Name, z => z),
 					conditionDefinitionsPerMod.ContainsKey(x.Key)
 						? conditionDefinitionsPerMod[x.Key]
-						: Array.Empty<ConditionDefinition>().ToLookup(y => y.Name, z => z));
+						: Array.Empty<ConditionDefinition>().ToLookup(y => y.Name, z => z),
+					cursorDefinitionsPerMod.ContainsKey(x.Key)
+						? cursorDefinitionsPerMod[x.Key]
+						: Array.Empty<CursorDefinition>().ToLookup(y => y.Name, z => z));
 			}).ToDictionary(x => x.ModId, y => y);
 		}
 

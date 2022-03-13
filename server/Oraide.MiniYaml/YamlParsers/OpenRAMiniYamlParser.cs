@@ -105,6 +105,30 @@ namespace Oraide.MiniYaml.YamlParsers
 					y => y.ToLookup(n => n.Name, m => m));
 		}
 
+		public static IReadOnlyDictionary<string, ILookup<string, CursorDefinition>> GetCursorDefinitions(in string modFolderPath)
+		{
+			var result = new List<CursorDefinition>();
+
+			// TODO: What about maps?
+			// TODO: The searching is getting ridiculous.
+			var filePaths = Directory.EnumerateFiles(modFolderPath, "cursors.yaml", SearchOption.AllDirectories);
+
+			foreach (var filePath in filePaths)
+			{
+				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
+				var yamlNodes = nodes.SelectMany(x =>
+					x.Value.Nodes.SelectMany(y =>
+						y.Value.Nodes.Select(z => z.ToYamlNode(y.ToYamlNode()))));
+
+				var cursorDefinitions = yamlNodes.Select(x => new CursorDefinition(x.Key, x.ParentNode.Key, x.ParentNode.Value, x.Location));
+				result.AddRange(cursorDefinitions);
+			}
+
+			return result.GroupBy(x => OpenRaFolderUtils.GetModId(x.Location.FilePath))
+				.ToDictionary(x => x.Key,
+					y => y.ToLookup(n => n.Name, m => m));
+		}
+
 		public static IEnumerable<YamlNode> ParseText(string text, bool flatten = false)
 		{
 			var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromString(text, discardCommentsAndWhitespace: false).Select(x => x.ToYamlNode());
