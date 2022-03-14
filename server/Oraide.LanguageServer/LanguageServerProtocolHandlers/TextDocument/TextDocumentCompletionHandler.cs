@@ -89,12 +89,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				return false;
 			}
 
-			var (fileLines, fileNodes) = openFileCache[filePath];
+			var (fileNodes, flattenedNodes, fileLines) = openFileCache[filePath];
 
 			var targetLine = fileLines[targetLineIndex];
 			var pre = targetLine.Substring(0, targetCharacterIndex);
 
-			var targetNode = fileNodes[targetLineIndex];
+			var targetNode = flattenedNodes[targetLineIndex];
 
 			string sourceString;
 			string targetType;

@@ -12,8 +12,8 @@ namespace Oraide.LanguageServer.Caching
 	{
 		private readonly YamlInformationProvider yamlInformationProvider;
 
-		private readonly IDictionary<string, (ReadOnlyCollection<string>, ReadOnlyCollection<YamlNode>)> openFiles =
-			new Dictionary<string, (ReadOnlyCollection<string> Lines, ReadOnlyCollection<YamlNode> YamlNodes)>();
+		private readonly IDictionary<string, (ReadOnlyCollection<YamlNode> YamlNodes, ReadOnlyCollection<YamlNode> FlattenedYamlNodes, ReadOnlyCollection<string> Lines)>
+			openFiles = new Dictionary<string, (ReadOnlyCollection<YamlNode> YamlNodes, ReadOnlyCollection<YamlNode> FlattenedYamlNodes, ReadOnlyCollection<string> Lines)>();
 
 		public OpenFileCache()
 		{
@@ -21,7 +21,10 @@ namespace Oraide.LanguageServer.Caching
 			yamlInformationProvider = new YamlInformationProvider(null);
 		}
 
-		public (ReadOnlyCollection<string>, ReadOnlyCollection<YamlNode>) this[string filePath] => openFiles[filePath];
+		public (ReadOnlyCollection<YamlNode> YamlNodes,
+			ReadOnlyCollection<YamlNode> FlattenedYamlNodes,
+			ReadOnlyCollection<string> Lines)
+			this[string filePath] => openFiles[filePath];
 
 		public void AddOrUpdateOpenFile(string fileUri)
 		{
@@ -33,8 +36,11 @@ namespace Oraide.LanguageServer.Caching
 		public void AddOrUpdateOpenFile(string fileUri, string content)
 		{
 			var lines = content.Split(new[] {"\r\n", "\n"}, StringSplitOptions.None);
-			var nodes = yamlInformationProvider.ParseText(content, true);
-			openFiles[fileUri] = (new ReadOnlyCollection<string>(lines), new ReadOnlyCollection<YamlNode>(nodes.ToArray()));
+			var nodes = yamlInformationProvider.ParseText(content);
+			openFiles[fileUri] = (
+				new ReadOnlyCollection<YamlNode>(nodes.Original.ToArray()),
+				new ReadOnlyCollection<YamlNode>(nodes.Flattened.ToArray()),
+				new ReadOnlyCollection<string>(lines));
 		}
 
 		public void RemoveOpenFile(string filePath)
