@@ -23,13 +23,13 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 					if (trace)
 						Console.Error.WriteLine("<-- Workspace-Symbols");
 
-					var actors = symbolCache.ModSymbols.SelectMany(x => x.Value.ActorDefinitions
+					var actors = symbolCache.ModSymbols.SelectMany(x => x.Value.ModSymbols.ActorDefinitions
 						.Select(actorDefinition => actorDefinition.First().ToSymbolInformation()));
-					var weapons = symbolCache.ModSymbols.SelectMany(x => x.Value.WeaponDefinitions
+					var weapons = symbolCache.ModSymbols.SelectMany(x => x.Value.ModSymbols.WeaponDefinitions
 						.Select(weaponDefinition => weaponDefinition.First().ToSymbolInformation()));
-					var conditions = symbolCache.ModSymbols.SelectMany(x => x.Value.ConditionDefinitions
+					var conditions = symbolCache.ModSymbols.SelectMany(x => x.Value.ModSymbols.ConditionDefinitions
 						.Select(condition => condition.First().ToSymbolInformation()));
-					var cursors = symbolCache.ModSymbols.SelectMany(x => x.Value.CursorDefinitions
+					var cursors = symbolCache.ModSymbols.SelectMany(x => x.Value.ModSymbols.CursorDefinitions
 						.Select(cursor => cursor.First().ToSymbolInformation()));
 
 					return actors.Union(weapons).Union(conditions).Union(cursors);

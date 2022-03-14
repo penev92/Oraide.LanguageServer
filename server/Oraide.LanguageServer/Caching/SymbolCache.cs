@@ -5,13 +5,14 @@ using System.Linq;
 using Oraide.Core;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.Csharp;
+using Oraide.LanguageServer.Caching.Entities;
 using Oraide.MiniYaml;
 
 namespace Oraide.LanguageServer.Caching
 {
 	public class SymbolCache
 	{
-		public IReadOnlyDictionary<string, ModSymbols> ModSymbols { get; private set; }
+		public IReadOnlyDictionary<string, ModData> ModSymbols { get; private set; }
 
 		private readonly CodeInformationProvider codeInformationProvider;
 		private readonly YamlInformationProvider yamlInformationProvider;
@@ -29,7 +30,7 @@ namespace Oraide.LanguageServer.Caching
 			ModSymbols = CreateSymbolCachesPerMod();
 		}
 
-		IReadOnlyDictionary<string, ModSymbols> CreateSymbolCachesPerMod()
+		IReadOnlyDictionary<string, ModData> CreateSymbolCachesPerMod()
 		{
 			var modFolders = yamlInformationProvider.GetModDirectories();
 			var mods = modFolders.ToDictionary(OpenRaFolderUtils.GetModId, y => y);
@@ -60,9 +61,8 @@ namespace Oraide.LanguageServer.Caching
 
 			return mods.Select(x =>
 			{
-				return new ModSymbols(x.Key, x.Value,
-					traitInfos,
-					weaponInfo,
+				var codeSymbols = new CodeSymbols(traitInfos, weaponInfo);
+				var modSymbols = new ModSymbols(
 					actorDefinitionsPerMod.ContainsKey(x.Key)
 						? actorDefinitionsPerMod[x.Key]
 						: Array.Empty<ActorDefinition>().ToLookup(y => y.Name, z => z),
@@ -75,9 +75,11 @@ namespace Oraide.LanguageServer.Caching
 					cursorDefinitionsPerMod.ContainsKey(x.Key)
 						? cursorDefinitionsPerMod[x.Key]
 						: Array.Empty<CursorDefinition>().ToLookup(y => y.Name, z => z));
+
+				return new ModData(x.Key, x.Value, modSymbols, codeSymbols);
 			}).ToDictionary(x => x.ModId, y => y);
 		}
 
-		public ModSymbols this[string key] => ModSymbols[key];
+		public ModData this[string key] => ModSymbols[key];
 	}
 }

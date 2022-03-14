@@ -133,13 +133,13 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 			// Using .First() is not great but we have no way to differentiate between traits of the same name
 			// until the server learns the concept of a mod and loaded assemblies.
-			traitNames = symbolCache[modId].TraitInfos.Select(x => x.First().ToCompletionItem());
-			actorNames = symbolCache[modId].ActorDefinitions.Select(x => x.First().ToCompletionItem());
-			weaponNames = symbolCache[modId].WeaponDefinitions.Select(x => x.First().ToCompletionItem());
-			conditionNames = symbolCache[modId].ConditionDefinitions.Select(x => x.First().ToCompletionItem());
-			cursorNames = symbolCache[modId].CursorDefinitions.Select(x => x.First().ToCompletionItem());
+			traitNames = symbolCache[modId].CodeSymbols.TraitInfos.Select(x => x.First().ToCompletionItem());
+			actorNames = symbolCache[modId].ModSymbols.ActorDefinitions.Select(x => x.First().ToCompletionItem());
+			weaponNames = symbolCache[modId].ModSymbols.WeaponDefinitions.Select(x => x.First().ToCompletionItem());
+			conditionNames = symbolCache[modId].ModSymbols.ConditionDefinitions.Select(x => x.First().ToCompletionItem());
+			cursorNames = symbolCache[modId].ModSymbols.CursorDefinitions.Select(x => x.First().ToCompletionItem());
 
-			weaponInfo = symbolCache[modId].WeaponInfo;
+			weaponInfo = symbolCache[modId].CodeSymbols.WeaponInfo;
 		}
 
 		#region CursorTarget handlers
@@ -165,7 +165,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					// Getting all traits and then all their properties is not great but we have no way to differentiate between traits of the same name
 					// until the server learns the concept of a mod and loaded assemblies.
-					return symbolCache[modId].TraitInfos[traitInfoName]
+					return symbolCache[modId].CodeSymbols.TraitInfos[traitInfoName]
 						.SelectMany(x => x.TraitPropertyInfos)
 						.DistinctBy(y => y.Name)
 						.Where(x => !presentProperties.Contains(x.Name))
@@ -200,7 +200,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					// Using .First() is not great but we have no way to differentiate between traits of the same name
 					// until the server learns the concept of a mod and loaded assemblies.
-					var traitInfo = symbolCache[modId].TraitInfos[traitInfoName].First();
+					var traitInfo = symbolCache[modId].CodeSymbols.TraitInfos[traitInfoName].First();
 					var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
 
 					if (fieldInfo.OtherAttributes.Any(x => x.Name == "ActorReference"))
