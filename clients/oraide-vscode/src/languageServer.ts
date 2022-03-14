@@ -50,15 +50,8 @@ async function findOrDownloadLanguageServer(context: vscode.ExtensionContext): P
     }
 
     if (latestServerVersion.localeCompare(currentServerVersion) > 0) {
-        const userResponse = await vscode.window.showInformationMessage("ORAIDE would like to download a newer version of its language server.", "Download now");
-        if (userResponse !== "Download now") {
-            return undefined;
-        } else {
-            if (await serverDownload.downloadLanguageServer(context)) {
-                currentServerVersion = await utils.getCurrentServerVersion(globalStorageUri);
-            } else {
-                return undefined;
-            }
+        if (await serverDownload.downloadLanguageServer(context)) {
+            currentServerVersion = await utils.getCurrentServerVersion(globalStorageUri);
         }
     }
 
