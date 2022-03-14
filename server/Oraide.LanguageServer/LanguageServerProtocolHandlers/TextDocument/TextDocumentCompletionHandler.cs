@@ -80,6 +80,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				fileType = FileType.Rules;
 			else if (filePath.Contains("/weapons/"))
 				fileType = FileType.Weapons;
+			else if (filePath.Contains("cursor")) // TODO: These checks are getting ridiculous.
+				fileType = FileType.Cursors;
 
 			if (!openFileCache.ContainsFile(filePath))
 			{
@@ -293,6 +295,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				default:
 					return Enumerable.Empty<CompletionItem>();
 			}
+		}
+
+		protected override IEnumerable<CompletionItem> HandleCursorsValue(CursorTarget cursorTarget)
+		{
+			// TODO: Return palette information when we have support for palettes.
+			return null;
 		}
 
 		#endregion

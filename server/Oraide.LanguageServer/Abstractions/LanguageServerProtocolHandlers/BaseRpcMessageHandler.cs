@@ -35,6 +35,8 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				fileType = FileType.Rules;
 			else if (filePath.Contains("/weapons/"))
 				fileType = FileType.Weapons;
+			else if (filePath.Contains("cursor")) // TODO: These checks are getting ridiculous.
+				fileType = FileType.Cursors;
 
 			if (!openFileCache.ContainsFile(filePath))
 			{
@@ -113,6 +115,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			{
 				FileType.Rules => HandleRulesFile(cursorTarget),
 				FileType.Weapons => HandleWeaponFile(cursorTarget),
+				FileType.Cursors => HandleCursorsFile(cursorTarget),
 				_ => null
 			};
 		}
@@ -137,6 +140,16 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			};
 		}
 
+		protected virtual object HandleCursorsFile(CursorTarget cursorTarget)
+		{
+			return cursorTarget.TargetType switch
+			{
+				"key" => HandleCursorsKey(cursorTarget),
+				"value" => HandleCursorsValue(cursorTarget),
+				_ => null
+			};
+		}
+
 		protected virtual object HandleRulesKey(CursorTarget cursorTarget) { return null; }
 
 		protected virtual object HandleRulesValue(CursorTarget cursorTarget) { return null; }
@@ -144,6 +157,10 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 		protected virtual object HandleWeaponKey(CursorTarget cursorTarget) { return null; }
 
 		protected virtual object HandleWeaponValue(CursorTarget cursorTarget) { return null; }
+
+		protected virtual object HandleCursorsKey(CursorTarget cursorTarget) { return null; }
+
+		protected virtual object HandleCursorsValue(CursorTarget cursorTarget) { return null; }
 
 		#endregion
 

@@ -294,6 +294,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			}
 		}
 
+		protected override Hover HandleCursorsValue(CursorTarget cursorTarget)
+		{
+			// TODO: Return palette information when we have support for palettes.
+			return null;
+		}
+
 		#endregion
 
 		private static Hover HoverFromHoverInfo(string content, Range range)

@@ -88,6 +88,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			return Enumerable.Empty<Location>();
 		}
 
+		protected override IEnumerable<Location> HandleCursorsValue(CursorTarget cursorTarget)
+		{
+			// TODO: Return palette information when we have support for palettes.
+			return null;
+		}
+
 		#endregion
 	}
 }
