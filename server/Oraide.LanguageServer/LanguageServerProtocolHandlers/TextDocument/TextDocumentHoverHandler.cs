@@ -140,6 +140,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 							if (fieldInfo.OtherAttributes.Any(x => x.Name == "ConsumedConditionReference") && modSymbols.ConditionDefinitions.Contains(cursorTarget.TargetString))
 								return HoverFromHoverInfo($"```csharp\nCondition \"{cursorTarget.TargetString}\"\n```", range);
+
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "CursorReference") && modSymbols.CursorDefinitions.Contains(cursorTarget.TargetString))
+							{
+								var cursor = modSymbols.CursorDefinitions[cursorTarget.TargetString].First();
+								return HoverFromHoverInfo(cursor.ToMarkdownInfoString(), range);
+							}
 						}
 
 						// Show explanation for world range value.
@@ -286,6 +292,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				default:
 					return null;
 			}
+		}
+
+		protected override Hover HandleCursorsValue(CursorTarget cursorTarget)
+		{
+			// TODO: Return palette information when we have support for palettes.
+			return null;
 		}
 
 		#endregion

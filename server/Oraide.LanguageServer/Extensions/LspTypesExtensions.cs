@@ -105,6 +105,17 @@ namespace Oraide.LanguageServer.Extensions
 			};
 		}
 
+		public static CompletionItem ToCompletionItem(this CursorDefinition cursorDefinition)
+		{
+			return new CompletionItem
+			{
+				Label = cursorDefinition.Name,
+				Kind = CompletionItemKind.Value,
+				Detail = "Cursor name",
+				CommitCharacters = new[] { ":" }
+			};
+		}
+
 		public static SymbolInformation ToSymbolInformation(this ActorDefinition actorDefinition)
 		{
 			return new SymbolInformation
@@ -135,6 +146,17 @@ namespace Oraide.LanguageServer.Extensions
 				Kind = SymbolKind.String,
 				Tags = Array.Empty<SymbolTag>(),
 				Location = conditionDefinition.Location.ToLspLocation(conditionDefinition.Name.Length)
+			};
+		}
+
+		public static SymbolInformation ToSymbolInformation(this CursorDefinition cursorDefinition)
+		{
+			return new SymbolInformation
+			{
+				Name = cursorDefinition.Name,
+				Kind = SymbolKind.String,
+				Tags = Array.Empty<SymbolTag>(),
+				Location = cursorDefinition.Location.ToLspLocation(cursorDefinition.Name.Length)
 			};
 		}
 	}

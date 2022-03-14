@@ -132,6 +132,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 							if (fieldInfo.OtherAttributes.Any(x => x.Name == "ConsumedConditionReference"))
 								return modSymbols.ConditionDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
+
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "CursorReference"))
+								return modSymbols.CursorDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
 						}
 
 						return new[] { fieldInfo.Location.ToLspLocation(cursorTarget.TargetString.Length) };
@@ -241,6 +244,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				default:
 					return Enumerable.Empty<Location>();
 			}
+		}
+
+		protected override IEnumerable<Location> HandleCursorsValue(CursorTarget cursorTarget)
+		{
+			// TODO: Return palette information when we have support for palettes.
+			return null;
 		}
 
 		#endregion

@@ -17,7 +17,8 @@ namespace Oraide.Core.Entities.MiniYaml
 	{
 		Unknown = 0,
 		Rules = 1,
-		Weapons = 2
+		Weapons = 2,
+		Cursors = 3
 	}
 
 	public readonly struct CursorTarget

@@ -41,6 +41,11 @@ namespace Oraide.MiniYaml
 			return OpenRAMiniYamlParser.GetConditionDefinitions(yamlFolder);
 		}
 
+		public IReadOnlyDictionary<string, ILookup<string, CursorDefinition>> GetCursorDefinitions()
+		{
+			return OpenRAMiniYamlParser.GetCursorDefinitions(yamlFolder);
+		}
+
 		public IEnumerable<YamlNode> ParseText(string text, bool flatten = false)
 		{
 			return OpenRAMiniYamlParser.ParseText(text, flatten);

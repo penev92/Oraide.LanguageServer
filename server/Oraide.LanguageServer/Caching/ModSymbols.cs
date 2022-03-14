@@ -36,8 +36,14 @@ namespace Oraide.LanguageServer.Caching
 		/// </summary>
 		public ILookup<string, ConditionDefinition> ConditionDefinitions { get; }
 
+		/// <summary>
+		/// A collection of all defined cursors.
+		/// </summary>
+		public ILookup<string, CursorDefinition> CursorDefinitions { get; }
+
 		public ModSymbols(string modId, string modFolder, ILookup<string, TraitInfo> traitInfos, WeaponInfo weaponInfo,
-			ILookup<string, ActorDefinition> actorDefinitions, ILookup<string, WeaponDefinition> weaponDefinitions, ILookup<string, ConditionDefinition> conditionDefinitions)
+			ILookup<string, ActorDefinition> actorDefinitions, ILookup<string, WeaponDefinition> weaponDefinitions,
+			ILookup<string, ConditionDefinition> conditionDefinitions, ILookup<string, CursorDefinition> cursorDefinitions)
 		{
 			ModId = modId;
 			ModFolder = modFolder;
@@ -46,6 +52,7 @@ namespace Oraide.LanguageServer.Caching
 			ActorDefinitions = actorDefinitions;
 			WeaponDefinitions = weaponDefinitions;
 			ConditionDefinitions = conditionDefinitions;
+			CursorDefinitions = cursorDefinitions;
 		}
 	}
 }
