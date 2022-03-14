@@ -24,6 +24,14 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.1.4
+
+ - Mod support:
+    - Added support for mod Cursors (GoTo, AutoComplete, information).
+ - VSCode integration:
+    - Added support for [Breadcrumbs](https://code.visualstudio.com/docs/editor/editingevolved#_breadcrumbs), file [Outline view](https://code.visualstudio.com/docs/getstarted/userinterface#_outline-view) and [DocumentSymbols](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-symbol).
+    - The VSCode extension will no longer prompt the user when a new server version is available, instead automatically downloading it.
+
 ### 0.1.3
 
  - Added a "custom" language icon for MiniYAML to match the official YAML icon.
