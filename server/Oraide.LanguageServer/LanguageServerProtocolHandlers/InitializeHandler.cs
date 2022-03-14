@@ -41,7 +41,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 					ReferencesProvider = true, // The server provides find references support.
 
 					DocumentHighlightProvider = false,
-					DocumentSymbolProvider = false,
+					DocumentSymbolProvider = true,
 					CodeActionProvider = false,
 					CodeLensProvider = null,
 

@@ -22,8 +22,8 @@ namespace Oraide.LanguageServer.Extensions
 		{
 			return new Range
 			{
-				Start = new Position((uint)memberLocation.LineNumber - 1, (uint)memberLocation.CharacterPosition),
-				End = new Position((uint)memberLocation.LineNumber - 1, (uint)(memberLocation.CharacterPosition + (uint)length))
+				Start = new Position((uint)(memberLocation.LineNumber - 1), (uint)memberLocation.CharacterPosition),
+				End = new Position((uint)(memberLocation.LineNumber - 1), (uint)(memberLocation.CharacterPosition + length))
 			};
 		}
 

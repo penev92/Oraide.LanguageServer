@@ -129,10 +129,12 @@ namespace Oraide.MiniYaml.YamlParsers
 					y => y.ToLookup(n => n.Name, m => m));
 		}
 
-		public static IEnumerable<YamlNode> ParseText(string text, bool flatten = false)
+		public static (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text)
 		{
-			var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromString(text, discardCommentsAndWhitespace: false).Select(x => x.ToYamlNode());
-			return flatten ? nodes.SelectMany(FlattenChildNodes) : nodes;
+			var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromString(text, discardCommentsAndWhitespace: false)
+				.Select(x => x.ToYamlNode()).ToArray();
+
+			return (nodes, nodes.SelectMany(FlattenChildNodes));
 		}
 
 		static IEnumerable<YamlNode> FlattenChildNodes(YamlNode rootNode)

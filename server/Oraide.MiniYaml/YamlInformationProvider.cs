@@ -46,9 +46,9 @@ namespace Oraide.MiniYaml
 			return OpenRAMiniYamlParser.GetCursorDefinitions(yamlFolder);
 		}
 
-		public IEnumerable<YamlNode> ParseText(string text, bool flatten = false)
+		public (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text)
 		{
-			return OpenRAMiniYamlParser.ParseText(text, flatten);
+			return OpenRAMiniYamlParser.ParseText(text);
 		}
 	}
 }

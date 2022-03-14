@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
 using Oraide.Core.Entities;
-using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Caching;
 
@@ -44,7 +42,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				return false;
 			}
 
-			var (fileLines, fileNodes) = openFileCache[filePath];
+			var (fileNodes, flattenedNodes, fileLines) = openFileCache[filePath];
 
 			var targetLine = fileLines[targetLineIndex];
 			var pre = targetLine.Substring(0, targetCharacterIndex);
@@ -57,7 +55,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				return false;
 			}
 
-			var targetNode = fileNodes[targetLineIndex];
+			var targetNode = flattenedNodes[targetLineIndex];
 
 			string sourceString;
 			string targetType;
