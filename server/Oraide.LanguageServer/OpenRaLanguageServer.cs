@@ -123,6 +123,13 @@ namespace Oraide.LanguageServer
 			return (Hover)methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<TextDocumentPositionParams>() });
 		}
 
+		[JsonRpcMethod(Methods.TextDocumentDocumentSymbolName)]
+		public IEnumerable<DocumentSymbol> DocumentSymbols(JToken arg)
+		{
+			var (messageHandlerClass, methodInfo) = rpcMessageHandlers[Methods.TextDocumentDocumentSymbolName];
+			return (IEnumerable<DocumentSymbol>)methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<DocumentSymbolParams>() });
+		}
+
 		[JsonRpcMethod(Methods.TextDocumentDidOpenName)]
 		public void DidOpenTextDocument(JToken arg)
 		{
