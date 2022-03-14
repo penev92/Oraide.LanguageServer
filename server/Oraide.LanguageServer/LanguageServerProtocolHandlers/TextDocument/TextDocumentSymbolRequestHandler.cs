@@ -47,13 +47,13 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			};
 
 			var selectionRange = yamlNode.Location.ToRange(yamlNode.Key.Length + indentation + 9001); // "To the end of the line" or close.
-			var lastChildNode = yamlNode.ChildNodes?.MaxBy(x => x.Location.LineNumber);
-			var range = lastChildNode == null
+			var lastHeirNode = GetLastHeirNode(yamlNode);
+			var range = lastHeirNode == null
 				? selectionRange
 				: new LspTypes.Range
 				{
 					Start = new Position((uint)yamlNode.Location.LineNumber - 1, (uint)yamlNode.Location.CharacterPosition),
-					End = new Position((uint)lastChildNode.Location.LineNumber - 1, 9001) // "To the end of the line" or close.
+					End = new Position((uint)lastHeirNode.Location.LineNumber - 1, 9101) // "To the end of the line" or close. Must be bigger than selectionRange's.
 				};
 
 			return new DocumentSymbol
@@ -64,6 +64,14 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				SelectionRange = selectionRange,
 				Children = yamlNode.ChildNodes?.Where(x => x.Key != null).Select(ConvertNodeToDocumentSymbol).ToArray()
 			};
+		}
+
+		YamlNode GetLastHeirNode(YamlNode yamlNode)
+		{
+			if (yamlNode.ChildNodes is { Count: > 0 })
+				return GetLastHeirNode(yamlNode.ChildNodes.MaxBy(x => x.Location.LineNumber));
+
+			return yamlNode;
 		}
 	}
 }
