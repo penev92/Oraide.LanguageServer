@@ -46,7 +46,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 					CodeLensProvider = null,
 
 					DocumentLinkProvider = null,
-					ColorProvider = false,
+					ColorProvider = true,
 					DocumentFormattingProvider = false,
 					DocumentRangeFormattingProvider = false,
 					DocumentOnTypeFormattingProvider = null,
