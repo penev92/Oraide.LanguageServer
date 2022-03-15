@@ -51,33 +51,39 @@ namespace Oraide.LanguageServer.Caching
 			var elapsed = stopwatch.Elapsed;
 			Console.Error.WriteLine($"Took {elapsed} to load {traitInfos.Count} traitInfos, {weaponInfo.ProjectileInfos.Length} projectileInfos and {weaponInfo.WarheadInfos.Length} warheadInfos.");
 
-			var actorDefinitionsPerMod = yamlInformationProvider.GetActorDefinitions();
-			var weaponDefinitionsPerMod = yamlInformationProvider.GetWeaponDefinitions();
-			var conditionDefinitionsPerMod = yamlInformationProvider.GetConditionDefinitions();
-			var cursorDefinitionsPerMod = yamlInformationProvider.GetCursorDefinitions();
+			var modDataPerMod = new Dictionary<string, ModData>();
+
+			foreach (var modId in mods.Keys)
+			{
+				var modFolder = mods[modId];
+
+				var actorDefinitionsPerMod = yamlInformationProvider.GetActorDefinitions(modFolder);
+				var weaponDefinitionsPerMod = yamlInformationProvider.GetWeaponDefinitions(modFolder);
+				var conditionDefinitionsPerMod = yamlInformationProvider.GetConditionDefinitions(modFolder);
+				var cursorDefinitionsPerMod = yamlInformationProvider.GetCursorDefinitions(modFolder);
+
+				var codeSymbols = new CodeSymbols(traitInfos, weaponInfo);
+				var modSymbols = new ModSymbols(
+					actorDefinitionsPerMod.ContainsKey(modId)
+						? actorDefinitionsPerMod[modId]
+						: Array.Empty<ActorDefinition>().ToLookup(y => y.Name, z => z),
+					weaponDefinitionsPerMod.ContainsKey(modId)
+						? weaponDefinitionsPerMod[modId]
+						: Array.Empty<WeaponDefinition>().ToLookup(y => y.Name, z => z),
+					conditionDefinitionsPerMod.ContainsKey(modId)
+						? conditionDefinitionsPerMod[modId]
+						: Array.Empty<ConditionDefinition>().ToLookup(y => y.Name, z => z),
+					cursorDefinitionsPerMod.ContainsKey(modId)
+						? cursorDefinitionsPerMod[modId]
+						: Array.Empty<CursorDefinition>().ToLookup(y => y.Name, z => z));
+
+				modDataPerMod.Add(modId, new ModData(modId, modFolder, modSymbols, codeSymbols));
+			}
 
 			elapsed = stopwatch.Elapsed;
 			Console.Error.WriteLine($"Took {elapsed} to load everything.");
 
-			return mods.Select(x =>
-			{
-				var codeSymbols = new CodeSymbols(traitInfos, weaponInfo);
-				var modSymbols = new ModSymbols(
-					actorDefinitionsPerMod.ContainsKey(x.Key)
-						? actorDefinitionsPerMod[x.Key]
-						: Array.Empty<ActorDefinition>().ToLookup(y => y.Name, z => z),
-					weaponDefinitionsPerMod.ContainsKey(x.Key)
-						? weaponDefinitionsPerMod[x.Key]
-						: Array.Empty<WeaponDefinition>().ToLookup(y => y.Name, z => z),
-					conditionDefinitionsPerMod.ContainsKey(x.Key)
-						? conditionDefinitionsPerMod[x.Key]
-						: Array.Empty<ConditionDefinition>().ToLookup(y => y.Name, z => z),
-					cursorDefinitionsPerMod.ContainsKey(x.Key)
-						? cursorDefinitionsPerMod[x.Key]
-						: Array.Empty<CursorDefinition>().ToLookup(y => y.Name, z => z));
-
-				return new ModData(x.Key, x.Value, modSymbols, codeSymbols);
-			}).ToDictionary(x => x.ModId, y => y);
+			return modDataPerMod;
 		}
 
 		public ModData this[string key] => ModSymbols[key];

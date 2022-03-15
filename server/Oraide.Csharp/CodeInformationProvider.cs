@@ -73,12 +73,6 @@ namespace Oraide.Csharp
 				if (OpenRaFolderUtils.IsOpenRaFolder(parentFolder))
 					oraFolderPath = parentFolder;
 			}
-			else if (OpenRaFolderUtils.IsModSubfolder(workspaceFolderPath))
-			{
-				var parentFolder = Directory.GetParent(workspaceFolderPath)?.Parent?.Parent?.FullName;
-				if (OpenRaFolderUtils.IsOpenRaFolder(parentFolder))
-					oraFolderPath = parentFolder;
-			}
 
 			if (string.IsNullOrEmpty(oraFolderPath))
 			{

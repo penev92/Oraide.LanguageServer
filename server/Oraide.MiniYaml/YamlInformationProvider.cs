@@ -19,31 +19,27 @@ namespace Oraide.MiniYaml
 
 		public IEnumerable<string> GetModDirectories()
 		{
-			var filePaths = Directory.EnumerateFiles(yamlFolder, "mod.yaml", SearchOption.AllDirectories).ToList();
-			if (!filePaths.Any())
-				filePaths.Add(yamlFolder);
-
-			return filePaths.Select(Path.GetDirectoryName);
+			return Directory.EnumerateFiles(yamlFolder, "mod.yaml", SearchOption.AllDirectories).Select(Path.GetDirectoryName);
 		}
 
-		public IReadOnlyDictionary<string, ILookup<string, ActorDefinition>> GetActorDefinitions()
+		public IReadOnlyDictionary<string, ILookup<string, ActorDefinition>> GetActorDefinitions(string modFolder)
 		{
-			return OpenRAMiniYamlParser.GetActorDefinitions(yamlFolder);
+			return OpenRAMiniYamlParser.GetActorDefinitions(modFolder);
 		}
 
-		public IReadOnlyDictionary<string, ILookup<string, WeaponDefinition>> GetWeaponDefinitions()
+		public IReadOnlyDictionary<string, ILookup<string, WeaponDefinition>> GetWeaponDefinitions(string modFolder)
 		{
-			return OpenRAMiniYamlParser.GetWeaponDefinitions(yamlFolder);
+			return OpenRAMiniYamlParser.GetWeaponDefinitions(modFolder);
 		}
 
-		public IReadOnlyDictionary<string, ILookup<string, ConditionDefinition>> GetConditionDefinitions()
+		public IReadOnlyDictionary<string, ILookup<string, ConditionDefinition>> GetConditionDefinitions(string modFolder)
 		{
-			return OpenRAMiniYamlParser.GetConditionDefinitions(yamlFolder);
+			return OpenRAMiniYamlParser.GetConditionDefinitions(modFolder);
 		}
 
-		public IReadOnlyDictionary<string, ILookup<string, CursorDefinition>> GetCursorDefinitions()
+		public IReadOnlyDictionary<string, ILookup<string, CursorDefinition>> GetCursorDefinitions(string modFolder)
 		{
-			return OpenRAMiniYamlParser.GetCursorDefinitions(yamlFolder);
+			return OpenRAMiniYamlParser.GetCursorDefinitions(modFolder);
 		}
 
 		public (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text)

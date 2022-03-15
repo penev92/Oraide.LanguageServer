@@ -12,11 +12,6 @@ namespace Oraide.Core
 		const string ModConfigFile = "mod.config";
 		const string UtilityExeFile = "OpenRA.Utility.exe";
 
-		public static bool IsModSubfolder(string folderPath)
-		{
-			return IsModFolder(Directory.GetParent(folderPath)?.FullName);
-		}
-
 		public static bool IsModFolder(string folderPath)
 		{
 			// Contains "mod.yaml" file.
