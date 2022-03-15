@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Oraide.Core;
-using Oraide.Core.Entities.MiniYaml;
 using Oraide.Csharp;
 using Oraide.LanguageServer.Caching.Entities;
 using Oraide.MiniYaml;
@@ -57,25 +56,13 @@ namespace Oraide.LanguageServer.Caching
 			{
 				var modFolder = mods[modId];
 
-				var actorDefinitionsPerMod = yamlInformationProvider.GetActorDefinitions(modFolder);
-				var weaponDefinitionsPerMod = yamlInformationProvider.GetWeaponDefinitions(modFolder);
-				var conditionDefinitionsPerMod = yamlInformationProvider.GetConditionDefinitions(modFolder);
-				var cursorDefinitionsPerMod = yamlInformationProvider.GetCursorDefinitions(modFolder);
+				var actorDefinitions = yamlInformationProvider.GetActorDefinitions(modFolder);
+				var weaponDefinitions = yamlInformationProvider.GetWeaponDefinitions(modFolder);
+				var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(modFolder);
+				var cursorDefinitions = yamlInformationProvider.GetCursorDefinitions(modFolder);
 
 				var codeSymbols = new CodeSymbols(traitInfos, weaponInfo);
-				var modSymbols = new ModSymbols(
-					actorDefinitionsPerMod.ContainsKey(modId)
-						? actorDefinitionsPerMod[modId]
-						: Array.Empty<ActorDefinition>().ToLookup(y => y.Name, z => z),
-					weaponDefinitionsPerMod.ContainsKey(modId)
-						? weaponDefinitionsPerMod[modId]
-						: Array.Empty<WeaponDefinition>().ToLookup(y => y.Name, z => z),
-					conditionDefinitionsPerMod.ContainsKey(modId)
-						? conditionDefinitionsPerMod[modId]
-						: Array.Empty<ConditionDefinition>().ToLookup(y => y.Name, z => z),
-					cursorDefinitionsPerMod.ContainsKey(modId)
-						? cursorDefinitionsPerMod[modId]
-						: Array.Empty<CursorDefinition>().ToLookup(y => y.Name, z => z));
+				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions);
 
 				modDataPerMod.Add(modId, new ModData(modId, modFolder, modSymbols, codeSymbols));
 			}

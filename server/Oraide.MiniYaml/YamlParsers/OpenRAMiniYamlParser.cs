@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Oraide.Core;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.MiniYaml;
 
@@ -9,10 +8,10 @@ namespace Oraide.MiniYaml.YamlParsers
 {
 	public static class OpenRAMiniYamlParser
 	{
-		public static IReadOnlyDictionary<string, ILookup<string, ActorDefinition>> GetActorDefinitions(in string modFolderPath)
+		public static ILookup<string, ActorDefinition> GetActorDefinitions(in string modFolderPath)
 		{
 			var result = new List<YamlNode>();
-			var actorDefinitionsPerMod = new Dictionary<string, List<ActorDefinition>>();
+			var actorDefinitions = new List<ActorDefinition>();
 
 			// TODO: What about maps?
 			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories)
@@ -29,25 +28,21 @@ namespace Oraide.MiniYaml.YamlParsers
 			{
 				var location = new MemberLocation(node.Location.FilePath, node.Location.LineNumber, node.Location.CharacterPosition);
 
-				var modId = OpenRaFolderUtils.GetModId(location.FilePath);
-				if (!actorDefinitionsPerMod.ContainsKey(modId))
-					actorDefinitionsPerMod.Add(modId, new List<ActorDefinition>());
-
 				var actorTraits = node.ChildNodes == null
 					? Enumerable.Empty<ActorTraitDefinition>()
 					: node.ChildNodes.Select(x =>
 						new ActorTraitDefinition(x.Key, new MemberLocation(x.Location.FilePath, x.Location.LineNumber, 1))); // HACK HACK HACK: Until the YAML Loader learns about character positions, we hardcode 1 here (since this is all for traits on actor definitions).
 
-				actorDefinitionsPerMod[modId].Add(new ActorDefinition(node.Key, location, actorTraits.ToList()));
+				actorDefinitions.Add(new ActorDefinition(node.Key, location, actorTraits.ToList()));
 			}
 
-			return actorDefinitionsPerMod.ToDictionary(x => x.Key, y => y.Value.ToLookup(n => n.Name, m => m));
+			return actorDefinitions.ToLookup(n => n.Name, m => m);
 		}
 
-		public static IReadOnlyDictionary<string, ILookup<string, WeaponDefinition>> GetWeaponDefinitions(in string modFolderPath)
+		public static ILookup<string, WeaponDefinition> GetWeaponDefinitions(in string modFolderPath)
 		{
 			var result = new List<YamlNode>();
-			var weaponDefinitionsPerMod = new Dictionary<string, List<WeaponDefinition>>();
+			var weaponDefinitions = new List<WeaponDefinition>();
 
 			// TODO: What about maps?
 			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories)
@@ -64,23 +59,19 @@ namespace Oraide.MiniYaml.YamlParsers
 			{
 				var location = new MemberLocation(node.Location.FilePath, node.Location.LineNumber, node.Location.CharacterPosition);
 
-				var modId = OpenRaFolderUtils.GetModId(location.FilePath);
-				if (!weaponDefinitionsPerMod.ContainsKey(modId))
-					weaponDefinitionsPerMod.Add(modId, new List<WeaponDefinition>());
-
 				var projectile = node.ChildNodes?.FirstOrDefault(x => x.Key == "Projectile");
 				var warheads = node.ChildNodes?.Where(x => x.Key == "Warhead" || x.Key.StartsWith("Warhead@")) ?? Enumerable.Empty<YamlNode>();
 
-				weaponDefinitionsPerMod[modId].Add(new WeaponDefinition(node.Key,
+				weaponDefinitions.Add(new WeaponDefinition(node.Key,
 					projectile == null ? default : new WeaponProjectileDefinition(projectile.Value, new MemberLocation(projectile.Location.FilePath, projectile.Location.LineNumber, projectile.Location.CharacterPosition)),
 					warheads.Select(x => new WeaponWarheadDefinition(x.Value, new MemberLocation(x.Location.FilePath, x.Location.LineNumber, x.Location.CharacterPosition))).ToArray(),
 					location));
 			}
 
-			return weaponDefinitionsPerMod.ToDictionary(x => x.Key, y => y.Value.ToLookup(n => n.Name, m => m));
+			return weaponDefinitions.ToLookup(n => n.Name, m => m);
 		}
 
-		public static IReadOnlyDictionary<string, ILookup<string, ConditionDefinition>> GetConditionDefinitions(in string modFolderPath)
+		public static ILookup<string, ConditionDefinition> GetConditionDefinitions(in string modFolderPath)
 		{
 			var result = new List<ConditionDefinition>();
 
@@ -100,12 +91,10 @@ namespace Oraide.MiniYaml.YamlParsers
 				result.AddRange(conditions);
 			}
 
-			return result.GroupBy(x => OpenRaFolderUtils.GetModId(x.Location.FilePath))
-				.ToDictionary(x => x.Key,
-					y => y.ToLookup(n => n.Name, m => m));
+			return result.ToLookup(n => n.Name, m => m);
 		}
 
-		public static IReadOnlyDictionary<string, ILookup<string, CursorDefinition>> GetCursorDefinitions(in string modFolderPath)
+		public static ILookup<string, CursorDefinition> GetCursorDefinitions(in string modFolderPath)
 		{
 			var result = new List<CursorDefinition>();
 
@@ -124,9 +113,7 @@ namespace Oraide.MiniYaml.YamlParsers
 				result.AddRange(cursorDefinitions);
 			}
 
-			return result.GroupBy(x => OpenRaFolderUtils.GetModId(x.Location.FilePath))
-				.ToDictionary(x => x.Key,
-					y => y.ToLookup(n => n.Name, m => m));
+			return result.ToLookup(n => n.Name, m => m);
 		}
 
 		public static (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text)

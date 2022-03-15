@@ -22,22 +22,22 @@ namespace Oraide.MiniYaml
 			return Directory.EnumerateFiles(yamlFolder, "mod.yaml", SearchOption.AllDirectories).Select(Path.GetDirectoryName);
 		}
 
-		public IReadOnlyDictionary<string, ILookup<string, ActorDefinition>> GetActorDefinitions(string modFolder)
+		public ILookup<string, ActorDefinition> GetActorDefinitions(string modFolder)
 		{
 			return OpenRAMiniYamlParser.GetActorDefinitions(modFolder);
 		}
 
-		public IReadOnlyDictionary<string, ILookup<string, WeaponDefinition>> GetWeaponDefinitions(string modFolder)
+		public ILookup<string, WeaponDefinition> GetWeaponDefinitions(string modFolder)
 		{
 			return OpenRAMiniYamlParser.GetWeaponDefinitions(modFolder);
 		}
 
-		public IReadOnlyDictionary<string, ILookup<string, ConditionDefinition>> GetConditionDefinitions(string modFolder)
+		public ILookup<string, ConditionDefinition> GetConditionDefinitions(string modFolder)
 		{
 			return OpenRAMiniYamlParser.GetConditionDefinitions(modFolder);
 		}
 
-		public IReadOnlyDictionary<string, ILookup<string, CursorDefinition>> GetCursorDefinitions(string modFolder)
+		public ILookup<string, CursorDefinition> GetCursorDefinitions(string modFolder)
 		{
 			return OpenRAMiniYamlParser.GetCursorDefinitions(modFolder);
 		}

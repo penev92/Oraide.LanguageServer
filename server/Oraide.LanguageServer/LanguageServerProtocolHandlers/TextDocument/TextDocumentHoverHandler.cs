@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
-using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
