@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Oraide.Core;
+using Oraide.Core.Entities.MiniYaml;
 using Oraide.Csharp;
 using Oraide.LanguageServer.Caching.Entities;
 using Oraide.MiniYaml;
@@ -56,15 +57,18 @@ namespace Oraide.LanguageServer.Caching
 			{
 				var modFolder = mods[modId];
 
-				var actorDefinitions = yamlInformationProvider.GetActorDefinitions(modFolder);
-				var weaponDefinitions = yamlInformationProvider.GetWeaponDefinitions(modFolder);
-				var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(modFolder);
-				var cursorDefinitions = yamlInformationProvider.GetCursorDefinitions(modFolder);
+				var modFileNodes = yamlInformationProvider.ReadModFile(modFolder);
+				var modManifest = new ModManifest(modFileNodes);
+
+				var actorDefinitions = yamlInformationProvider.GetActorDefinitions(modManifest.RulesFiles, mods);
+				var weaponDefinitions = yamlInformationProvider.GetWeaponDefinitions(modManifest.WeaponsFiles, mods);
+				var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(modManifest.RulesFiles, mods);
+				var cursorDefinitions = yamlInformationProvider.GetCursorDefinitions(modManifest.CursorsFiles, mods);
 
 				var codeSymbols = new CodeSymbols(traitInfos, weaponInfo);
 				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions);
 
-				modDataPerMod.Add(modId, new ModData(modId, modFolder, modSymbols, codeSymbols));
+				modDataPerMod.Add(modId, new ModData(modId, modFolder, modManifest, modSymbols, codeSymbols));
 			}
 
 			elapsed = stopwatch.Elapsed;
