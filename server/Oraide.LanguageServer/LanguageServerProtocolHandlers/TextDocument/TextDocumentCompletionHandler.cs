@@ -70,26 +70,31 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		protected override bool TryGetCursorTarget(TextDocumentPositionParams positionParams, out CursorTarget target)
 		{
-			var filePath = positionParams.TextDocument.Uri;
+			TryGetModId(positionParams.TextDocument.Uri, out var modId);
+			var fileUri = positionParams.TextDocument.Uri;
 			var targetLineIndex = (int)positionParams.Position.Line;
 			var targetCharacterIndex = (int)positionParams.Position.Character;
 
+			// TODO: What about maps?
 			// Determine file type.
+			var modManifest = symbolCache[modId].ModManifest;
+			var fileName = fileUri.Split($"mods/{modId}/")[1];
+			var fileReference = $"{modId}|{fileName}";
 			var fileType = FileType.Unknown;
-			if (filePath.Contains("/rules/") || (filePath.Contains("/maps/") && !filePath.EndsWith("map.yaml")))
+			if (modManifest.RulesFiles.Contains(fileReference))
 				fileType = FileType.Rules;
-			else if (filePath.Contains("/weapons/"))
+			else if (modManifest.WeaponsFiles.Contains(fileReference))
 				fileType = FileType.Weapons;
-			else if (filePath.Contains("cursor")) // TODO: These checks are getting ridiculous.
+			else if (modManifest.CursorsFiles.Contains(fileReference))
 				fileType = FileType.Cursors;
 
-			if (!openFileCache.ContainsFile(filePath))
+			if (!openFileCache.ContainsFile(fileUri))
 			{
 				target = default;
 				return false;
 			}
 
-			var (fileNodes, flattenedNodes, fileLines) = openFileCache[filePath];
+			var (fileNodes, flattenedNodes, fileLines) = openFileCache[fileUri];
 
 			var targetLine = fileLines[targetLineIndex];
 			var pre = targetLine.Substring(0, targetCharacterIndex);
@@ -118,11 +123,10 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				}
 			}
 
-			TryGetModId(positionParams.TextDocument.Uri, out var modId);
 			TryGetTargetStringIndentation(targetNode, out var indentation);
 			target = new CursorTarget(modId, fileType, targetNode, targetType, sourceString,
-				new MemberLocation(filePath, targetLineIndex, targetCharacterIndex),
-				new MemberLocation(filePath, targetLineIndex, targetCharacterIndex), indentation);
+				new MemberLocation(fileUri, targetLineIndex, targetCharacterIndex),
+				new MemberLocation(fileUri, targetLineIndex, targetCharacterIndex), indentation);
 
 			return true;
 		}
