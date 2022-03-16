@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Oraide.Core;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.MiniYaml;
 
@@ -60,9 +61,12 @@ namespace Oraide.MiniYaml.YamlParsers
 			var result = new List<ConditionDefinition>();
 
 			// TODO: What about maps?
-			var filePaths = FilePathsFromReferencedFiles(referencedFiles, mods);
+			var filePaths = referencedFiles.Select(fileReference => OpenRaFolderUtils.ResolveFilePath(fileReference, mods));
 			foreach (var filePath in filePaths)
 			{
+				if (filePath == null)
+					continue;
+
 				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
 				var yamlNodes = nodes.Select(x => x.ToYamlNode());
 				var flattenedNodes = yamlNodes.SelectMany(FlattenChildNodes);
@@ -81,9 +85,12 @@ namespace Oraide.MiniYaml.YamlParsers
 		{
 			var result = new List<CursorDefinition>();
 
-			var filePaths = FilePathsFromReferencedFiles(referencedFiles, mods);
+			var filePaths = referencedFiles.Select(fileReference => OpenRaFolderUtils.ResolveFilePath(fileReference, mods));
 			foreach (var filePath in filePaths)
 			{
+				if (filePath == null)
+					continue;
+
 				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
 				var yamlNodes = nodes.SelectMany(x =>
 					x.Value.Nodes.SelectMany(y =>
@@ -142,33 +149,18 @@ namespace Oraide.MiniYaml.YamlParsers
 		{
 			var result = new List<YamlNode>();
 
-			var filePaths = FilePathsFromReferencedFiles(referencedFiles, mods);
+			var filePaths = referencedFiles.Select(fileReference => OpenRaFolderUtils.ResolveFilePath(fileReference, mods));
 			foreach (var filePath in filePaths)
 			{
+				if (filePath == null)
+					continue;
+
 				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
 				var yamlNodes = nodes.Select(x => x.ToYamlNode());
 				result.AddRange(yamlNodes);
 			}
 
 			return result;
-		}
-
-		static List<string> FilePathsFromReferencedFiles(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
-		{
-			var filePaths = new List<string>();
-			foreach (var referencedFile in referencedFiles)
-			{
-				var parts = referencedFile.Split('|');
-				var modId = parts[0];
-				var filePath = parts[1];
-				if (mods.ContainsKey(modId))
-				{
-					var fileFullPath = Path.Combine(mods[modId], filePath);
-					filePaths.Add(fileFullPath);
-				}
-			}
-
-			return filePaths;
 		}
 	}
 }
