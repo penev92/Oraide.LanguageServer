@@ -6,7 +6,7 @@ namespace Oraide.Core.Entities.MiniYaml
 {
 	public readonly struct ModManifest
 	{
-		public readonly string MapFolder;
+		public readonly string MapsFolder;
 
 		public readonly IReadOnlyList<string> RulesFiles;
 
@@ -16,7 +16,7 @@ namespace Oraide.Core.Entities.MiniYaml
 
 		public ModManifest(IEnumerable<YamlNode> yamlNodes)
 		{
-			MapFolder = yamlNodes.FirstOrDefault(x => x.Key == "MapFolders")?.ChildNodes?.FirstOrDefault(x => x.Value == "System")?.Key;
+			MapsFolder = yamlNodes.FirstOrDefault(x => x.Key == "MapFolders")?.ChildNodes?.FirstOrDefault(x => x.Value == "System")?.Key;
 			RulesFiles = new ReadOnlyCollection<string>(GetValues(yamlNodes, "Rules").ToList());
 			CursorsFiles = new ReadOnlyCollection<string>(GetValues(yamlNodes, "Cursors").ToList());
 			WeaponsFiles = new ReadOnlyCollection<string>(GetValues(yamlNodes, "Weapons").ToList());

@@ -69,7 +69,7 @@ namespace Oraide.LanguageServer.Caching
 				var codeSymbols = new CodeSymbols(traitInfos, weaponInfo);
 				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions);
 
-				var mapsDir = OpenRaFolderUtils.ResolveFilePath(modManifest.MapFolder, mods);
+				var mapsDir = OpenRaFolderUtils.ResolveFilePath(modManifest.MapsFolder, mods);
 				var allMaps = mapsDir == null ? Enumerable.Empty<string>() : Directory.EnumerateDirectories(mapsDir);
 				var maps = allMaps.Where(x => File.Exists(Path.Combine(x, "map.yaml")) && File.Exists(Path.Combine(x, "map.bin"))).ToArray();
 
