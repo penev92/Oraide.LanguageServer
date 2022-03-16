@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Oraide.Core;
 using Oraide.Core.Entities.MiniYaml;
@@ -68,7 +69,11 @@ namespace Oraide.LanguageServer.Caching
 				var codeSymbols = new CodeSymbols(traitInfos, weaponInfo);
 				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions);
 
-				modDataPerMod.Add(modId, new ModData(modId, modFolder, modManifest, modSymbols, codeSymbols));
+				var mapsDir = OpenRaFolderUtils.ResolveFilePath(modManifest.MapFolder, mods);
+				var allMaps = mapsDir == null ? Enumerable.Empty<string>() : Directory.EnumerateDirectories(mapsDir);
+				var maps = allMaps.Where(x => File.Exists(Path.Combine(x, "map.yaml")) && File.Exists(Path.Combine(x, "map.bin"))).ToArray();
+
+				modDataPerMod.Add(modId, new ModData(modId, modFolder, modManifest, modSymbols, codeSymbols, maps));
 			}
 
 			elapsed = stopwatch.Elapsed;
