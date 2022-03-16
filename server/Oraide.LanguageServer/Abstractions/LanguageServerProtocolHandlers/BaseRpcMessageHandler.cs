@@ -201,7 +201,6 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 					else
 					{
 						targetString = sourceString.Substring(startIndex, endIndex - startIndex + 1).Trim(' ', '\t', ',', '!');
-						Console.Error.WriteLine(targetString);
 						break;
 					}
 				}
@@ -209,7 +208,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				endIndex++;
 			}
 
-			startIndex = targetLine.IndexOf(targetString, StringComparison.InvariantCulture);
+			startIndex = targetLine.IndexOf(targetString, targetCharacterIndex - targetString.Length, StringComparison.InvariantCulture);
 			endIndex = startIndex + targetString.Length;
 			return true;
 		}
