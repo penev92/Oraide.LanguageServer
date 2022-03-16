@@ -14,6 +14,11 @@ namespace Oraide.MiniYaml.YamlParsers
 			return OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(Path.Combine(modFolder, "mod.yaml")).Select(x => x.ToYamlNode());
 		}
 
+		public static IEnumerable<YamlNode> ReadMapFile(string mapFolder)
+		{
+			return OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(Path.Combine(mapFolder, "map.yaml")).Select(x => x.ToYamlNode());
+		}
+
 		// TODO: What about maps?
 		public static ILookup<string, ActorDefinition> GetActorDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{

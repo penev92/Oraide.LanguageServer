@@ -90,7 +90,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				fileType = FileType.Weapons;
 			else if (modManifest.CursorsFiles.Contains(fileReference))
 				fileType = FileType.Cursors;
-			else if (Path.GetFileName(filePath) == "map.yaml" && symbolCache[modId].Maps.Contains(Path.GetDirectoryName(filePath)))
+			else if (Path.GetFileName(filePath) == "map.yaml" && symbolCache[modId].Maps.Any(x => x.MapFile == filePath))
 				fileType = FileType.MapFile;
 
 			if (!openFileCache.ContainsFile(fileUri))
