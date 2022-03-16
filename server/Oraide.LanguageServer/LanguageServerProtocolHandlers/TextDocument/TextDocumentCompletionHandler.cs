@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using LspTypes;
 using Oraide.Core.Entities;
@@ -80,6 +81,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			var modManifest = symbolCache[modId].ModManifest;
 			var fileName = fileUri.Split($"mods/{modId}/")[1];
 			var fileReference = $"{modId}|{fileName}";
+			var filePath = fileUri.Replace("file:///", string.Empty).Replace("%3A", ":");
+
 			var fileType = FileType.Unknown;
 			if (modManifest.RulesFiles.Contains(fileReference))
 				fileType = FileType.Rules;
@@ -87,6 +90,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				fileType = FileType.Weapons;
 			else if (modManifest.CursorsFiles.Contains(fileReference))
 				fileType = FileType.Cursors;
+			else if (Path.GetFileName(filePath) == "map.yaml" && symbolCache[modId].Maps.Contains(Path.GetDirectoryName(filePath)))
+				fileType = FileType.MapFile;
 
 			if (!openFileCache.ContainsFile(fileUri))
 			{

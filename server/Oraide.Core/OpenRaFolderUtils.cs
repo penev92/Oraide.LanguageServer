@@ -79,6 +79,21 @@ namespace Oraide.Core
 			return match.Split('/')[2];
 		}
 
+		public static string ResolveFilePath(string fileReference, (string ModId, string ModFolder) modInfo)
+		{
+			string fileFullPath = null;
+			if (!string.IsNullOrWhiteSpace(fileReference))
+			{
+				var parts = fileReference.Split('|');
+				var modId = parts[0];
+				var filePath = parts[1];
+				if (modId == modInfo.ModId)
+					fileFullPath = Path.Combine(modInfo.ModFolder, filePath);
+			}
+
+			return fileFullPath;
+		}
+
 		public static string ResolveFilePath(string fileReference, IReadOnlyDictionary<string, string> mods)
 		{
 			string fileFullPath = null;

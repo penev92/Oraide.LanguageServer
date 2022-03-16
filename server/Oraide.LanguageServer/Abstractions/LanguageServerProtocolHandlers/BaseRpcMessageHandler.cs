@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
@@ -34,6 +35,8 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			var modManifest = symbolCache[modId].ModManifest;
 			var fileName = fileUri.Split($"mods/{modId}/")[1];
 			var fileReference = $"{modId}|{fileName}";
+			var filePath = fileUri.Replace("file:///", string.Empty).Replace("%3A", ":");
+
 			var fileType = FileType.Unknown;
 			if (modManifest.RulesFiles.Contains(fileReference))
 				fileType = FileType.Rules;
@@ -41,6 +44,8 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				fileType = FileType.Weapons;
 			else if (modManifest.CursorsFiles.Contains(fileReference))
 				fileType = FileType.Cursors;
+			else if (Path.GetFileName(filePath) == "map.yaml" && symbolCache[modId].Maps.Contains(Path.GetDirectoryName(filePath)))
+				fileType = FileType.MapFile;
 
 			if (!openFileCache.ContainsFile(fileUri))
 			{
@@ -119,6 +124,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				FileType.Rules => HandleRulesFile(cursorTarget),
 				FileType.Weapons => HandleWeaponFile(cursorTarget),
 				FileType.Cursors => HandleCursorsFile(cursorTarget),
+				FileType.MapFile => HandleMapFile(cursorTarget),
 				_ => null
 			};
 		}
@@ -153,6 +159,16 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			};
 		}
 
+		protected virtual object HandleMapFile(CursorTarget cursorTarget)
+		{
+			return cursorTarget.TargetType switch
+			{
+				"key" => HandleMapFileKey(cursorTarget),
+				"value" => HandleMapFileValue(cursorTarget),
+				_ => null
+			};
+		}
+
 		protected virtual object HandleRulesKey(CursorTarget cursorTarget) { return null; }
 
 		protected virtual object HandleRulesValue(CursorTarget cursorTarget) { return null; }
@@ -164,6 +180,10 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 		protected virtual object HandleCursorsKey(CursorTarget cursorTarget) { return null; }
 
 		protected virtual object HandleCursorsValue(CursorTarget cursorTarget) { return null; }
+
+		protected virtual object HandleMapFileKey(CursorTarget cursorTarget) { return null; }
+
+		protected virtual object HandleMapFileValue(CursorTarget cursorTarget) { return null; }
 
 		#endregion
 

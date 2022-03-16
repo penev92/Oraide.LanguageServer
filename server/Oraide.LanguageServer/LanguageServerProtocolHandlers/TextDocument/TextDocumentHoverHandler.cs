@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
+using Oraide.Core;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
@@ -298,6 +300,94 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		{
 			// TODO: Return palette information when we have support for palettes.
 			return null;
+		}
+
+		protected override Hover HandleMapFileKey(CursorTarget cursorTarget)
+		{
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 1:
+				{
+					if (cursorTarget.TargetString == "PlayerReference" && cursorTarget.TargetNode?.ParentNode?.Key == "Players")
+					{
+						// TODO: This could only be useful if documentation for PlayerReference is added.
+					}
+
+					return null;
+				}
+
+				case 2:
+				{
+					if (cursorTarget.TargetNode?.ParentNode?.Key != null && cursorTarget.TargetNode.ParentNode.Key.StartsWith("PlayerReference"))
+					{
+						// TODO: This could only be useful if documentation for PlayerReference is added.
+					}
+
+					if (cursorTarget.TargetNode?.ParentNode?.ParentNode?.Key == "Actors")
+					{
+						// TODO: Add support for ActorInits one day.
+					}
+
+					return null;
+				}
+
+				default:
+					return null;
+			}
+		}
+
+		protected override Hover HandleMapFileValue(CursorTarget cursorTarget)
+		{
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+				{
+					if (cursorTarget.TargetString.Contains('|'))
+					{
+						var resolvedFile = OpenRaFolderUtils.ResolveFilePath(cursorTarget.TargetString, (cursorTarget.ModId, symbolCache[cursorTarget.ModId].ModFolder));
+						if (File.Exists(resolvedFile))
+							return HoverFromHoverInfo($"```csharp\nFile \"{cursorTarget.TargetString}\"\n```", range);
+					}
+					else
+					{
+						var targetPath = cursorTarget.TargetStart.FilePath.Replace("file:///", string.Empty).Replace("%3A", ":");
+						var mapFolder = Path.GetDirectoryName(targetPath);
+						var mapName = Path.GetFileName(mapFolder);
+						var filePath = Path.Combine(mapFolder, cursorTarget.TargetString);
+						if (File.Exists(filePath))
+							return HoverFromHoverInfo($"```csharp\nFile \"{mapName}/{cursorTarget.TargetString}\"\n```", range);
+					}
+
+					return null; // TODO:
+				}
+
+				case 1:
+				{
+					if (cursorTarget.TargetNode?.ParentNode?.Key == "Actors")
+						if (modSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
+							return HoverFromHoverInfo($"```csharp\nActor \"{cursorTarget.TargetString}\"\n```", range);
+
+					return null;
+				}
+
+				case 2:
+				{
+					if (cursorTarget.TargetNode?.ParentNode?.ParentNode?.Key == "Players")
+					{
+						// TODO: Add support for factions and for players.
+					}
+
+					if (cursorTarget.TargetNode?.ParentNode?.ParentNode?.Key == "Actors")
+					{
+						// TODO: Add support for ActorInits one day.
+					}
+
+					return null;
+				}
+
+				default:
+					return null;
+			}
 		}
 
 		#endregion
