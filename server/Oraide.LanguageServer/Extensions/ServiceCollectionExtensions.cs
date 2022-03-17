@@ -48,7 +48,8 @@ namespace Oraide.LanguageServer.Extensions
 				.AddSingleton<IRpcMessageHandler, TextDocumentDefinitionHandler>()
 				.AddSingleton<IRpcMessageHandler, TextDocumentReferencesHandler>()
 				.AddSingleton<IRpcMessageHandler, TextDocumentHoverHandler>()
-				.AddSingleton<IRpcMessageHandler, TextDocumentSymbolRequestHandler>();
+				.AddSingleton<IRpcMessageHandler, TextDocumentSymbolRequestHandler>()
+				.AddSingleton<IRpcMessageHandler, TextDocumentColorHandler>();
 		}
 
 		public static IServiceCollection AddWorkspaceLspMessageHandlers(this IServiceCollection serviceCollection)

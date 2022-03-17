@@ -151,6 +151,22 @@ namespace Oraide.LanguageServer
 			methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<DidCloseTextDocumentParams>() });
 		}
 
+		// The currently used LSPTypes library doesn't even have support for this method, so hardcoding the method name.
+		[JsonRpcMethod("textDocument/documentColor")]
+		public IEnumerable<ColorInformation> DocumentColor(JToken arg)
+		{
+			var (messageHandlerClass, methodInfo) = rpcMessageHandlers["textDocument/documentColor"];
+			return (IEnumerable<ColorInformation>)methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<DocumentColorParams>() });
+		}
+
+		// The currently used LSPTypes library doesn't even have support for this method, so hardcoding the method name.
+		[JsonRpcMethod("textDocument/colorPresentation")]
+		public IEnumerable<ColorPresentation> ColorPresentation(JToken arg)
+		{
+			var (messageHandlerClass, methodInfo) = rpcMessageHandlers["textDocument/colorPresentation"];
+			return (IEnumerable<ColorPresentation>)methodInfo.Invoke(messageHandlerClass, new object[] { arg.ToObject<ColorPresentationParams>() });
+		}
+
 		#endregion
 
 		#region Workspace messages
