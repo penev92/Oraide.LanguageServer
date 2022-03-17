@@ -208,7 +208,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				endIndex++;
 			}
 
-			startIndex = targetLine.IndexOf(targetString, targetCharacterIndex - targetString.Length, StringComparison.InvariantCulture);
+			startIndex = targetLine.IndexOf(targetString, Math.Max(targetCharacterIndex - targetString.Length, 0), StringComparison.InvariantCulture);
 			endIndex = startIndex + targetString.Length;
 			return true;
 		}
