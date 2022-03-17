@@ -200,7 +200,18 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				{
 					// Get actor definitions (for inheriting).
 					if (cursorTarget.TargetNode.Key == "Inherits" || cursorTarget.TargetNode.Key.StartsWith("Inherits@"))
+					{
+						if (cursorTarget.FileType == FileType.MapRules)
+						{
+							var mapReference = symbolCache[cursorTarget.ModId].Maps
+								.FirstOrDefault(x => x.RulesFiles.Contains(cursorTarget.FileReference));
+
+							if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+								return actorNames.Union(mapSymbols.ActorDefinitions.Select(x => x.First().ToCompletionItem()));
+						}
+
 						return actorNames;
+					}
 
 					return Enumerable.Empty<CompletionItem>();
 				}
@@ -215,20 +226,37 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					var traitInfo = symbolCache[modId].CodeSymbols.TraitInfos[traitInfoName].First();
 					var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
 
+					var tempActorNames = actorNames;
+					var tempWeaponNames = weaponNames;
+					var tempConditionNames = conditionNames;
+					var tempCursorNames = cursorNames;
+					if (cursorTarget.FileType == FileType.MapRules)
+					{
+						var mapReference = symbolCache[cursorTarget.ModId].Maps
+							.FirstOrDefault(x => x.RulesFiles.Contains(cursorTarget.FileReference));
+
+						if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+						{
+							tempActorNames = tempActorNames.Union(mapSymbols.ActorDefinitions.Select(x => x.First().ToCompletionItem()));
+							tempWeaponNames = tempWeaponNames.Union(mapSymbols.WeaponDefinitions.Select(x => x.First().ToCompletionItem()));
+							tempConditionNames = tempConditionNames.Union(mapSymbols.ConditionDefinitions.Select(x => x.First().ToCompletionItem()));
+						}
+					}
+
 					if (fieldInfo.OtherAttributes.Any(x => x.Name == "ActorReference"))
-						return actorNames;
+						return tempActorNames;
 
 					if (fieldInfo.OtherAttributes.Any(x => x.Name == "WeaponReference"))
-						return weaponNames;
+						return tempWeaponNames;
 
 					if (fieldInfo.OtherAttributes.Any(x => x.Name == "GrantedConditionReference"))
-						return conditionNames;
+						return tempConditionNames;
 
 					if (fieldInfo.OtherAttributes.Any(x => x.Name == "ConsumedConditionReference"))
-						return conditionNames;
+						return tempConditionNames;
 
 					if (fieldInfo.OtherAttributes.Any(x => x.Name == "CursorReference"))
-						return cursorNames;
+						return tempCursorNames;
 
 					return Enumerable.Empty<CompletionItem>();
 				}
@@ -290,7 +318,18 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					// Get weapon definitions (for inheriting).
 					if (nodeKey == "Inherits" || nodeKey.StartsWith("Inherits@"))
+					{
+						if (cursorTarget.FileType == FileType.MapWeapons)
+						{
+							var mapReference = symbolCache[cursorTarget.ModId].Maps
+								.FirstOrDefault(x => x.WeaponsFiles.Contains(cursorTarget.FileReference));
+
+							if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+								return weaponNames.Union(mapSymbols.WeaponDefinitions.Select(x => x.First().ToCompletionItem()));
+						}
+
 						return weaponNames;
+					}
 
 					if (nodeKey == "Projectile")
 						return weaponInfo.ProjectileInfos.Select(x => x.ToCompletionItem("Type implementing IProjectileInfo"));
@@ -313,6 +352,38 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		{
 			// TODO: Return palette information when we have support for palettes.
 			return null;
+		}
+
+		protected override IEnumerable<CompletionItem> HandleMapFileValue(CursorTarget cursorTarget)
+		{
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+					return null;
+
+				case 1:
+				{
+					if (cursorTarget.TargetNode?.ParentNode?.Key == "Actors")
+					{
+						// Actor definitions from map rules:
+						var mapReference = symbolCache[cursorTarget.ModId].Maps
+							.FirstOrDefault(x => x.MapFileReference == cursorTarget.FileReference);
+
+						if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+							return actorNames.Union(mapSymbols.ActorDefinitions.Select(x => x.First().ToCompletionItem()));
+
+						return actorNames;
+					}
+
+					return null;
+				}
+
+				case 2:
+					return null;
+
+				default:
+					return null;
+			}
 		}
 
 		#endregion
