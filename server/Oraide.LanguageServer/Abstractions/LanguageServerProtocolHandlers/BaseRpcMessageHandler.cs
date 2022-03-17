@@ -44,8 +44,12 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				fileType = FileType.Weapons;
 			else if (modManifest.CursorsFiles.Contains(fileReference))
 				fileType = FileType.Cursors;
-			else if (Path.GetFileName(filePath) == "map.yaml" && symbolCache[modId].Maps.Any(x => x.MapFile == Path.GetDirectoryName(filePath)))
+			else if (Path.GetFileName(filePath) == "map.yaml" && symbolCache[modId].Maps.Any(x => x.MapFolder == Path.GetDirectoryName(filePath)))
 				fileType = FileType.MapFile;
+			else if (symbolCache[modId].Maps.Any(x => x.RulesFiles.Contains(fileReference)))
+				fileType = FileType.MapRules;
+			else if (symbolCache[modId].Maps.Any(x => x.WeaponsFiles.Contains(fileReference)))
+				fileType = FileType.MapWeapons;
 
 			if (!openFileCache.ContainsFile(fileUri))
 			{
