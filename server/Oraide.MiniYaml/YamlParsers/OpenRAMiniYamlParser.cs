@@ -19,7 +19,6 @@ namespace Oraide.MiniYaml.YamlParsers
 			return OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(Path.Combine(mapFolder, "map.yaml")).Select(x => x.ToYamlNode());
 		}
 
-		// TODO: What about maps?
 		public static ILookup<string, ActorDefinition> GetActorDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
 			var actorDefinitions = new List<ActorDefinition>();
@@ -39,7 +38,6 @@ namespace Oraide.MiniYaml.YamlParsers
 			return actorDefinitions.ToLookup(n => n.Name, m => m);
 		}
 
-		// TODO: What about maps?
 		public static ILookup<string, WeaponDefinition> GetWeaponDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
 			var weaponDefinitions = new List<WeaponDefinition>();
@@ -60,12 +58,10 @@ namespace Oraide.MiniYaml.YamlParsers
 			return weaponDefinitions.ToLookup(n => n.Name, m => m);
 		}
 
-		// TODO: What about maps?
 		public static ILookup<string, ConditionDefinition> GetConditionDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
 			var result = new List<ConditionDefinition>();
 
-			// TODO: What about maps?
 			var filePaths = referencedFiles.Select(fileReference => OpenRaFolderUtils.ResolveFilePath(fileReference, mods));
 			foreach (var filePath in filePaths)
 			{
@@ -85,7 +81,6 @@ namespace Oraide.MiniYaml.YamlParsers
 			return result.ToLookup(n => n.Name, m => m);
 		}
 
-		// TODO: What about maps?
 		public static ILookup<string, CursorDefinition> GetCursorDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
 			var result = new List<CursorDefinition>();

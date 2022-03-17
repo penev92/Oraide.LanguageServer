@@ -76,7 +76,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			var targetLineIndex = (int)positionParams.Position.Line;
 			var targetCharacterIndex = (int)positionParams.Position.Character;
 
-			// TODO: What about maps?
 			// Determine file type.
 			var modManifest = symbolCache[modId].ModManifest;
 			var fileName = fileUri.Split($"mods/{modId}/")[1];
@@ -133,7 +132,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			}
 
 			TryGetTargetStringIndentation(targetNode, out var indentation);
-			target = new CursorTarget(modId, fileType, targetNode, targetType, sourceString,
+			target = new CursorTarget(modId, fileType, fileReference, targetNode, targetType, sourceString,
 				new MemberLocation(fileUri, targetLineIndex, targetCharacterIndex),
 				new MemberLocation(fileUri, targetLineIndex, targetCharacterIndex), indentation);
 

@@ -15,6 +15,8 @@ namespace Oraide.LanguageServer.Caching
 	{
 		public IReadOnlyDictionary<string, ModData> ModSymbols { get; private set; }
 
+		public IDictionary<string, MapSymbols> Maps { get; } = new Dictionary<string, MapSymbols>();
+
 		private readonly CodeInformationProvider codeInformationProvider;
 		private readonly YamlInformationProvider yamlInformationProvider;
 
@@ -84,5 +86,24 @@ namespace Oraide.LanguageServer.Caching
 		}
 
 		public ModData this[string key] => ModSymbols[key];
+
+		public void AddMap(string modId, MapManifest mapManifest)
+		{
+			var mods = new Dictionary<string, string> { { modId, ModSymbols[modId].ModFolder } };
+			var actorDefinitions = yamlInformationProvider.GetActorDefinitions(mapManifest.RulesFiles, mods);
+			var weaponDefinitions = yamlInformationProvider.GetWeaponDefinitions(mapManifest.WeaponsFiles, mods);
+			var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(mapManifest.RulesFiles, mods);
+
+			var mapSymbols = new MapSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions);
+			Maps.Add(mapManifest.MapReference, mapSymbols);
+		}
+
+		public void UpdateMap(string modId, MapManifest mapManifest)
+		{
+			if (!Maps.ContainsKey(mapManifest.MapReference) || !Maps.Remove(mapManifest.MapReference))
+				return;
+
+			AddMap(modId, mapManifest);
+		}
 	}
 }

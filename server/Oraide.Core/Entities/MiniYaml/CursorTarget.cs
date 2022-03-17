@@ -30,6 +30,8 @@ namespace Oraide.Core.Entities.MiniYaml
 
 		public readonly FileType FileType;
 
+		public readonly string FileReference;
+
 		public readonly YamlNode TargetNode;
 
 		// TODO: Change to enum.
@@ -43,11 +45,12 @@ namespace Oraide.Core.Entities.MiniYaml
 
 		public readonly int TargetNodeIndentation;
 
-		public CursorTarget(string modId, FileType fileType, YamlNode targetNode, string targetType, string targetString,
+		public CursorTarget(string modId, FileType fileType, string fileReference, YamlNode targetNode, string targetType, string targetString,
 			MemberLocation targetStart, MemberLocation targetEnd, int targetNodeIndentation)
 		{
 			ModId = modId;
 			FileType = fileType;
+			FileReference = fileReference;
 			TargetNode = targetNode;
 			TargetType = targetType;
 			TargetString = targetString;
