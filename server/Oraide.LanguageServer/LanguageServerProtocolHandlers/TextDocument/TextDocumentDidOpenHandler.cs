@@ -50,7 +50,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						if (string.IsNullOrWhiteSpace(mapManifest.MapFolder))
 							mapManifest = symbolCache[modId].Maps.FirstOrDefault(x => x.WeaponsFiles.Contains(fileReference));
 
-						if (!string.IsNullOrWhiteSpace(mapManifest.MapFolder))
+						if (!string.IsNullOrWhiteSpace(mapManifest.MapFolder) && !symbolCache.Maps.ContainsKey(mapManifest.MapReference))
 							symbolCache.AddMap(modId, mapManifest);
 					}
 				}

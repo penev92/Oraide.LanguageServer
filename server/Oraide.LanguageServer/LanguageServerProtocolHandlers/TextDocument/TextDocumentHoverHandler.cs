@@ -62,6 +62,16 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					if (modSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
 						return HoverFromHoverInfo($"```csharp\nActor \"{cursorTarget.TargetString}\"\n```", range);
 
+					if (cursorTarget.FileType == FileType.MapRules)
+					{
+						var mapReference = symbolCache[cursorTarget.ModId].Maps
+							.FirstOrDefault(x => x.RulesFiles.Contains(cursorTarget.FileReference));
+
+						if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+							if (mapSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
+								return HoverFromHoverInfo($"```csharp\nActor \"{cursorTarget.TargetString}\"\n```", range);
+					}
+
 					return null;
 				}
 
@@ -114,8 +124,20 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				case 1:
 				{
 					if (cursorTarget.TargetNode.Key == "Inherits" || cursorTarget.TargetNode.Key.StartsWith("Inherits@"))
+					{
 						if (modSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
 							return HoverFromHoverInfo($"```csharp\nActor \"{cursorTarget.TargetString}\"\n```", range);
+
+						if (cursorTarget.FileType == FileType.MapRules)
+						{
+							var mapReference = symbolCache[cursorTarget.ModId].Maps
+								.FirstOrDefault(x => x.RulesFiles.Contains(cursorTarget.FileReference));
+
+							if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+								if (mapSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
+									return HoverFromHoverInfo($"```csharp\nActor \"{cursorTarget.TargetString}\"\n```", range);
+						}
+					}
 
 					return null;
 				}
@@ -131,19 +153,36 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
 						if (fieldInfo.Name != null)
 						{
-							if (fieldInfo.OtherAttributes.Any(x => x.Name == "ActorReference") && modSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
+							var actorDefinitions = modSymbols.ActorDefinitions.Select(x => x.Key);
+							var weaponDefinitions = modSymbols.WeaponDefinitions.Select(x => x.Key);
+							var conditionDefinitions = modSymbols.ConditionDefinitions.Select(x => x.Key);
+							var cursorDefinitions = modSymbols.CursorDefinitions.Select(x => x.Key);
+							if (cursorTarget.FileType == FileType.MapRules)
+							{
+								var mapReference = symbolCache[cursorTarget.ModId].Maps
+									.FirstOrDefault(x => x.RulesFiles.Contains(cursorTarget.FileReference));
+
+								if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+								{
+									actorDefinitions = actorDefinitions.Union(mapSymbols.ActorDefinitions.Select(x => x.Key));
+									weaponDefinitions = weaponDefinitions.Union(mapSymbols.WeaponDefinitions.Select(x => x.Key));
+									conditionDefinitions = conditionDefinitions.Union(mapSymbols.ConditionDefinitions.Select(x => x.Key));
+								}
+							}
+
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "ActorReference") && actorDefinitions.Contains(cursorTarget.TargetString))
 								return HoverFromHoverInfo($"```csharp\nActor \"{cursorTarget.TargetString}\"\n```", range);
 
-							if (fieldInfo.OtherAttributes.Any(x => x.Name == "WeaponReference") && modSymbols.WeaponDefinitions.Contains(cursorTarget.TargetString))
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "WeaponReference") && weaponDefinitions.Contains(cursorTarget.TargetString))
 								return HoverFromHoverInfo($"```csharp\nWeapon \"{cursorTarget.TargetString}\"\n```", range);
 
-							if (fieldInfo.OtherAttributes.Any(x => x.Name == "GrantedConditionReference") && modSymbols.ConditionDefinitions.Contains(cursorTarget.TargetString))
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "GrantedConditionReference") && conditionDefinitions.Contains(cursorTarget.TargetString))
 								return HoverFromHoverInfo($"```csharp\nCondition \"{cursorTarget.TargetString}\"\n```", range);
 
-							if (fieldInfo.OtherAttributes.Any(x => x.Name == "ConsumedConditionReference") && modSymbols.ConditionDefinitions.Contains(cursorTarget.TargetString))
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "ConsumedConditionReference") && conditionDefinitions.Contains(cursorTarget.TargetString))
 								return HoverFromHoverInfo($"```csharp\nCondition \"{cursorTarget.TargetString}\"\n```", range);
 
-							if (fieldInfo.OtherAttributes.Any(x => x.Name == "CursorReference") && modSymbols.CursorDefinitions.Contains(cursorTarget.TargetString))
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "CursorReference") && cursorDefinitions.Contains(cursorTarget.TargetString))
 							{
 								var cursor = modSymbols.CursorDefinitions[cursorTarget.TargetString].First();
 								return HoverFromHoverInfo(cursor.ToMarkdownInfoString(), range);
@@ -175,6 +214,16 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				{
 					if (modSymbols.WeaponDefinitions.Contains(cursorTarget.TargetString))
 						return HoverFromHoverInfo($"```csharp\nWeapon \"{cursorTarget.TargetString}\"\n```", range);
+
+					if (cursorTarget.FileType == FileType.MapWeapons)
+					{
+						var mapReference = symbolCache[cursorTarget.ModId].Maps
+							.FirstOrDefault(x => x.WeaponsFiles.Contains(cursorTarget.FileReference));
+
+						if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+							if (mapSymbols.WeaponDefinitions.Contains(cursorTarget.TargetString))
+								return HoverFromHoverInfo($"```csharp\nWeapon \"{cursorTarget.TargetString}\"\n```", range);
+					}
 
 					return null;
 				}
@@ -242,6 +291,16 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					{
 						if (modSymbols.WeaponDefinitions.Any(x => x.Key == cursorTarget.TargetString))
 							return HoverFromHoverInfo($"```csharp\nWeapon \"{cursorTarget.TargetString}\"\n```", range);
+
+						if (cursorTarget.FileType == FileType.MapWeapons)
+						{
+							var mapReference = symbolCache[cursorTarget.ModId].Maps
+								.FirstOrDefault(x => x.WeaponsFiles.Contains(cursorTarget.FileReference));
+
+							if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+								if (mapSymbols.WeaponDefinitions.Contains(cursorTarget.TargetString))
+									return HoverFromHoverInfo($"```csharp\nWeapon \"{cursorTarget.TargetString}\"\n```", range);
+						}
 					}
 					else if (nodeKey == "Projectile")
 					{
@@ -265,7 +324,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							return HoverFromHoverInfo(content, range);
 						}
 					}
-
 
 					// Show explanation for world range value.
 					if (Regex.IsMatch(cursorTarget.TargetString, "[0-9]+c[0-9]+", RegexOptions.Compiled))

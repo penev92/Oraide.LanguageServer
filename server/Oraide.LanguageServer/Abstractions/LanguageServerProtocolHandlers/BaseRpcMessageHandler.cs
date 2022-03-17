@@ -128,6 +128,8 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				FileType.Weapons => HandleWeaponFile(cursorTarget),
 				FileType.Cursors => HandleCursorsFile(cursorTarget),
 				FileType.MapFile => HandleMapFile(cursorTarget),
+				FileType.MapRules => HandleRulesFile(cursorTarget),
+				FileType.MapWeapons => HandleWeaponFile(cursorTarget),
 				_ => null
 			};
 		}
