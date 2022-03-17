@@ -19,31 +19,32 @@ namespace Oraide.MiniYaml
 
 		public IEnumerable<string> GetModDirectories()
 		{
-			var filePaths = Directory.EnumerateFiles(yamlFolder, "mod.yaml", SearchOption.AllDirectories).ToList();
-			if (!filePaths.Any())
-				filePaths.Add(yamlFolder);
-
-			return filePaths.Select(Path.GetDirectoryName);
+			return Directory.EnumerateFiles(yamlFolder, "mod.yaml", SearchOption.AllDirectories).Select(Path.GetDirectoryName);
 		}
 
-		public IReadOnlyDictionary<string, ILookup<string, ActorDefinition>> GetActorDefinitions()
+		public IEnumerable<YamlNode> ReadModFile(string modFolder)
 		{
-			return OpenRAMiniYamlParser.GetActorDefinitions(yamlFolder);
+			return OpenRAMiniYamlParser.ReadModFile(modFolder);
 		}
 
-		public IReadOnlyDictionary<string, ILookup<string, WeaponDefinition>> GetWeaponDefinitions()
+		public ILookup<string, ActorDefinition> GetActorDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
-			return OpenRAMiniYamlParser.GetWeaponDefinitions(yamlFolder);
+			return OpenRAMiniYamlParser.GetActorDefinitions(referencedFiles, mods);
 		}
 
-		public IReadOnlyDictionary<string, ILookup<string, ConditionDefinition>> GetConditionDefinitions()
+		public ILookup<string, WeaponDefinition> GetWeaponDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
-			return OpenRAMiniYamlParser.GetConditionDefinitions(yamlFolder);
+			return OpenRAMiniYamlParser.GetWeaponDefinitions(referencedFiles, mods);
 		}
 
-		public IReadOnlyDictionary<string, ILookup<string, CursorDefinition>> GetCursorDefinitions()
+		public ILookup<string, ConditionDefinition> GetConditionDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
-			return OpenRAMiniYamlParser.GetCursorDefinitions(yamlFolder);
+			return OpenRAMiniYamlParser.GetConditionDefinitions(referencedFiles, mods);
+		}
+
+		public ILookup<string, CursorDefinition> GetCursorDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
+		{
+			return OpenRAMiniYamlParser.GetCursorDefinitions(referencedFiles, mods);
 		}
 
 		public (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text)

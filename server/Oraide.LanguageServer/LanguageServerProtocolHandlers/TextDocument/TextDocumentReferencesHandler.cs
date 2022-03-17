@@ -43,7 +43,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			if (cursorTarget.TargetNodeIndentation == 1)
 			{
 				// Find where else the selected trait is used.
-				return symbolCache[cursorTarget.ModId].ActorDefinitions
+				return symbolCache[cursorTarget.ModId].ModSymbols.ActorDefinitions
 					.SelectMany(x =>
 						x.SelectMany(y => y.Traits.Where(z => z.Name == cursorTarget.TargetString)))
 					.Select(x => x.Location.ToLspLocation(cursorTarget.TargetString.Length));
@@ -70,7 +70,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				if (targetNodeKey == "Projectile")
 				{
 					// Find where else the selected projectile type is used.
-					return symbolCache[cursorTarget.ModId].WeaponDefinitions
+					return symbolCache[cursorTarget.ModId].ModSymbols.WeaponDefinitions
 						.SelectMany(x => x.Where(y => y.Projectile.Name == cursorTarget.TargetString))
 						.Select(x => x.Projectile.Location.ToLspLocation(cursorTarget.TargetString.Length));
 				}
@@ -78,7 +78,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				if (targetNodeKey == "Warhead" || targetNodeKey.StartsWith("Warhead@"))
 				{
 					// Find where else the selected warhead type is used.
-					return symbolCache[cursorTarget.ModId].WeaponDefinitions
+					return symbolCache[cursorTarget.ModId].ModSymbols.WeaponDefinitions
 						.SelectMany(x =>
 							x.SelectMany(y => y.Warheads.Where(z => z.Name == cursorTarget.TargetString)))
 						.Select(x => x.Location.ToLspLocation(cursorTarget.TargetString.Length));

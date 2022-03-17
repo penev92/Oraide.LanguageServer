@@ -5,13 +5,14 @@ using System.Linq;
 using Oraide.Core;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.Csharp;
+using Oraide.LanguageServer.Caching.Entities;
 using Oraide.MiniYaml;
 
 namespace Oraide.LanguageServer.Caching
 {
 	public class SymbolCache
 	{
-		public IReadOnlyDictionary<string, ModSymbols> ModSymbols { get; private set; }
+		public IReadOnlyDictionary<string, ModData> ModSymbols { get; private set; }
 
 		private readonly CodeInformationProvider codeInformationProvider;
 		private readonly YamlInformationProvider yamlInformationProvider;
@@ -29,7 +30,7 @@ namespace Oraide.LanguageServer.Caching
 			ModSymbols = CreateSymbolCachesPerMod();
 		}
 
-		IReadOnlyDictionary<string, ModSymbols> CreateSymbolCachesPerMod()
+		IReadOnlyDictionary<string, ModData> CreateSymbolCachesPerMod()
 		{
 			var modFolders = yamlInformationProvider.GetModDirectories();
 			var mods = modFolders.ToDictionary(OpenRaFolderUtils.GetModId, y => y);
@@ -50,34 +51,32 @@ namespace Oraide.LanguageServer.Caching
 			var elapsed = stopwatch.Elapsed;
 			Console.Error.WriteLine($"Took {elapsed} to load {traitInfos.Count} traitInfos, {weaponInfo.ProjectileInfos.Length} projectileInfos and {weaponInfo.WarheadInfos.Length} warheadInfos.");
 
-			var actorDefinitionsPerMod = yamlInformationProvider.GetActorDefinitions();
-			var weaponDefinitionsPerMod = yamlInformationProvider.GetWeaponDefinitions();
-			var conditionDefinitionsPerMod = yamlInformationProvider.GetConditionDefinitions();
-			var cursorDefinitionsPerMod = yamlInformationProvider.GetCursorDefinitions();
+			var modDataPerMod = new Dictionary<string, ModData>();
+
+			foreach (var modId in mods.Keys)
+			{
+				var modFolder = mods[modId];
+
+				var modFileNodes = yamlInformationProvider.ReadModFile(modFolder);
+				var modManifest = new ModManifest(modFileNodes);
+
+				var actorDefinitions = yamlInformationProvider.GetActorDefinitions(modManifest.RulesFiles, mods);
+				var weaponDefinitions = yamlInformationProvider.GetWeaponDefinitions(modManifest.WeaponsFiles, mods);
+				var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(modManifest.RulesFiles, mods);
+				var cursorDefinitions = yamlInformationProvider.GetCursorDefinitions(modManifest.CursorsFiles, mods);
+
+				var codeSymbols = new CodeSymbols(traitInfos, weaponInfo);
+				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions);
+
+				modDataPerMod.Add(modId, new ModData(modId, modFolder, modManifest, modSymbols, codeSymbols));
+			}
 
 			elapsed = stopwatch.Elapsed;
 			Console.Error.WriteLine($"Took {elapsed} to load everything.");
 
-			return mods.Select(x =>
-			{
-				return new ModSymbols(x.Key, x.Value,
-					traitInfos,
-					weaponInfo,
-					actorDefinitionsPerMod.ContainsKey(x.Key)
-						? actorDefinitionsPerMod[x.Key]
-						: Array.Empty<ActorDefinition>().ToLookup(y => y.Name, z => z),
-					weaponDefinitionsPerMod.ContainsKey(x.Key)
-						? weaponDefinitionsPerMod[x.Key]
-						: Array.Empty<WeaponDefinition>().ToLookup(y => y.Name, z => z),
-					conditionDefinitionsPerMod.ContainsKey(x.Key)
-						? conditionDefinitionsPerMod[x.Key]
-						: Array.Empty<ConditionDefinition>().ToLookup(y => y.Name, z => z),
-					cursorDefinitionsPerMod.ContainsKey(x.Key)
-						? cursorDefinitionsPerMod[x.Key]
-						: Array.Empty<CursorDefinition>().ToLookup(y => y.Name, z => z));
-			}).ToDictionary(x => x.ModId, y => y);
+			return modDataPerMod;
 		}
 
-		public ModSymbols this[string key] => ModSymbols[key];
+		public ModData this[string key] => ModSymbols[key];
 	}
 }

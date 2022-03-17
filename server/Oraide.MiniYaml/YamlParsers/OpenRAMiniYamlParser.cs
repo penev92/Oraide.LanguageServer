@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Oraide.Core;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.MiniYaml;
 
@@ -9,85 +8,59 @@ namespace Oraide.MiniYaml.YamlParsers
 {
 	public static class OpenRAMiniYamlParser
 	{
-		public static IReadOnlyDictionary<string, ILookup<string, ActorDefinition>> GetActorDefinitions(in string modFolderPath)
+		public static IEnumerable<YamlNode> ReadModFile(string modFolder)
 		{
-			var result = new List<YamlNode>();
-			var actorDefinitionsPerMod = new Dictionary<string, List<ActorDefinition>>();
+			return OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(Path.Combine(modFolder, "mod.yaml")).Select(x => x.ToYamlNode());
+		}
 
-			// TODO: What about maps?
-			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories)
-				.Where(x => x.Contains("/rules/") || x.Contains("\\rules\\") || ((x.Contains("/maps/") || x.Contains("\\maps\\")) && !x.EndsWith("map.yaml") && !x.EndsWith("weapons.yaml")));
-
-			foreach (var filePath in filePaths)
-			{
-				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
-				var yamlNodes = nodes.Select(x => x.ToYamlNode());
-				result.AddRange(yamlNodes);
-			}
-
-			foreach (var node in result)
+		// TODO: What about maps?
+		public static ILookup<string, ActorDefinition> GetActorDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
+		{
+			var actorDefinitions = new List<ActorDefinition>();
+			var yamlNodes = YamlNodesFromReferencedFiles(referencedFiles, mods);
+			foreach (var node in yamlNodes)
 			{
 				var location = new MemberLocation(node.Location.FilePath, node.Location.LineNumber, node.Location.CharacterPosition);
-
-				var modId = OpenRaFolderUtils.GetModId(location.FilePath);
-				if (!actorDefinitionsPerMod.ContainsKey(modId))
-					actorDefinitionsPerMod.Add(modId, new List<ActorDefinition>());
 
 				var actorTraits = node.ChildNodes == null
 					? Enumerable.Empty<ActorTraitDefinition>()
 					: node.ChildNodes.Select(x =>
 						new ActorTraitDefinition(x.Key, new MemberLocation(x.Location.FilePath, x.Location.LineNumber, 1))); // HACK HACK HACK: Until the YAML Loader learns about character positions, we hardcode 1 here (since this is all for traits on actor definitions).
 
-				actorDefinitionsPerMod[modId].Add(new ActorDefinition(node.Key, location, actorTraits.ToList()));
+				actorDefinitions.Add(new ActorDefinition(node.Key, location, actorTraits.ToList()));
 			}
 
-			return actorDefinitionsPerMod.ToDictionary(x => x.Key, y => y.Value.ToLookup(n => n.Name, m => m));
+			return actorDefinitions.ToLookup(n => n.Name, m => m);
 		}
 
-		public static IReadOnlyDictionary<string, ILookup<string, WeaponDefinition>> GetWeaponDefinitions(in string modFolderPath)
+		// TODO: What about maps?
+		public static ILookup<string, WeaponDefinition> GetWeaponDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
-			var result = new List<YamlNode>();
-			var weaponDefinitionsPerMod = new Dictionary<string, List<WeaponDefinition>>();
-
-			// TODO: What about maps?
-			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories)
-				.Where(x => x.Contains("/weapons/") || x.Contains("\\weapons\\") || ((x.Contains("/maps/") || x.Contains("\\maps\\")) && x.EndsWith("weapons.yaml")));
-
-			foreach (var filePath in filePaths)
-			{
-				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
-				var yamlNodes = nodes.Select(x => x.ToYamlNode());
-				result.AddRange(yamlNodes);
-			}
-
-			foreach (var node in result)
+			var weaponDefinitions = new List<WeaponDefinition>();
+			var yamlNodes = YamlNodesFromReferencedFiles(referencedFiles, mods);
+			foreach (var node in yamlNodes)
 			{
 				var location = new MemberLocation(node.Location.FilePath, node.Location.LineNumber, node.Location.CharacterPosition);
-
-				var modId = OpenRaFolderUtils.GetModId(location.FilePath);
-				if (!weaponDefinitionsPerMod.ContainsKey(modId))
-					weaponDefinitionsPerMod.Add(modId, new List<WeaponDefinition>());
 
 				var projectile = node.ChildNodes?.FirstOrDefault(x => x.Key == "Projectile");
 				var warheads = node.ChildNodes?.Where(x => x.Key == "Warhead" || x.Key.StartsWith("Warhead@")) ?? Enumerable.Empty<YamlNode>();
 
-				weaponDefinitionsPerMod[modId].Add(new WeaponDefinition(node.Key,
+				weaponDefinitions.Add(new WeaponDefinition(node.Key,
 					projectile == null ? default : new WeaponProjectileDefinition(projectile.Value, new MemberLocation(projectile.Location.FilePath, projectile.Location.LineNumber, projectile.Location.CharacterPosition)),
 					warheads.Select(x => new WeaponWarheadDefinition(x.Value, new MemberLocation(x.Location.FilePath, x.Location.LineNumber, x.Location.CharacterPosition))).ToArray(),
 					location));
 			}
 
-			return weaponDefinitionsPerMod.ToDictionary(x => x.Key, y => y.Value.ToLookup(n => n.Name, m => m));
+			return weaponDefinitions.ToLookup(n => n.Name, m => m);
 		}
 
-		public static IReadOnlyDictionary<string, ILookup<string, ConditionDefinition>> GetConditionDefinitions(in string modFolderPath)
+		// TODO: What about maps?
+		public static ILookup<string, ConditionDefinition> GetConditionDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
 			var result = new List<ConditionDefinition>();
 
 			// TODO: What about maps?
-			var filePaths = Directory.EnumerateFiles(modFolderPath, "*.yaml", SearchOption.AllDirectories)
-				.Where(x => x.Contains("/rules/") || x.Contains("\\rules\\"));
-
+			var filePaths = FilePathsFromReferencedFiles(referencedFiles, mods);
 			foreach (var filePath in filePaths)
 			{
 				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
@@ -100,19 +73,15 @@ namespace Oraide.MiniYaml.YamlParsers
 				result.AddRange(conditions);
 			}
 
-			return result.GroupBy(x => OpenRaFolderUtils.GetModId(x.Location.FilePath))
-				.ToDictionary(x => x.Key,
-					y => y.ToLookup(n => n.Name, m => m));
+			return result.ToLookup(n => n.Name, m => m);
 		}
 
-		public static IReadOnlyDictionary<string, ILookup<string, CursorDefinition>> GetCursorDefinitions(in string modFolderPath)
+		// TODO: What about maps?
+		public static ILookup<string, CursorDefinition> GetCursorDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
 			var result = new List<CursorDefinition>();
 
-			// TODO: What about maps?
-			// TODO: The searching is getting ridiculous.
-			var filePaths = Directory.EnumerateFiles(modFolderPath, "cursors.yaml", SearchOption.AllDirectories);
-
+			var filePaths = FilePathsFromReferencedFiles(referencedFiles, mods);
 			foreach (var filePath in filePaths)
 			{
 				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
@@ -124,9 +93,7 @@ namespace Oraide.MiniYaml.YamlParsers
 				result.AddRange(cursorDefinitions);
 			}
 
-			return result.GroupBy(x => OpenRaFolderUtils.GetModId(x.Location.FilePath))
-				.ToDictionary(x => x.Key,
-					y => y.ToLookup(n => n.Name, m => m));
+			return result.ToLookup(n => n.Name, m => m);
 		}
 
 		public static (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text)
@@ -169,6 +136,39 @@ namespace Oraide.MiniYaml.YamlParsers
 		static MemberLocation ToMemberLocation(this OpenRA.MiniYamlParser.MiniYamlNode.SourceLocation source)
 		{
 			return new MemberLocation(source.Filename, source.Line, source.Character);
+		}
+
+		static List<YamlNode> YamlNodesFromReferencedFiles(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
+		{
+			var result = new List<YamlNode>();
+
+			var filePaths = FilePathsFromReferencedFiles(referencedFiles, mods);
+			foreach (var filePath in filePaths)
+			{
+				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
+				var yamlNodes = nodes.Select(x => x.ToYamlNode());
+				result.AddRange(yamlNodes);
+			}
+
+			return result;
+		}
+
+		static List<string> FilePathsFromReferencedFiles(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
+		{
+			var filePaths = new List<string>();
+			foreach (var referencedFile in referencedFiles)
+			{
+				var parts = referencedFile.Split('|');
+				var modId = parts[0];
+				var filePath = parts[1];
+				if (mods.ContainsKey(modId))
+				{
+					var fileFullPath = Path.Combine(mods[modId], filePath);
+					filePaths.Add(fileFullPath);
+				}
+			}
+
+			return filePaths;
 		}
 	}
 }

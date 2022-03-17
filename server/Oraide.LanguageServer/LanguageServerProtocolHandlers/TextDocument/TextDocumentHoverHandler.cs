@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
-using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
+using Oraide.LanguageServer.Caching.Entities;
 using Oraide.LanguageServer.Extensions;
 using Range = LspTypes.Range;
 
@@ -14,8 +14,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 	public class TextDocumentHoverHandler : BaseRpcMessageHandler
 	{
 		Range range;
-		WeaponInfo weaponInfo;
 		ModSymbols modSymbols;
+		CodeSymbols codeSymbols;
 
 		public TextDocumentHoverHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
 			: base(symbolCache, openFileCache) { }
@@ -45,8 +45,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		protected override void Initialize(CursorTarget cursorTarget)
 		{
 			range = cursorTarget.ToRange();
-			modSymbols = symbolCache[cursorTarget.ModId];
-			weaponInfo = symbolCache[cursorTarget.ModId].WeaponInfo;
+			modSymbols = symbolCache[cursorTarget.ModId].ModSymbols;
+			codeSymbols = symbolCache[cursorTarget.ModId].CodeSymbols;
 		}
 
 		#region CursorTarget handlers
@@ -69,11 +69,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						return HoverFromHoverInfo($"Inherits (and possibly overwrites) rules from actor {cursorTarget.TargetNode.Value}", range);
 
 					var traitInfoName = $"{cursorTarget.TargetString}Info";
-					if (modSymbols.TraitInfos.Contains(traitInfoName))
+					if (codeSymbols.TraitInfos.Contains(traitInfoName))
 					{
 						// Using .First() is not great but we have no way to differentiate between traits of the same name
 						// until the server learns the concept of a mod and loaded assemblies.
-						var traitInfo = modSymbols.TraitInfos[traitInfoName].First();
+						var traitInfo = codeSymbols.TraitInfos[traitInfoName].First();
 						var content = traitInfo.ToMarkdownInfoString() + "\n\n" + "https://docs.openra.net/en/latest/release/traits/#" + $"{traitInfo.TraitName.ToLower()}";
 						return HoverFromHoverInfo(content, range);
 					}
@@ -84,11 +84,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				case 2:
 				{
 					var traitInfoName = $"{cursorTarget.TargetNode.ParentNode.Key.Split("@")[0]}Info";
-					if (modSymbols.TraitInfos.Contains(traitInfoName))
+					if (codeSymbols.TraitInfos.Contains(traitInfoName))
 					{
 						// Using .First() is not great but we have no way to differentiate between traits of the same name
 						// until the server learns the concept of a mod and loaded assemblies.
-						var traitInfo = modSymbols.TraitInfos[traitInfoName].First();
+						var traitInfo = codeSymbols.TraitInfos[traitInfoName].First();
 						var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
 						var content = fieldInfo.ToMarkdownInfoString();
 						return HoverFromHoverInfo(content, range);
@@ -121,11 +121,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				case 2:
 				{
 					var traitInfoName = $"{cursorTarget.TargetNode.ParentNode.Key.Split("@")[0]}Info";
-					if (modSymbols.TraitInfos.Contains(traitInfoName))
+					if (codeSymbols.TraitInfos.Contains(traitInfoName))
 					{
 						// Using .First() is not great but we have no way to differentiate between traits of the same name
 						// until the server learns the concept of a mod and loaded assemblies.
-						var traitInfo = modSymbols.TraitInfos[traitInfoName].First();
+						var traitInfo = codeSymbols.TraitInfos[traitInfoName].First();
 						var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
 						if (fieldInfo.Name != null)
 						{
@@ -186,7 +186,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						return HoverFromHoverInfo("Warhead used by this weapon.", range);
 
 					// Maybe this is a property of WeaponInfo.
-					var prop = weaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+					var prop = codeSymbols.WeaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
 					if (prop.Name != null)
 						return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
 
@@ -198,7 +198,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					var parentNode = cursorTarget.TargetNode.ParentNode;
 					if (parentNode.Key == "Projectile")
 					{
-						var projectileInfo = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+						var projectileInfo = codeSymbols.WeaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
 						if (projectileInfo.Name != null)
 						{
 							var prop = projectileInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
@@ -208,7 +208,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					}
 					else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
 					{
-						var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+						var warheadInfo = codeSymbols.WeaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
 						if (warheadInfo.Name != null)
 						{
 							var prop = warheadInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
@@ -238,12 +238,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					if (nodeKey == "Inherits")
 					{
-						if (symbolCache[cursorTarget.ModId].WeaponDefinitions.Any(x => x.Key == cursorTarget.TargetString))
+						if (modSymbols.WeaponDefinitions.Any(x => x.Key == cursorTarget.TargetString))
 							return HoverFromHoverInfo($"```csharp\nWeapon \"{cursorTarget.TargetString}\"\n```", range);
 					}
 					else if (nodeKey == "Projectile")
 					{
-						var projectileInfo = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+						var projectileInfo = codeSymbols.WeaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
 						if (projectileInfo.Name != null)
 						{
 							var content = projectileInfo.ToMarkdownInfoString() +
@@ -254,7 +254,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					}
 					else if (nodeKey == "Warhead" || nodeKey.StartsWith("Warhead@"))
 					{
-						var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+						var warheadInfo = codeSymbols.WeaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
 						if (warheadInfo.Name != null)
 						{
 							var content = warheadInfo.ToMarkdownInfoString() +

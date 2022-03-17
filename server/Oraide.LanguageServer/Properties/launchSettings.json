@@ -2,7 +2,7 @@
   "profiles": {
     "Oraide.LanguageServer": {
       "commandName": "Project",
-      "commandLineArgs": "d:\\Work.Personal\\OpenRA\\OpenRA\\mods\\d2k d:\\Work.Personal\\OpenRA\\OpenRA\\"
+      "commandLineArgs": "d:\\Work.Personal\\OpenRA\\OpenRA\\mods d:\\Work.Personal\\OpenRA\\OpenRA\\"
     }
   }
 }

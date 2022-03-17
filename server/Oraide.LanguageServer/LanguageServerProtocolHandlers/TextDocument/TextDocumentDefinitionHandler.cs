@@ -6,14 +6,16 @@ using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
+using Oraide.LanguageServer.Caching.Entities;
 using Oraide.LanguageServer.Extensions;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
 	public class TextDocumentDefinitionHandler : BaseRpcMessageHandler
 	{
-		WeaponInfo weaponInfo;
 		ModSymbols modSymbols;
+		WeaponInfo weaponInfo;
+		CodeSymbols codeSymbols;
 
 		public TextDocumentDefinitionHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
 			: base(symbolCache, openFileCache) { }
@@ -42,8 +44,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		protected override void Initialize(CursorTarget cursorTarget)
 		{
-			modSymbols = symbolCache[cursorTarget.ModId];
-			weaponInfo = symbolCache[cursorTarget.ModId].WeaponInfo;
+			modSymbols = symbolCache[cursorTarget.ModId].ModSymbols;
+			codeSymbols = symbolCache[cursorTarget.ModId].CodeSymbols;
+			weaponInfo = symbolCache[cursorTarget.ModId].CodeSymbols.WeaponInfo;
 		}
 
 		#region CursorTarget handlers
@@ -62,7 +65,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					// Using .First() is not great but we have no way to differentiate between traits of the same name
 					// until the server learns the concept of a mod and loaded assemblies.
-					var traitInfo = modSymbols.TraitInfos[traitInfoName].FirstOrDefault();
+					var traitInfo = codeSymbols.TraitInfos[traitInfoName].FirstOrDefault();
 					if (traitInfo.TraitName != null)
 						return new[] { traitInfo.Location.ToLspLocation(cursorTarget.TargetString.Length) };
 
@@ -76,7 +79,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					// Using .First() is not great but we have no way to differentiate between traits of the same name
 					// until the server learns the concept of a mod and loaded assemblies.
-					var traitInfo = modSymbols.TraitInfos[traitInfoName].FirstOrDefault();
+					var traitInfo = codeSymbols.TraitInfos[traitInfoName].FirstOrDefault();
 					if (traitInfo.TraitName != null)
 					{
 						var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
@@ -115,7 +118,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					// Using .First() is not great but we have no way to differentiate between traits of the same name
 					// until the server learns the concept of a mod and loaded assemblies.
-					var traitInfo = modSymbols.TraitInfos[traitInfoName].FirstOrDefault();
+					var traitInfo = codeSymbols.TraitInfos[traitInfoName].FirstOrDefault();
 					if (traitInfo.TraitName != null)
 					{
 						var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
