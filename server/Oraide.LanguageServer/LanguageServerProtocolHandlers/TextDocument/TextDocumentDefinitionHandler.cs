@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using LspTypes;
+using Oraide.Core;
 using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
@@ -253,6 +255,87 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		{
 			// TODO: Return palette information when we have support for palettes.
 			return null;
+		}
+
+		protected override IEnumerable<Location> HandleMapFileValue(CursorTarget cursorTarget)
+		{
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+				{
+					if (cursorTarget.TargetNode.Key is "Rules" or "Sequences" or "ModelSequences" or "Weapons" or "Voices" or "Music" or "Notifications")
+					{
+						if (cursorTarget.TargetString.Contains('|'))
+						{
+							var resolvedFile = OpenRaFolderUtils.ResolveFilePath(cursorTarget.TargetString, (cursorTarget.ModId, symbolCache[cursorTarget.ModId].ModFolder));
+							if (File.Exists(resolvedFile))
+							{
+								return new[]
+								{
+									new Location
+									{
+										Uri = new Uri(resolvedFile).ToString(),
+										Range = new LspTypes.Range
+										{
+											Start = new Position(0, 0),
+											End = new Position(0, 0)
+										}
+									}
+								};
+							}
+						}
+						else
+						{
+							var targetPath = cursorTarget.TargetStart.FilePath.Replace("file:///", string.Empty).Replace("%3A", ":");
+							var mapFolder = Path.GetDirectoryName(targetPath);
+							var filePath = Path.Combine(mapFolder, cursorTarget.TargetString);
+							if (File.Exists(filePath))
+							{
+								return new[]
+								{
+									new Location
+									{
+										Uri = new Uri(filePath).ToString(),
+										Range = new LspTypes.Range
+										{
+											Start = new Position(0, 0),
+											End = new Position(0, 0)
+										}
+									}
+								};
+							}
+						}
+					}
+
+					return null;
+				}
+
+				case 1:
+				{
+					if (cursorTarget.TargetNode?.ParentNode?.Key == "Actors")
+					{
+						// Actor definitions from the mod rules:
+						if (modSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
+							return modSymbols.ActorDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
+
+						// Actor definitions from map rules:
+						var mapReference = symbolCache[cursorTarget.ModId].Maps
+							.FirstOrDefault(x => x.MapFileReference == cursorTarget.FileReference);
+
+						if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+							if (mapSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
+								return mapSymbols.ActorDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
+					}
+
+					return Enumerable.Empty<Location>();
+				}
+
+				case 2:
+					return Enumerable.Empty<Location>();
+
+				default:
+					return Enumerable.Empty<Location>();
+			}
 		}
 
 		#endregion
