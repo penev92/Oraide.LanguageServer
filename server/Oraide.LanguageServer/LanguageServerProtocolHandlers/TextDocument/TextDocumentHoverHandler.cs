@@ -151,7 +151,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						}
 
 						// Show explanation for world range value.
-						if(Regex.IsMatch(cursorTarget.TargetString, "[0-9]+c[0-9]+", RegexOptions.Compiled))
+						if (Regex.IsMatch(cursorTarget.TargetString, "[0-9]+c[0-9]+", RegexOptions.Compiled))
 						{
 							var parts = cursorTarget.TargetString.Split('c');
 							var content = $"Range in world distance units equal to {parts[0]} cells and {parts[1]} distance units (where 1 cell has 1024 units)";
@@ -342,20 +342,23 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			{
 				case 0:
 				{
-					if (cursorTarget.TargetString.Contains('|'))
+					if (cursorTarget.TargetNode.Key is "Rules" or "Sequences" or "ModelSequences" or "Weapons" or "Voices" or "Music" or "Notifications")
 					{
-						var resolvedFile = OpenRaFolderUtils.ResolveFilePath(cursorTarget.TargetString, (cursorTarget.ModId, symbolCache[cursorTarget.ModId].ModFolder));
-						if (File.Exists(resolvedFile))
-							return HoverFromHoverInfo($"```csharp\nFile \"{cursorTarget.TargetString}\"\n```", range);
-					}
-					else
-					{
-						var targetPath = cursorTarget.TargetStart.FilePath.Replace("file:///", string.Empty).Replace("%3A", ":");
-						var mapFolder = Path.GetDirectoryName(targetPath);
-						var mapName = Path.GetFileName(mapFolder);
-						var filePath = Path.Combine(mapFolder, cursorTarget.TargetString);
-						if (File.Exists(filePath))
-							return HoverFromHoverInfo($"```csharp\nFile \"{mapName}/{cursorTarget.TargetString}\"\n```", range);
+						if (cursorTarget.TargetString.Contains('|'))
+						{
+							var resolvedFile = OpenRaFolderUtils.ResolveFilePath(cursorTarget.TargetString, (cursorTarget.ModId, symbolCache[cursorTarget.ModId].ModFolder));
+							if (File.Exists(resolvedFile))
+								return HoverFromHoverInfo($"```csharp\nFile \"{cursorTarget.TargetString}\"\n```", range);
+						}
+						else
+						{
+							var targetPath = cursorTarget.TargetStart.FilePath.Replace("file:///", string.Empty).Replace("%3A", ":");
+							var mapFolder = Path.GetDirectoryName(targetPath);
+							var mapName = Path.GetFileName(mapFolder);
+							var filePath = Path.Combine(mapFolder, cursorTarget.TargetString);
+							if (File.Exists(filePath))
+								return HoverFromHoverInfo($"```csharp\nFile \"{mapName}/{cursorTarget.TargetString}\"\n```", range);
+						}
 					}
 
 					return null; // TODO:
@@ -364,8 +367,19 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				case 1:
 				{
 					if (cursorTarget.TargetNode?.ParentNode?.Key == "Actors")
+					{
+						// Actor definitions from the mod rules:
 						if (modSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
 							return HoverFromHoverInfo($"```csharp\nActor \"{cursorTarget.TargetString}\"\n```", range);
+
+						// Actor definitions from map rules:
+						var mapReference = symbolCache[cursorTarget.ModId].Maps
+							.FirstOrDefault(x => x.MapFileReference == cursorTarget.FileReference);
+
+						if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+							if (mapSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
+								return HoverFromHoverInfo($"```csharp\nActor \"{cursorTarget.TargetString}\"\n```", range);
+					}
 
 					return null;
 				}
