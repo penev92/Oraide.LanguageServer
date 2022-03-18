@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -76,6 +77,36 @@ namespace Oraide.Core
 				match = Regex.Match(fileUri, "(\\/mods\\/[^\\/]*$)").Value;
 
 			return match.Split('/')[2];
+		}
+
+		public static string ResolveFilePath(string fileReference, (string ModId, string ModFolder) modInfo)
+		{
+			string fileFullPath = null;
+			if (!string.IsNullOrWhiteSpace(fileReference))
+			{
+				var parts = fileReference.Split('|');
+				var modId = parts[0];
+				var filePath = parts[1];
+				if (modId == modInfo.ModId)
+					fileFullPath = Path.Combine(modInfo.ModFolder, filePath);
+			}
+
+			return fileFullPath;
+		}
+
+		public static string ResolveFilePath(string fileReference, IReadOnlyDictionary<string, string> mods)
+		{
+			string fileFullPath = null;
+			if (!string.IsNullOrWhiteSpace(fileReference))
+			{
+				var parts = fileReference.Split('|');
+				var modId = parts[0];
+				var filePath = parts[1];
+				if (mods.ContainsKey(modId))
+					fileFullPath = Path.Combine(mods[modId], filePath);
+			}
+
+			return fileFullPath;
 		}
 	}
 }

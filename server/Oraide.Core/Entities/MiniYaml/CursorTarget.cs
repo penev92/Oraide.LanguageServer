@@ -18,7 +18,10 @@ namespace Oraide.Core.Entities.MiniYaml
 		Unknown = 0,
 		Rules = 1,
 		Weapons = 2,
-		Cursors = 3
+		Cursors = 3,
+		MapFile = 10,
+		MapRules = 11,
+		MapWeapons = 12
 	}
 
 	public readonly struct CursorTarget
@@ -26,6 +29,8 @@ namespace Oraide.Core.Entities.MiniYaml
 		public readonly string ModId;
 
 		public readonly FileType FileType;
+
+		public readonly string FileReference;
 
 		public readonly YamlNode TargetNode;
 
@@ -40,11 +45,12 @@ namespace Oraide.Core.Entities.MiniYaml
 
 		public readonly int TargetNodeIndentation;
 
-		public CursorTarget(string modId, FileType fileType, YamlNode targetNode, string targetType, string targetString,
+		public CursorTarget(string modId, FileType fileType, string fileReference, YamlNode targetNode, string targetType, string targetString,
 			MemberLocation targetStart, MemberLocation targetEnd, int targetNodeIndentation)
 		{
 			ModId = modId;
 			FileType = fileType;
+			FileReference = fileReference;
 			TargetNode = targetNode;
 			TargetType = targetType;
 			TargetString = targetString;

@@ -14,13 +14,16 @@ namespace Oraide.LanguageServer.Caching.Entities
 
 		public CodeSymbols CodeSymbols { get; }
 
-		public ModData(string modId, string modFolder, ModManifest modManifest, ModSymbols modSymbols, CodeSymbols codeSymbols)
+		public MapManifest[] Maps { get; }
+
+		public ModData(string modId, string modFolder, ModManifest modManifest, ModSymbols modSymbols, CodeSymbols codeSymbols, MapManifest[] maps)
 		{
 			ModId = modId;
 			ModFolder = modFolder;
 			ModManifest = modManifest;
 			ModSymbols = modSymbols;
 			CodeSymbols = codeSymbols;
+			Maps = maps;
 		}
 	}
 }

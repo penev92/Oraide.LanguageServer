@@ -64,13 +64,14 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		protected override IEnumerable<Location> HandleWeaponValue(CursorTarget cursorTarget)
 		{
+			var weaponDefinitions = symbolCache[cursorTarget.ModId].ModSymbols.WeaponDefinitions;
 			if (cursorTarget.TargetNodeIndentation == 1)
 			{
 				var targetNodeKey = cursorTarget.TargetNode.Key;
 				if (targetNodeKey == "Projectile")
 				{
 					// Find where else the selected projectile type is used.
-					return symbolCache[cursorTarget.ModId].ModSymbols.WeaponDefinitions
+					return weaponDefinitions
 						.SelectMany(x => x.Where(y => y.Projectile.Name == cursorTarget.TargetString))
 						.Select(x => x.Projectile.Location.ToLspLocation(cursorTarget.TargetString.Length));
 				}
@@ -78,9 +79,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				if (targetNodeKey == "Warhead" || targetNodeKey.StartsWith("Warhead@"))
 				{
 					// Find where else the selected warhead type is used.
-					return symbolCache[cursorTarget.ModId].ModSymbols.WeaponDefinitions
-						.SelectMany(x =>
-							x.SelectMany(y => y.Warheads.Where(z => z.Name == cursorTarget.TargetString)))
+					return weaponDefinitions
+						.SelectMany(x => x.SelectMany(y => y.Warheads.Where(z => z.Name == cursorTarget.TargetString)))
 						.Select(x => x.Location.ToLspLocation(cursorTarget.TargetString.Length));
 				}
 			}

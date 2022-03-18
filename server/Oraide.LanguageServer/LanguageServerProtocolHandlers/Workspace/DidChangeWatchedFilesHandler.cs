@@ -1,5 +1,8 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using LspTypes;
+using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
 
@@ -24,15 +27,50 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 					// TODO: Be smarter about which symbol collections we actually need to update so we don't do all.
 					symbolCache.Update();
 
-					// Check if the affected file(s) are present in the "currently opened files" cache and invalidate/update that.
 					foreach (var requestChange in request.Changes)
 					{
+						// Check if the affected file(s) are present in the "currently opened files" cache and invalidate/update that.
 						if (openFileCache.ContainsFile(requestChange.Uri))
 						{
 							if(requestChange.FileChangeType == FileChangeType.Deleted)
 								openFileCache.RemoveOpenFile(requestChange.Uri);
 							else if (requestChange.FileChangeType == FileChangeType.Changed)
 								openFileCache.AddOrUpdateOpenFile(requestChange.Uri);
+						}
+
+						// Check if this is a map-related file and potentially load the map into the symbol cache.
+						TryGetModId(requestChange.Uri, out var modId);
+						var fileUri = requestChange.Uri;
+
+						var modManifest = symbolCache[modId].ModManifest;
+						var fileName = fileUri.Split($"mods/{modId}/")[1];
+						var fileReference = $"{modId}|{fileName}";
+						var filePath = fileUri.Replace("file:///", string.Empty).Replace("%3A", ":");
+
+						if (!modManifest.RulesFiles.Contains(fileReference)
+						    && !modManifest.WeaponsFiles.Contains(fileReference)
+						    && !modManifest.CursorsFiles.Contains(fileReference))
+						{
+							var targetFileDir = Path.GetDirectoryName(filePath);
+							MapManifest mapManifest = default;
+							if (Path.GetFileName(filePath) == "map.yaml")
+								mapManifest = symbolCache[modId].Maps.FirstOrDefault(x => x.MapFolder == targetFileDir);
+
+							if (string.IsNullOrWhiteSpace(mapManifest.MapFolder))
+								mapManifest = symbolCache[modId].Maps.FirstOrDefault(x => x.RulesFiles.Contains(fileReference));
+
+							if (string.IsNullOrWhiteSpace(mapManifest.MapFolder))
+								mapManifest = symbolCache[modId].Maps.FirstOrDefault(x => x.WeaponsFiles.Contains(fileReference));
+
+							if (!string.IsNullOrWhiteSpace(mapManifest.MapFolder) && symbolCache.Maps.ContainsKey(mapManifest.MapReference))
+							{
+								var specificMap = symbolCache[modId].Maps.FirstOrDefault(x => fileReference.StartsWith(x.MapReference));
+								if (!string.IsNullOrWhiteSpace(specificMap.MapFolder))
+									symbolCache.UpdateMap(modId, mapManifest);
+								else
+									foreach (var map in symbolCache[modId].Maps)
+										symbolCache.UpdateMap(modId, map);
+							}
 						}
 					}
 				}

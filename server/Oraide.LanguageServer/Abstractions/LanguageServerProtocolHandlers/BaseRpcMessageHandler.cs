@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
@@ -29,11 +30,12 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			var targetLineIndex = (int)positionParams.Position.Line;
 			var targetCharacterIndex = (int)positionParams.Position.Character;
 
-			// TODO: What about maps?
 			// Determine file type.
 			var modManifest = symbolCache[modId].ModManifest;
 			var fileName = fileUri.Split($"mods/{modId}/")[1];
 			var fileReference = $"{modId}|{fileName}";
+			var filePath = fileUri.Replace("file:///", string.Empty).Replace("%3A", ":");
+
 			var fileType = FileType.Unknown;
 			if (modManifest.RulesFiles.Contains(fileReference))
 				fileType = FileType.Rules;
@@ -41,6 +43,12 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				fileType = FileType.Weapons;
 			else if (modManifest.CursorsFiles.Contains(fileReference))
 				fileType = FileType.Cursors;
+			else if (Path.GetFileName(filePath) == "map.yaml" && symbolCache[modId].Maps.Any(x => x.MapFolder == Path.GetDirectoryName(filePath)))
+				fileType = FileType.MapFile;
+			else if (symbolCache[modId].Maps.Any(x => x.RulesFiles.Contains(fileReference)))
+				fileType = FileType.MapRules;
+			else if (symbolCache[modId].Maps.Any(x => x.WeaponsFiles.Contains(fileReference)))
+				fileType = FileType.MapWeapons;
 
 			if (!openFileCache.ContainsFile(fileUri))
 			{
@@ -96,7 +104,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				targetString = sourceString;
 
 			TryGetTargetStringIndentation(targetNode, out var indentation);
-			target = new CursorTarget(modId, fileType, targetNode, targetType, targetString,
+			target = new CursorTarget(modId, fileType, fileReference, targetNode, targetType, targetString,
 				new MemberLocation(fileUri, targetLineIndex, startIndex),
 				new MemberLocation(fileUri, targetLineIndex, endIndex), indentation);
 
@@ -119,6 +127,9 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				FileType.Rules => HandleRulesFile(cursorTarget),
 				FileType.Weapons => HandleWeaponFile(cursorTarget),
 				FileType.Cursors => HandleCursorsFile(cursorTarget),
+				FileType.MapFile => HandleMapFile(cursorTarget),
+				FileType.MapRules => HandleRulesFile(cursorTarget),
+				FileType.MapWeapons => HandleWeaponFile(cursorTarget),
 				_ => null
 			};
 		}
@@ -153,6 +164,16 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			};
 		}
 
+		protected virtual object HandleMapFile(CursorTarget cursorTarget)
+		{
+			return cursorTarget.TargetType switch
+			{
+				"key" => HandleMapFileKey(cursorTarget),
+				"value" => HandleMapFileValue(cursorTarget),
+				_ => null
+			};
+		}
+
 		protected virtual object HandleRulesKey(CursorTarget cursorTarget) { return null; }
 
 		protected virtual object HandleRulesValue(CursorTarget cursorTarget) { return null; }
@@ -164,6 +185,10 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 		protected virtual object HandleCursorsKey(CursorTarget cursorTarget) { return null; }
 
 		protected virtual object HandleCursorsValue(CursorTarget cursorTarget) { return null; }
+
+		protected virtual object HandleMapFileKey(CursorTarget cursorTarget) { return null; }
+
+		protected virtual object HandleMapFileValue(CursorTarget cursorTarget) { return null; }
 
 		#endregion
 

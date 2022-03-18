@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Oraide.Core;
 using Oraide.Core.Entities.MiniYaml;
@@ -13,6 +14,8 @@ namespace Oraide.LanguageServer.Caching
 	public class SymbolCache
 	{
 		public IReadOnlyDictionary<string, ModData> ModSymbols { get; private set; }
+
+		public IDictionary<string, MapSymbols> Maps { get; } = new Dictionary<string, MapSymbols>();
 
 		private readonly CodeInformationProvider codeInformationProvider;
 		private readonly YamlInformationProvider yamlInformationProvider;
@@ -68,7 +71,12 @@ namespace Oraide.LanguageServer.Caching
 				var codeSymbols = new CodeSymbols(traitInfos, weaponInfo);
 				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions);
 
-				modDataPerMod.Add(modId, new ModData(modId, modFolder, modManifest, modSymbols, codeSymbols));
+				var mapsDir = OpenRaFolderUtils.ResolveFilePath(modManifest.MapsFolder, mods);
+				var allMaps = mapsDir == null ? Enumerable.Empty<string>() : Directory.EnumerateDirectories(mapsDir);
+				var mapDirs = allMaps.Where(x => File.Exists(Path.Combine(x, "map.yaml")) && File.Exists(Path.Combine(x, "map.bin"))).ToArray();
+				var maps = mapDirs.Select(x => new MapManifest(x, yamlInformationProvider.ReadMapFile(x), modManifest.MapsFolder));
+
+				modDataPerMod.Add(modId, new ModData(modId, modFolder, modManifest, modSymbols, codeSymbols, maps.ToArray()));
 			}
 
 			elapsed = stopwatch.Elapsed;
@@ -78,5 +86,24 @@ namespace Oraide.LanguageServer.Caching
 		}
 
 		public ModData this[string key] => ModSymbols[key];
+
+		public void AddMap(string modId, MapManifest mapManifest)
+		{
+			var mods = new Dictionary<string, string> { { modId, ModSymbols[modId].ModFolder } };
+			var actorDefinitions = yamlInformationProvider.GetActorDefinitions(mapManifest.RulesFiles, mods);
+			var weaponDefinitions = yamlInformationProvider.GetWeaponDefinitions(mapManifest.WeaponsFiles, mods);
+			var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(mapManifest.RulesFiles, mods);
+
+			var mapSymbols = new MapSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions);
+			Maps.Add(mapManifest.MapReference, mapSymbols);
+		}
+
+		public void UpdateMap(string modId, MapManifest mapManifest)
+		{
+			if (!Maps.ContainsKey(mapManifest.MapReference) || !Maps.Remove(mapManifest.MapReference))
+				return;
+
+			AddMap(modId, mapManifest);
+		}
 	}
 }

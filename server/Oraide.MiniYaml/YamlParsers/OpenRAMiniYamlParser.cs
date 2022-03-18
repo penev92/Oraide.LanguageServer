@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Oraide.Core;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.MiniYaml;
 
@@ -13,7 +14,11 @@ namespace Oraide.MiniYaml.YamlParsers
 			return OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(Path.Combine(modFolder, "mod.yaml")).Select(x => x.ToYamlNode());
 		}
 
-		// TODO: What about maps?
+		public static IEnumerable<YamlNode> ReadMapFile(string mapFolder)
+		{
+			return OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(Path.Combine(mapFolder, "map.yaml")).Select(x => x.ToYamlNode());
+		}
+
 		public static ILookup<string, ActorDefinition> GetActorDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
 			var actorDefinitions = new List<ActorDefinition>();
@@ -33,7 +38,6 @@ namespace Oraide.MiniYaml.YamlParsers
 			return actorDefinitions.ToLookup(n => n.Name, m => m);
 		}
 
-		// TODO: What about maps?
 		public static ILookup<string, WeaponDefinition> GetWeaponDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
 			var weaponDefinitions = new List<WeaponDefinition>();
@@ -54,15 +58,16 @@ namespace Oraide.MiniYaml.YamlParsers
 			return weaponDefinitions.ToLookup(n => n.Name, m => m);
 		}
 
-		// TODO: What about maps?
 		public static ILookup<string, ConditionDefinition> GetConditionDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
 			var result = new List<ConditionDefinition>();
 
-			// TODO: What about maps?
-			var filePaths = FilePathsFromReferencedFiles(referencedFiles, mods);
+			var filePaths = referencedFiles.Select(fileReference => OpenRaFolderUtils.ResolveFilePath(fileReference, mods));
 			foreach (var filePath in filePaths)
 			{
+				if (filePath == null)
+					continue;
+
 				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
 				var yamlNodes = nodes.Select(x => x.ToYamlNode());
 				var flattenedNodes = yamlNodes.SelectMany(FlattenChildNodes);
@@ -76,14 +81,16 @@ namespace Oraide.MiniYaml.YamlParsers
 			return result.ToLookup(n => n.Name, m => m);
 		}
 
-		// TODO: What about maps?
 		public static ILookup<string, CursorDefinition> GetCursorDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
 			var result = new List<CursorDefinition>();
 
-			var filePaths = FilePathsFromReferencedFiles(referencedFiles, mods);
+			var filePaths = referencedFiles.Select(fileReference => OpenRaFolderUtils.ResolveFilePath(fileReference, mods));
 			foreach (var filePath in filePaths)
 			{
+				if (filePath == null)
+					continue;
+
 				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
 				var yamlNodes = nodes.SelectMany(x =>
 					x.Value.Nodes.SelectMany(y =>
@@ -142,33 +149,18 @@ namespace Oraide.MiniYaml.YamlParsers
 		{
 			var result = new List<YamlNode>();
 
-			var filePaths = FilePathsFromReferencedFiles(referencedFiles, mods);
+			var filePaths = referencedFiles.Select(fileReference => OpenRaFolderUtils.ResolveFilePath(fileReference, mods));
 			foreach (var filePath in filePaths)
 			{
+				if (filePath == null)
+					continue;
+
 				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
 				var yamlNodes = nodes.Select(x => x.ToYamlNode());
 				result.AddRange(yamlNodes);
 			}
 
 			return result;
-		}
-
-		static List<string> FilePathsFromReferencedFiles(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
-		{
-			var filePaths = new List<string>();
-			foreach (var referencedFile in referencedFiles)
-			{
-				var parts = referencedFile.Split('|');
-				var modId = parts[0];
-				var filePath = parts[1];
-				if (mods.ContainsKey(modId))
-				{
-					var fileFullPath = Path.Combine(mods[modId], filePath);
-					filePaths.Add(fileFullPath);
-				}
-			}
-
-			return filePaths;
 		}
 	}
 }

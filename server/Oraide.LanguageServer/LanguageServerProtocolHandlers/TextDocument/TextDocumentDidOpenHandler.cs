@@ -1,5 +1,8 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using LspTypes;
+using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
 
@@ -22,6 +25,34 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						Console.Error.WriteLine("<-- TextDocument-DidOpen");
 
 					openFileCache.AddOrUpdateOpenFile(request.TextDocument.Uri, request.TextDocument.Text);
+
+					// Check if this is a map-related file and potentially load the map into the symbol cache.
+					TryGetModId(request.TextDocument.Uri, out var modId);
+					var fileUri = request.TextDocument.Uri;
+
+					var modManifest = symbolCache[modId].ModManifest;
+					var fileName = fileUri.Split($"mods/{modId}/")[1];
+					var fileReference = $"{modId}|{fileName}";
+					var filePath = fileUri.Replace("file:///", string.Empty).Replace("%3A", ":");
+
+					if (!modManifest.RulesFiles.Contains(fileReference)
+						&& !modManifest.WeaponsFiles.Contains(fileReference)
+						&& !modManifest.CursorsFiles.Contains(fileReference))
+					{
+						var targetFileDir = Path.GetDirectoryName(filePath);
+						MapManifest mapManifest = default;
+						if (Path.GetFileName(filePath) == "map.yaml")
+							mapManifest = symbolCache[modId].Maps.FirstOrDefault(x => x.MapFolder == targetFileDir);
+
+						if (string.IsNullOrWhiteSpace(mapManifest.MapFolder))
+							mapManifest = symbolCache[modId].Maps.FirstOrDefault(x => x.RulesFiles.Contains(fileReference));
+
+						if (string.IsNullOrWhiteSpace(mapManifest.MapFolder))
+							mapManifest = symbolCache[modId].Maps.FirstOrDefault(x => x.WeaponsFiles.Contains(fileReference));
+
+						if (!string.IsNullOrWhiteSpace(mapManifest.MapFolder) && !symbolCache.Maps.ContainsKey(mapManifest.MapReference))
+							symbolCache.AddMap(modId, mapManifest);
+					}
 				}
 				catch (Exception e)
 				{

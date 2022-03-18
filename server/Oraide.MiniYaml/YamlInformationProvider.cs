@@ -27,6 +27,11 @@ namespace Oraide.MiniYaml
 			return OpenRAMiniYamlParser.ReadModFile(modFolder);
 		}
 
+		public IEnumerable<YamlNode> ReadMapFile(string mapFolder)
+		{
+			return OpenRAMiniYamlParser.ReadMapFile(mapFolder);
+		}
+
 		public ILookup<string, ActorDefinition> GetActorDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
 			return OpenRAMiniYamlParser.GetActorDefinitions(referencedFiles, mods);
