@@ -24,10 +24,20 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.2.0
+
+ - OpenRA Mod support:
+    - Added proper mod support - loading of `mod.yaml` and referenced rules/weapons/etc. files.
+    - Added proper map support - loading of `map.yaml` and referenced rules/weapons/etc. files.
+    - Added support for `map.yaml` files (GoTo, AutoComplete, hover information) for relevant supported featuers (actor definitions, referenced files).
+ - VSCode integration:
+    - Added support for the VSCode color picker and in-line color visualization.
+    - Fixed a low-level issue with detecting duplicate strings in a line.
+
 ### 0.1.4
 
- - Mod support:
-    - Added support for mod Cursors (GoTo, AutoComplete, information).
+ - OpenRA Mod support:
+    - Added support for Cursors (GoTo, AutoComplete, information).
  - VSCode integration:
     - Added support for [Breadcrumbs](https://code.visualstudio.com/docs/editor/editingevolved#_breadcrumbs), file [Outline view](https://code.visualstudio.com/docs/getstarted/userinterface#_outline-view) and [DocumentSymbols](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-symbol).
     - The VSCode extension will no longer prompt the user when a new server version is available, instead automatically downloading it.
