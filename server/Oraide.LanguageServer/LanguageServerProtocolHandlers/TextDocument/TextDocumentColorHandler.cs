@@ -27,12 +27,15 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					var (yamlNodes, flattenedYamlNodes, lines) = openFileCache[request.TextDocument.Uri];
 					foreach (var node in flattenedYamlNodes)
 					{
-						if (node.Key != null && node.Key.EndsWith("Color") && node.ChildNodes == null)
+						if (node.Key == null || node.ChildNodes != null)
+							continue;
+
+						var line = lines[node.Location.LineNumber - 1];
+						if (node.Key.EndsWith("Color"))
 						{
 							var colorString = node.Value;
 							if (TryParseColor(colorString, out var color))
 							{
-								var line = lines[node.Location.LineNumber - 1];
 								var valueStartIndex = line.IndexOf("Color: ", StringComparison.Ordinal);
 								if (valueStartIndex > 0)
 								{
@@ -48,6 +51,51 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									};
 
 									results.Add(colorInfo);
+								}
+							}
+						}
+						else if (node.Key.EndsWith("Colors"))
+						{
+							var valueStartIndex = line.IndexOf("Colors: ", StringComparison.Ordinal);
+							if (valueStartIndex < 0)
+								continue;
+
+							valueStartIndex += 8;
+							var colorsString = node.Value;
+							var previousWasEmpty = true;
+							for (var i = 0; i < colorsString.Length; i++)
+							{
+								if (colorsString[i] == '\t' || colorsString[i] == ' ' || colorsString[i] == ',')
+								{
+									previousWasEmpty = true;
+									continue;
+								}
+
+								if (previousWasEmpty && char.IsLetterOrDigit(colorsString[i]))
+								{
+									previousWasEmpty = false;
+									var startIndex = i;
+									for (; i < colorsString.Length; i++)
+										if (!char.IsLetterOrDigit(colorsString[i]))
+											break;
+
+									var endIndex = i;
+
+									var colorString = line.Substring(valueStartIndex + startIndex, endIndex - startIndex);
+									if (TryParseColor(colorString, out var color))
+									{
+										var colorInfo = new ColorInformation
+										{
+											Color = color,
+											Range = new LspTypes.Range
+											{
+												Start = new Position((uint)(node.Location.LineNumber - 1), (uint)(valueStartIndex + startIndex)),
+												End = new Position((uint)(node.Location.LineNumber - 1), (uint)(valueStartIndex + startIndex + colorString.Length))
+											}
+										};
+
+										results.Add(colorInfo);
+									}
 								}
 							}
 						}
