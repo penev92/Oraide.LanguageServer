@@ -60,7 +60,16 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				case 0:
 				{
 					if (modSymbols.ActorDefinitions.Contains(cursorTarget.TargetString))
-						return HoverFromHoverInfo($"```csharp\nActor \"{cursorTarget.TargetString}\"\n```", range);
+					{
+						string content;
+						if (cursorTarget.TargetString.StartsWith('^'))
+							content = $"```csharp\nAbstract Actor \"{cursorTarget.TargetString}\"\n```\n" +
+							           $"Abstract actor definitions are meant to be inherited and will not be considered as real actors by the game.";
+						else
+							content = $"```csharp\nActor \"{cursorTarget.TargetString}\"\n```";
+
+						return HoverFromHoverInfo(content, range);
+					}
 
 					if (cursorTarget.FileType == FileType.MapRules)
 					{
@@ -213,7 +222,16 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				case 0:
 				{
 					if (modSymbols.WeaponDefinitions.Contains(cursorTarget.TargetString))
-						return HoverFromHoverInfo($"```csharp\nWeapon \"{cursorTarget.TargetString}\"\n```", range);
+					{
+						string content;
+						if (cursorTarget.TargetString.StartsWith('^'))
+							content = $"```csharp\nAbstract Weapon \"{cursorTarget.TargetString}\"\n```\n" +
+							          $"Abstract weapon definitions are meant to be inherited and can not be used directly.";
+						else
+							content = $"```csharp\nWeapon \"{cursorTarget.TargetString}\"\n```";
+
+						return HoverFromHoverInfo(content, range);
+					}
 
 					if (cursorTarget.FileType == FileType.MapWeapons)
 					{
