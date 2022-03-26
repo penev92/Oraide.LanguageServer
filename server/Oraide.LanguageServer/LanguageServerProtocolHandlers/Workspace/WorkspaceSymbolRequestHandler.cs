@@ -24,7 +24,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 						Console.Error.WriteLine("<-- Workspace-Symbols");
 
 					var actors = symbolCache.ModSymbols.SelectMany(x => x.Value.ModSymbols.ActorDefinitions
-						.Select(actorDefinition => actorDefinition.First().ToSymbolInformation()));
+						.SelectMany(actorDefinition => actorDefinition.First().ToSymbolInformation()));
 					var weapons = symbolCache.ModSymbols.SelectMany(x => x.Value.ModSymbols.WeaponDefinitions
 						.Select(weaponDefinition => weaponDefinition.First().ToSymbolInformation()));
 					var conditions = symbolCache.ModSymbols.SelectMany(x => x.Value.ModSymbols.ConditionDefinitions

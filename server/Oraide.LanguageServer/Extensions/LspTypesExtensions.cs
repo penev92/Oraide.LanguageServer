@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using LspTypes;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.Csharp;
@@ -116,15 +117,27 @@ namespace Oraide.LanguageServer.Extensions
 			};
 		}
 
-		public static SymbolInformation ToSymbolInformation(this ActorDefinition actorDefinition)
+		public static IEnumerable<SymbolInformation> ToSymbolInformation(this ActorDefinition actorDefinition)
 		{
-			return new SymbolInformation
+			yield return new SymbolInformation
 			{
 				Name = actorDefinition.Name,
 				Kind = SymbolKind.Struct,
 				Tags = Array.Empty<SymbolTag>(),
 				Location = actorDefinition.Location.ToLspLocation(actorDefinition.Name.Length)
 			};
+
+			if (!string.IsNullOrEmpty(actorDefinition.TooltipName) && actorDefinition.Name.ToLowerInvariant() != actorDefinition.TooltipName.ToLowerInvariant())
+			{
+				yield return new SymbolInformation
+				{
+					Name = actorDefinition.TooltipName,
+					Kind = SymbolKind.Struct,
+					Tags = Array.Empty<SymbolTag>(),
+					Location = actorDefinition.Location.ToLspLocation(actorDefinition.Name.Length),
+					ContainerName = actorDefinition.Name
+				};
+			}
 		}
 
 		public static SymbolInformation ToSymbolInformation(this WeaponDefinition weaponDefinition)

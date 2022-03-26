@@ -32,7 +32,9 @@ namespace Oraide.MiniYaml.YamlParsers
 					: node.ChildNodes.Select(x =>
 						new ActorTraitDefinition(x.Key, new MemberLocation(x.Location.FilePath, x.Location.LineNumber, 1))); // HACK HACK HACK: Until the YAML Loader learns about character positions, we hardcode 1 here (since this is all for traits on actor definitions).
 
-				actorDefinitions.Add(new ActorDefinition(node.Key, location, actorTraits.ToList()));
+				var tooltipTrait = node.ChildNodes?.FirstOrDefault(x => x.Key.EndsWith("Tooltip"));
+				var displayName = tooltipTrait?.ChildNodes?.FirstOrDefault(x => x.Key == "Name")?.Value;
+				actorDefinitions.Add(new ActorDefinition(node.Key, displayName, location, actorTraits.ToList()));
 			}
 
 			return actorDefinitions.ToLookup(n => n.Name, m => m);
