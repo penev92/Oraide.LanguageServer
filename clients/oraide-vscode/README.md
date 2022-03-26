@@ -24,6 +24,16 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.3.0
+
+ - OpenRA Mod support:
+    - Added extra hover info for abstract Actor and Weapon definitions.
+    - Added hover info for actor names in `map.yaml` files.
+    - Added actor `Tooltip.Name` text as navigatable workspace symbols (open with `Ctrl+T`/`Cmd+T`).
+ - VSCode integration:
+    - Fixed color picker/preview not appearing on lines with multiple color values.
+    - Improved syntax highlighting thanks to improvements to [the MiniYAML.tmLanguage](https://github.com/OpenRA/MiniYAML.tmbundle) file.
+
 ### 0.2.0
 
  - OpenRA Mod support:
