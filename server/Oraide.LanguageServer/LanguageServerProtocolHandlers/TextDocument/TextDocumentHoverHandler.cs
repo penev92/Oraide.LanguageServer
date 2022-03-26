@@ -389,6 +389,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						// TODO: This could only be useful if documentation for PlayerReference is added.
 					}
 
+					if (cursorTarget.TargetNode?.ParentNode?.Key == "Actors")
+						return HoverFromHoverInfo("**Actor name**\n\nThis name will be used by potential map scripts and will also show up in the map editor.", range);
+
 					return null;
 				}
 
