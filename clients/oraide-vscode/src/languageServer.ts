@@ -17,7 +17,6 @@ async function getLanguageServerPath(context: vscode.ExtensionContext, config: v
 
     if (utils.IS_DEBUG) {
         serverPath = config.get<string>('oraide.server.path');
-        serverPath = "D:\\Work.Personal\\OpenRA\\Oraide\\server\\bin\\Oraide.LanguageServer.dll";
     } else {
         serverPath = await findOrDownloadLanguageServer(context);
     }
