@@ -101,55 +101,60 @@ async function spawnServerProcess(serverPath: string, workspaceFolderPath: strin
 export async function tryStart(context: vscode.ExtensionContext, config: vscode.WorkspaceConfiguration,
     workspaceFolderPath: string) : Promise<{isSuccessful: boolean, client: vscodelc.LanguageClient | null}> {
     
-    // Locate language server binary.
-    let serverPath = await getLanguageServerPath(context, config);
-    if (!serverPath) {
-        logger.appendLine("Extension ORAIDE failed to find or download its language server and will abort.");
-        logger.appendLine("If you are running in debug mode, configure the path to the language server in the extension settings!");
-        vscode.window.showInformationMessage("Extension ORAIDE failed to find or download its language server and will abort.");
+    try {
+        // Locate language server binary.
+        let serverPath = await getLanguageServerPath(context, config);
+        if (!serverPath) {
+            logger.appendLine("Extension ORAIDE failed to find or download its language server and will abort.");
+            logger.appendLine("If you are running in debug mode, configure the path to the language server in the extension settings!");
+            vscode.window.showInformationMessage("Extension ORAIDE failed to find or download its language server and will abort.");
+            return { isSuccessful: false, client: null };
+        }
+
+        // Try get the fallback OpenRA folder is configured.
+        const defaultOpenRaPath = config.get<string>('oraide.game.path');
+
+        logger.appendLine(`METHOD tryStart`);
+        logger.appendLine(`  serverPath: ${serverPath}`);
+        logger.appendLine(`  workspaceFolderPath: ${workspaceFolderPath}`);
+        logger.appendLine(`  defaultOpenRaPath: ${defaultOpenRaPath}`);
+        
+        const serverOptions: vscodelc.ServerOptions = async () => spawnServerProcess(serverPath!, workspaceFolderPath, defaultOpenRaPath!);
+
+        const clientOptions: vscodelc.LanguageClientOptions = {
+            // Register the server for 'miniyaml' (.yaml) files. This uses the definition for 'miniyaml' found in package.json under 'contributes.languages'.
+            documentSelector: [
+                {
+                    language: 'miniyaml',
+                    scheme: 'file',
+                },
+                {
+                    language: 'miniyaml',
+                    scheme: 'untitled',
+                },
+            ],
+            diagnosticCollectionName: 'OpenRA IDE',
+            synchronize: {
+                // Notify the server about file changes to '.yaml files contained in the workspace
+                configurationSection: 'oraide',
+                fileEvents: vscode.workspace.createFileSystemWatcher('**/*.yaml')
+            },
+            outputChannelName: "OpenRA IDE server",
+        };
+
+        let client = new vscodelc.LanguageClient('oraide', 'OpenRA IDE', serverOptions, clientOptions, utils.IS_DEBUG);
+
+        let disposable = client.start();
+
+        logger.appendLine("Started client")
+
+        // Push the disposable to the context's subscriptions so that the
+        // client can be deactivated on extension deactivation
+        context.subscriptions.push(disposable);
+
+        return { isSuccessful: true, client: client };
+    }
+    catch (e) {
         return { isSuccessful: false, client: null };
     }
-
-    // Try get the fallback OpenRA folder is configured.
-    const defaultOpenRaPath = config.get<string>('oraide.game.path');
-
-    logger.appendLine(`METHOD tryStart`);
-    logger.appendLine(`  serverPath: ${serverPath}`);
-    logger.appendLine(`  workspaceFolderPath: ${workspaceFolderPath}`);
-    logger.appendLine(`  defaultOpenRaPath: ${defaultOpenRaPath}`);
-    
-    const serverOptions: vscodelc.ServerOptions = async () => spawnServerProcess(serverPath!, workspaceFolderPath, defaultOpenRaPath!);
-
-    const clientOptions: vscodelc.LanguageClientOptions = {
-        // Register the server for 'miniyaml' (.yaml) files. This uses the definition for 'miniyaml' found in package.json under 'contributes.languages'.
-        documentSelector: [
-            {
-                language: 'miniyaml',
-                scheme: 'file',
-            },
-            {
-                language: 'miniyaml',
-                scheme: 'untitled',
-            },
-        ],
-        diagnosticCollectionName: 'OpenRA IDE',
-        synchronize: {
-            // Notify the server about file changes to '.yaml files contained in the workspace
-            configurationSection: 'oraide',
-            fileEvents: vscode.workspace.createFileSystemWatcher('**/*.yaml')
-        },
-        outputChannelName: "OpenRA IDE server",
-    };
-
-    let client = new vscodelc.LanguageClient('oraide', 'OpenRA IDE', serverOptions, clientOptions, utils.IS_DEBUG);
-
-    let disposable = client.start();
-
-    logger.appendLine("Started client")
-
-    // Push the disposable to the context's subscriptions so that the
-    // client can be deactivated on extension deactivation
-    context.subscriptions.push(disposable);
-
-    return { isSuccessful: true, client: client };
 }
