@@ -24,6 +24,11 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.3.1
+
+ - VSCode integration:
+    - Allowed the extension to work (for the sake of syntax highlighting) even if the language server can't be started.
+
 ### 0.3.0
 
  - OpenRA Mod support:
