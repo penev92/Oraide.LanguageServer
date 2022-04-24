@@ -7,33 +7,40 @@ namespace Oraide.Csharp
 {
 	abstract class CodeSymbolGenerationStrategy
 	{
-		public abstract ILookup<string, TraitInfo> GetTraitInfos(string openRaFolder);
+		public abstract ILookup<string, TraitInfo> GetTraitInfos();
 
-		public abstract WeaponInfo GetWeaponInfo(string openRaFolder);
+		public abstract WeaponInfo GetWeaponInfo();
 	}
 
 	class CodeParsingSymbolGenerationStrategy : CodeSymbolGenerationStrategy
 	{
+		private readonly string openRaFolder;
+
 		ILookup<string, TraitInfo> traitInfos;
 		WeaponInfo weaponInfo;
 
-		public override ILookup<string, TraitInfo> GetTraitInfos(string openRaFolder)
+		public CodeParsingSymbolGenerationStrategy(string openRaFolder)
+		{
+			this.openRaFolder = openRaFolder;
+		}
+
+		public override ILookup<string, TraitInfo> GetTraitInfos()
 		{
 			if (traitInfos == null)
-				Parse(openRaFolder);
+				Parse();
 
 			return traitInfos;
 		}
 
-		public override WeaponInfo GetWeaponInfo(string openRaFolder)
+		public override WeaponInfo GetWeaponInfo()
 		{
 			if (weaponInfo.WeaponPropertyInfos == null)
-				Parse(openRaFolder);
+				Parse();
 
 			return weaponInfo;
 		}
 
-		void Parse(string openRaFolder)
+		void Parse()
 		{
 			var (traits, weapons) = RoslynCodeParser.Parse(openRaFolder);
 			traitInfos = traits;
@@ -43,12 +50,12 @@ namespace Oraide.Csharp
 
 	class ReflectionSymbolGenerationStrategy : CodeSymbolGenerationStrategy
 	{
-		public override ILookup<string, TraitInfo> GetTraitInfos(string openRaFolder)
+		public override ILookup<string, TraitInfo> GetTraitInfos()
 		{
 			throw new NotImplementedException();
 		}
 
-		public override WeaponInfo GetWeaponInfo(string openRaFolder)
+		public override WeaponInfo GetWeaponInfo()
 		{
 			throw new NotImplementedException();
 		}
@@ -56,12 +63,12 @@ namespace Oraide.Csharp
 
 	class FromStaticFileSymbolGenerationStrategy : CodeSymbolGenerationStrategy
 	{
-		public override ILookup<string, TraitInfo> GetTraitInfos(string openRaFolder)
+		public override ILookup<string, TraitInfo> GetTraitInfos()
 		{
 			throw new NotImplementedException();
 		}
 
-		public override WeaponInfo GetWeaponInfo(string openRaFolder)
+		public override WeaponInfo GetWeaponInfo()
 		{
 			throw new NotImplementedException();
 		}
