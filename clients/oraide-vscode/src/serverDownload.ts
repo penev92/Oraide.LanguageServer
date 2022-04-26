@@ -1,6 +1,6 @@
 'use strict';
 
-const fetch = require('node-fetch');
+const fetch = require('node-fetch-retry-timeout');
 
 import * as fileSystem from 'fs';
 import * as path from 'path';
@@ -15,9 +15,13 @@ async function getLanguageServerAsset(): Promise<{ name: string; browser_downloa
 
     const headers: Record<string, string> = { Accept: "application/vnd.github.v3+json" };
     const requestUrl = "https://api.github.com/repos/penev92/Oraide.LanguageServer/releases/latest";
-    const response = await (() => {
-        return fetch(requestUrl, { headers: headers });
-    })();
+    const response = await fetch(requestUrl, {
+        method: 'GET', 
+        retry: 2, // number attempts to retry
+        pause: 500, // pause between requests (ms)
+        timeout: 5000,  // timeout PER 1 REQUEST (ms)
+        headers: headers
+    });
 
     let toJson = await response.json();
     let release: GithubRelease = toJson;
@@ -25,14 +29,20 @@ async function getLanguageServerAsset(): Promise<{ name: string; browser_downloa
 };
 
 export async function getLatestServerVersion(): Promise<string> {
-    let asset = await getLanguageServerAsset();
-    if (!asset) {
+    try {
+        let asset = await getLanguageServerAsset();
+        if (!asset) {
+            return '';
+        }
+
+        let version = asset.name;
+        version = version.substring(0, version.lastIndexOf('.'));
+        return version;
+    }
+    catch (e) {
         return '';
     }
 
-    let version = asset.name;
-    version = version.substring(0, version.lastIndexOf('.'));
-    return version;
 }
 
 export async function downloadLanguageServer(context: vscode.ExtensionContext): Promise<boolean> {
