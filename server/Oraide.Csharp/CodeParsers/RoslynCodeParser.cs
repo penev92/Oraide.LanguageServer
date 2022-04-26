@@ -87,11 +87,13 @@ namespace Oraide.Csharp.CodeParsers
 						{
 							var fi = ti.TraitPropertyInfos.FirstOrDefault(z => z.Name == typeFieldName);
 							if (fi.Name != null)
-								fieldInfos.Add(new ClassFieldInfo(fi.Name, fi.Type, fi.DefaultValue, className, fi.Location, fi.Description, fi.OtherAttributes));
+								fieldInfos.Add(new ClassFieldInfo(fi.Name, fi.InternalType, fi.UserFriendlyType, fi.DefaultValue,
+									className, fi.Location, fi.Description, fi.OtherAttributes));
 							else
 							{
 								var otherFieldInfo = traitInfos.First(x => x.TraitInfoName == className).TraitPropertyInfos.First(x => x.Name == typeFieldName);
-								fieldInfos.Add(new ClassFieldInfo(otherFieldInfo.Name, otherFieldInfo.Type, otherFieldInfo.DefaultValue, className, otherFieldInfo.Location, otherFieldInfo.Description, otherFieldInfo.OtherAttributes));
+								fieldInfos.Add(new ClassFieldInfo(otherFieldInfo.Name, otherFieldInfo.InternalType, otherFieldInfo.UserFriendlyType,
+									otherFieldInfo.DefaultValue, className, otherFieldInfo.Location, otherFieldInfo.Description, otherFieldInfo.OtherAttributes));
 							}
 						}
 					}
@@ -102,7 +104,8 @@ namespace Oraide.Csharp.CodeParsers
 						ti.TraitDescription,
 						ti.Location,
 						baseTypes.Where(x => x.TypeName != ti.TraitInfoName).Select(x => x.TypeName).ToArray(),
-						fieldInfos.ToArray());
+						fieldInfos.ToArray(),
+						ti.IsAbstract);
 
 					finalTraitInfos.Add(traitInfo);
 				}
@@ -124,11 +127,13 @@ namespace Oraide.Csharp.CodeParsers
 					{
 						var fi = wi.PropertyInfos.FirstOrDefault(z => z.Name == typeFieldName);
 						if (fi.Name != null)
-							fieldInfos.Add(new ClassFieldInfo(fi.Name, fi.Type, fi.DefaultValue, className, fi.Location, fi.Description, fi.OtherAttributes));
+							fieldInfos.Add(new ClassFieldInfo(fi.Name, fi.InternalType, fi.UserFriendlyType, fi.DefaultValue,
+								className, fi.Location, fi.Description, fi.OtherAttributes));
 						else
 						{
 							var otherFieldInfo = warheadInfos.First(x => x.InfoName == className).PropertyInfos.First(x => x.Name == typeFieldName);
-							fieldInfos.Add(new ClassFieldInfo(otherFieldInfo.Name, otherFieldInfo.Type, otherFieldInfo.DefaultValue, className, otherFieldInfo.Location, otherFieldInfo.Description, otherFieldInfo.OtherAttributes));
+							fieldInfos.Add(new ClassFieldInfo(otherFieldInfo.Name, otherFieldInfo.InternalType, otherFieldInfo.UserFriendlyType,
+								otherFieldInfo.DefaultValue, className, otherFieldInfo.Location, otherFieldInfo.Description, otherFieldInfo.OtherAttributes));
 						}
 					}
 				}
@@ -139,7 +144,8 @@ namespace Oraide.Csharp.CodeParsers
 					wi.Description,
 					wi.Location,
 					baseTypes.Where(x => x.TypeName != wi.InfoName).Select(x => x.TypeName).ToArray(),
-					fieldInfos.ToArray());
+					fieldInfos.ToArray(),
+					wi.IsAbstract);
 
 				finalWarheadInfos.Add(warheadInfo);
 			}
@@ -153,6 +159,7 @@ namespace Oraide.Csharp.CodeParsers
 		{
 			var traitProperties = new List<ClassFieldInfo>();
 			var traitInfoName = classDeclaration.Identifier.ValueText;
+			var isAbstract = classDeclaration.Modifiers.Any(x => x.ValueText == "abstract");
 
 			// Skip classes that are not TraitInfos. Make a special case exception for TooltipInfoBase.
 			if (!traitInfoName.EndsWith("Info") && !traitInfoName.EndsWith("InfoBase"))
@@ -163,7 +170,10 @@ namespace Oraide.Csharp.CodeParsers
 
 			// Get TraitInfo property (actually field) list.
 			foreach (var member in classDeclaration.Members)
-				if (member is FieldDeclarationSyntax fieldMember)
+				if (member is FieldDeclarationSyntax fieldMember
+					&& fieldMember.Modifiers.Any(x => x.ValueText == "public")
+					&& fieldMember.Modifiers.Any(x => x.ValueText == "readonly")
+					&& fieldMember.Modifiers.All(x => x.ValueText != "static"))
 					traitProperties.AddRange(ParseClassField(filePath, fileText, fieldMember));
 
 			// Some manual string nonsense to determine trait name location inside the file.
@@ -171,7 +181,7 @@ namespace Oraide.Csharp.CodeParsers
 			var classLocation = FindClassLocationInText(filePath, fileText, traitInfoName, classStart);
 
 			yield return new TraitInfo(traitInfoName.Substring(0, traitInfoName.Length - 4), traitInfoName,
-				traitDesc, classLocation, baseTypes, traitProperties.ToArray());
+				traitDesc, classLocation, baseTypes, traitProperties.ToArray(), isAbstract);
 		}
 
 		static IEnumerable<ClassFieldInfo> ParseWeaponInfo(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
@@ -195,6 +205,7 @@ namespace Oraide.Csharp.CodeParsers
 			var projectileName = projectileInfoName.EndsWith("Info") ? projectileInfoName.Substring(0, projectileInfoName.Length - 4) : projectileInfoName;
 			projectileName = projectileName.EndsWith("Warhead") ? projectileName.Substring(0, projectileName.Length - 7) : projectileName;
 			var description = ParseClassDescAttribute(classDeclaration);
+			var isAbstract = classDeclaration.Modifiers.Any(x => x.ValueText == "abstract");
 
 			// Some manual string nonsense to determine the class name location inside the file.
 			var classStart = classDeclaration.GetLocation().SourceSpan.Start;
@@ -202,14 +213,17 @@ namespace Oraide.Csharp.CodeParsers
 			var baseTypes = ParseBaseTypes(classDeclaration).ToArray();
 			var fields = ParseClassFields(filePath, fileText, classDeclaration).ToArray();
 
-			return new SimpleClassInfo(projectileName, projectileInfoName, description, classLocation, baseTypes, fields);
+			return new SimpleClassInfo(projectileName, projectileInfoName, description, classLocation, baseTypes, fields, isAbstract);
 		}
 
 		static IEnumerable<ClassFieldInfo> ParseClassFields(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
 		{
 			// Get property (actually field) list.
 			foreach (var member in classDeclaration.Members)
-				if (member is FieldDeclarationSyntax fieldMember)
+				if (member is FieldDeclarationSyntax fieldMember
+					&& fieldMember.Modifiers.Any(x => x.ValueText == "public")
+					&& fieldMember.Modifiers.Any(x => x.ValueText == "readonly")
+					&& fieldMember.Modifiers.All(x => x.ValueText != "static"))
 					foreach (var fieldInfo in ParseClassField(filePath, fileText, fieldMember))
 						yield return fieldInfo;
 		}
@@ -241,22 +255,26 @@ namespace Oraide.Csharp.CodeParsers
 							fieldDesc = Regex.Replace(fieldDesc, "(\"\\s*\\+\\s*nameof\\(([A-Za-z0-9.\\S]*)\\)\\s*\\+\\s*\")", "$2");
 						}
 
+						else if (attributeName == "FieldLoader.Ignore")
+							yield break;
+
+						else if (attributeName == "FieldLoader.LoadUsing")
+							continue;
+
 						// Full set of attributes on trait properties for future reference.
-						else if (attributeName == "FieldLoader.LoadUsing"
-						         || attributeName == "FieldLoader.Require"
-						         || attributeName == "FieldLoader.Ignore"
-						         || attributeName == "ActorReference"
-						         || attributeName == "VoiceReference"
-						         || attributeName == "VoiceSetReference"
-						         || attributeName == "CursorReference"
-						         || attributeName == "WeaponReference"
-						         || attributeName == "PaletteReference"
-						         || attributeName == "PaletteDefinition"
-						         || attributeName == "SequenceReference"
-						         || attributeName == "NotificationReference"
-						         || attributeName == "GrantedConditionReference"
-						         || attributeName == "ConsumedConditionReference"
-						         || attributeName == "LocomotorReference")
+						else if (attributeName == "FieldLoader.Require"
+								 || attributeName == "ActorReference"
+								 || attributeName == "VoiceReference"
+								 || attributeName == "VoiceSetReference"
+								 || attributeName == "CursorReference"
+								 || attributeName == "WeaponReference"
+								 || attributeName == "PaletteReference"
+								 || attributeName == "PaletteDefinition"
+								 || attributeName == "SequenceReference"
+								 || attributeName == "NotificationReference"
+								 || attributeName == "GrantedConditionReference"
+								 || attributeName == "ConsumedConditionReference"
+								 || attributeName == "LocomotorReference")
 						{
 							// Try to resolve `nameof(...)`.
 							if (attributeValue != null)
@@ -273,11 +291,12 @@ namespace Oraide.Csharp.CodeParsers
 
 				var propertyName = variableDeclaratorSyntax.Identifier.ValueText;
 				var propertyType = HumanReadablePropertyType(fieldDeclarationSyntax.Declaration.Type);
+				var userFriendlyType = UserFriendlyTypeName(propertyType);
 				var defaultValue = HumanReadablePropertyDefaultValue(variableDeclaratorSyntax);
 				var location = FindPropertyLocationInText(filePath, fileText, variableDeclaratorSyntax.GetLocation().SourceSpan.Start);
 
 				// Using "???" as class name here as a temporary placeholder. That should be replaced later when resolving inheritance and inherited fields.
-				yield return new ClassFieldInfo(propertyName, propertyType, defaultValue, "???", location, fieldDesc, otherAttributes.ToArray());
+				yield return new ClassFieldInfo(propertyName, propertyType, userFriendlyType, defaultValue, "???", location, fieldDesc, otherAttributes.ToArray());
 			}
 		}
 
@@ -350,9 +369,17 @@ namespace Oraide.Csharp.CodeParsers
 				if (typeSyntax is PredefinedTypeSyntax predefinedTypeSyntax)
 					propertyType = predefinedTypeSyntax.Keyword.Text;
 				else if (typeSyntax is GenericNameSyntax genericNameSyntax)
-					propertyType = $"{genericNameSyntax.Identifier.Value} of {genericNameSyntax.TypeArgumentList.Arguments}";
+					propertyType = $"{genericNameSyntax.Identifier.Value}<{string.Join(", ", genericNameSyntax.TypeArgumentList.Arguments)}>";
 				else if (typeSyntax is IdentifierNameSyntax identifierNameSyntax)
 					propertyType = identifierNameSyntax.Identifier.Text;
+				else if (typeSyntax is ArrayTypeSyntax arrayTypeSyntax)
+					propertyType = $"{arrayTypeSyntax.ElementType.GetText()}[]";
+				else if (typeSyntax is NullableTypeSyntax nullableTypeSyntax)
+					propertyType = $"Nullable<{nullableTypeSyntax.ElementType.GetText()}>";
+				else if (typeSyntax is QualifiedNameSyntax qualifiedNameSyntax)
+					propertyType = qualifiedNameSyntax.Right.Identifier.Text;
+				else
+					Console.Error.WriteLine($"Unknown TypeSyntax {typeSyntax.GetType()}!");
 			}
 			catch (Exception e)
 			{
@@ -436,10 +463,10 @@ namespace Oraide.Csharp.CodeParsers
 						defaultValue = "(empty)";
 				}
 				else if (valueKind != SyntaxKind.StringLiteralExpression
-				         && valueKind != SyntaxKind.NumericLiteralExpression
-				         && valueKind != SyntaxKind.NullLiteralExpression
-				         && valueKind != SyntaxKind.InvocationExpression
-				         && valueKind != SyntaxKind.UnaryMinusExpression)
+						 && valueKind != SyntaxKind.NumericLiteralExpression
+						 && valueKind != SyntaxKind.NullLiteralExpression
+						 && valueKind != SyntaxKind.InvocationExpression
+						 && valueKind != SyntaxKind.UnaryMinusExpression)
 				{
 					throw new NotImplementedException($"unsupported type {valueKind}!");
 				}
@@ -450,6 +477,68 @@ namespace Oraide.Csharp.CodeParsers
 			}
 
 			return defaultValue;
+		}
+
+		static string UserFriendlyTypeName(string typeName)
+		{
+			if (typeName.EndsWith("[]"))
+				return $"Collection of {UserFriendlyTypeName(typeName.Substring(0, typeName.Length - 2))}";
+
+			if (typeName.StartsWith("BitSet<"))
+				return $"Collection of {UserFriendlyTypeName(typeName.Substring(7, typeName.Length - 8))}";
+
+			if (typeName.StartsWith("HashSet<"))
+				return $"Set of {UserFriendlyTypeName(typeName.Substring(8, typeName.Length - 9))}";
+
+			if (typeName.StartsWith("Dictionary<"))
+			{
+				var types = typeName.Substring(11, typeName.Length - 12).Split(", ");
+				return $"Dictionary with Key: {UserFriendlyTypeName(types[0])}, Value: {UserFriendlyTypeName(types[1])}";
+			}
+
+			if (typeName.StartsWith("Nullable<"))
+				return $"{UserFriendlyTypeName(typeName.Substring(9, typeName.Length - 10))} (optional)";
+
+			if (typeName == "int" || typeName == "uint")
+				return "Integer";
+
+			if (typeName == "int2")
+				return "2D Integer";
+
+			if (typeName == "float" || typeName == "decimal")
+				return "Real Number";
+
+			if (typeName == "float2")
+				return "2D Real Number";
+
+			if (typeName == "CPos")
+				return "2D Cell Position";
+
+			if (typeName == "CVec")
+				return "2D Cell Vector";
+
+			if (typeName == "WAngle")
+				return "1D World Angle";
+
+			if (typeName == "WRot")
+				return "3D World Rotation";
+
+			if (typeName == "WPos")
+				return "3D World Position";
+
+			if (typeName == "WDist")
+				return "1D World Distance";
+
+			if (typeName == "WVec")
+				return "3D World Vector";
+
+			if (typeName == "Color")
+				return "Color (RRGGBB[AA] notation)";
+
+			if (typeName == "IProjectileInfo")
+				return "Projectile";
+
+			return typeName;
 		}
 
 		static IEnumerable<(string TypeName, IEnumerable<string> ClassFields)> GetTraitBaseTypes(List<TraitInfo> traitInfos, string traitInfoName)

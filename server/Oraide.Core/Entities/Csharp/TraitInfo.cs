@@ -17,7 +17,10 @@
 
 		public readonly ClassFieldInfo[] TraitPropertyInfos;
 
-		public TraitInfo(string traitName, string traitInfoName, string traitDescription, MemberLocation location, string[] baseTypes, ClassFieldInfo[] traitPropertyInfos)
+		public readonly bool IsAbstract;
+
+		public TraitInfo(string traitName, string traitInfoName, string traitDescription, MemberLocation location,
+			string[] baseTypes, ClassFieldInfo[] traitPropertyInfos, bool isAbstract)
 		{
 			TraitName = traitName;
 			TraitInfoName = traitInfoName;
@@ -25,6 +28,7 @@
 			Location = location;
 			BaseTypes = baseTypes;
 			TraitPropertyInfos = traitPropertyInfos;
+			IsAbstract = isAbstract;
 		}
 
 		public override string ToString() => TraitName;

@@ -37,7 +37,7 @@ namespace Oraide.Csharp
 			else if (OpenRaFolderUtils.IsOpenRaInstallationFolder(openRaFolder))
 			{
 				// Strategy 2 - load data from static file.
-				symbolGenerator = new FromStaticFileSymbolGenerationStrategy();
+				symbolGenerator = new FromStaticFileSymbolGenerationStrategy(openRaFolder);
 			}
 		}
 
