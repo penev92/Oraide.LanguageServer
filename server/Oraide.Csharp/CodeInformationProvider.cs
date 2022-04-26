@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Oraide.Core;
 using Oraide.Core.Entities.Csharp;
+using Oraide.Csharp.CodeSymbolGenerationStrategies;
 
 namespace Oraide.Csharp
 {
@@ -16,7 +17,7 @@ namespace Oraide.Csharp
 	public class CodeInformationProvider
 	{
 		readonly string openRaFolder;
-		readonly CodeSymbolGenerationStrategy symbolGenerator;
+		readonly ICodeSymbolGenerationStrategy symbolGenerator;
 
 		public CodeInformationProvider(string workspaceFolderPath, string defaultOpenRaFolderPath)
 		{
@@ -30,30 +31,24 @@ namespace Oraide.Csharp
 
 			if (OpenRaFolderUtils.IsOpenRaRepositoryFolder(openRaFolder) || OpenRaFolderUtils.IsModSdkRepositoryFolder(openRaFolder))
 			{
-				// TODO: Strategy 1 - C# code parsing.
-				symbolGenerator = new CodeParsingSymbolGenerationStrategy();
+				// Strategy 1 - C# code parsing.
+				symbolGenerator = new CodeParsingSymbolGenerationStrategy(openRaFolder);
 			}
 			else if (OpenRaFolderUtils.IsOpenRaInstallationFolder(openRaFolder))
 			{
-				// TODO: Strategy 2 - DLL reflection.
-				// symbolGenerator = new ReflectionSymbolGenerationStrategy();
-				symbolGenerator = new FromStaticFileSymbolGenerationStrategy(); // Falling back to Strategy 3 until 2 is implemented.
-			}
-			else
-			{
-				// TODO: Strategy 3 - load data from static file.
-				symbolGenerator = new FromStaticFileSymbolGenerationStrategy();
+				// Strategy 2 - load data from static file.
+				symbolGenerator = new FromStaticFileSymbolGenerationStrategy(openRaFolder);
 			}
 		}
 
 		public ILookup<string, TraitInfo> GetTraitInfos()
 		{
-			return symbolGenerator.GetTraitInfos(openRaFolder);
+			return symbolGenerator.GetTraitInfos();
 		}
 
 		public WeaponInfo GetWeaponInfo()
 		{
-			return symbolGenerator.GetWeaponInfo(openRaFolder);
+			return symbolGenerator.GetWeaponInfo();
 		}
 
 		string GetOpenRaFolder(string workspaceFolderPath, string defaultOpenRaFolderPath)

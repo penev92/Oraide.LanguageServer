@@ -6,10 +6,20 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" Version="3.11.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Oraide.Core\Oraide.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="docs\release-20210321-traits.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="docs\release-20210321-weapons.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

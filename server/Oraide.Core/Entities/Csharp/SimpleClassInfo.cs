@@ -17,7 +17,10 @@
 
 		public readonly ClassFieldInfo[] PropertyInfos;
 
-		public SimpleClassInfo(string name, string infoName, string description, MemberLocation location, string[] inheritedTypes, ClassFieldInfo[] propertyInfos)
+		public readonly bool IsAbstract;
+
+		public SimpleClassInfo(string name, string infoName, string description, MemberLocation location, string[] inheritedTypes,
+			ClassFieldInfo[] propertyInfos, bool isAbstract)
 		{
 			Name = name;
 			InfoName = infoName;
@@ -25,13 +28,14 @@
 			Location = location;
 			InheritedTypes = inheritedTypes;
 			PropertyInfos = propertyInfos;
+			IsAbstract = isAbstract;
 		}
 
 		public override string ToString() => InfoName;
 
 		public string ToMarkdownInfoString() => "```csharp\n" +
-		                                        $"class {InfoName}" +
-		                                        $"\n```\n" +
-		                                        $"{Description}";
+												$"class {InfoName}" +
+												$"\n```\n" +
+												$"{Description}";
 	}
 }

@@ -9,7 +9,9 @@ namespace Oraide.Core.Entities.Csharp
 	{
 		public readonly string Name;
 
-		public readonly string Type;
+		public readonly string InternalType;
+
+		public readonly string UserFriendlyType;
 
 		public readonly string DefaultValue;
 
@@ -21,10 +23,12 @@ namespace Oraide.Core.Entities.Csharp
 
 		public readonly (string Name, string Value)[] OtherAttributes;
 
-		public ClassFieldInfo(string name, string type, string defaultValue, string className, MemberLocation location, string description, (string Name, string Value)[] otherAttributes)
+		public ClassFieldInfo(string name, string internalType, string userFriendlyType, string defaultValue, string className,
+			MemberLocation location, string description, (string Name, string Value)[] otherAttributes)
 		{
 			Name = name;
-			Type = type;
+			InternalType = internalType;
+			UserFriendlyType = userFriendlyType;
 			DefaultValue = defaultValue;
 			ClassName = className;
 			Location = location;
@@ -32,12 +36,12 @@ namespace Oraide.Core.Entities.Csharp
 			OtherAttributes = otherAttributes;
 		}
 
-		public override string ToString() => $"{Type} {Name}";
+		public override string ToString() => $"{InternalType} {Name}";
 
 		public string ToMarkdownInfoString()
 		{
 			var content = "```csharp\n" +
-			              $"{Name}" + (string.IsNullOrWhiteSpace(Type) ? "" : $" ({Type})") +
+			              $"{Name}" + (string.IsNullOrWhiteSpace(InternalType) ? "" : $" - {InternalType} ({UserFriendlyType})") +
 			              "\n```\n" +
 			              $"{Description}";
 
