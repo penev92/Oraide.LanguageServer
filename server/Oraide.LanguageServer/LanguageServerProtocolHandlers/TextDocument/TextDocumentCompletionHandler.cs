@@ -145,7 +145,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 			// Using .First() is not great but we have no way to differentiate between traits of the same name
 			// until the server learns the concept of a mod and loaded assemblies.
-			traitNames = symbolCache[modId].CodeSymbols.TraitInfos.Select(x => x.First().ToCompletionItem());
+			traitNames = symbolCache[modId].CodeSymbols.TraitInfos.Where(x => !x.First().IsAbstract).Select(x => x.First().ToCompletionItem());
 			actorNames = symbolCache[modId].ModSymbols.ActorDefinitions.Select(x => x.First().ToCompletionItem());
 			weaponNames = symbolCache[modId].ModSymbols.WeaponDefinitions.Select(x => x.First().ToCompletionItem());
 			conditionNames = symbolCache[modId].ModSymbols.ConditionDefinitions.Select(x => x.First().ToCompletionItem());
@@ -332,10 +332,10 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					}
 
 					if (nodeKey == "Projectile")
-						return weaponInfo.ProjectileInfos.Select(x => x.ToCompletionItem("Type implementing IProjectileInfo"));
+						return weaponInfo.ProjectileInfos.Where(x => !x.IsAbstract).Select(x => x.ToCompletionItem("Type implementing IProjectileInfo"));
 
 					if (nodeKey == "Warhead" || nodeKey.StartsWith("Warhead@"))
-						return weaponInfo.WarheadInfos.Select(x => x.ToCompletionItem("Type implementing IWarhead"));
+						return weaponInfo.WarheadInfos.Where(x => !x.IsAbstract).Select(x => x.ToCompletionItem("Type implementing IWarhead"));
 
 					return Enumerable.Empty<CompletionItem>();
 				}
