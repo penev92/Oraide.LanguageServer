@@ -51,7 +51,10 @@ export async function downloadLanguageServer(context: vscode.ExtensionContext): 
         return false;
     }
 
-    let response = await fetch(asset.browser_download_url);
+    let response = await fetch(asset.browser_download_url, {
+        redirect: 'follow'
+    });
+
     if (!response.ok) {
         return false;
     }
