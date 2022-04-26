@@ -24,6 +24,15 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.4.0
+
+ - OpenRA Mod support:
+    - Added support for working with OpenRA install directories via static docs files (previously could only parse C# code to generate symbols).
+    - Fixed abstract traits/weapons showing up as code completion suggestions.
+ - VSCode integration:
+    - Fixed a bug that would cause the VSCode extension to hang indefinitely on startup if it couldn't access https://api.github.com/ to check for updates.
+    - Updated [the MiniYAML.tmLanguage](https://github.com/OpenRA/MiniYAML.tmbundle) with some syntax highlighting bug fixes and improvements.
+
 ### 0.3.1
 
  - VSCode integration:
