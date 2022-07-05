@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using LspTypes;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
@@ -10,6 +11,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
 	public class TextDocumentColorHandler : BaseRpcMessageHandler
 	{
+		const string RegexMatchPattern = "(?:\t|[a-zA-Z0-9])(Color[s]*)(?:[:A-Z])";
+
 		public TextDocumentColorHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
 			: base(symbolCache, openFileCache) { }
 
@@ -31,52 +34,30 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							continue;
 
 						var line = lines[node.Location.LineNumber - 1];
-						if (node.Key.EndsWith("Color"))
+						var matches = Regex.Match(line, RegexMatchPattern, RegexOptions.Compiled);
+						if (matches.Groups.Count > 1)
 						{
-							var colorString = node.Value;
-							if (TryParseColor(colorString, out var color))
-							{
-								var valueStartIndex = line.IndexOf("Color: ", StringComparison.Ordinal);
-								if (valueStartIndex > 0)
-								{
-									valueStartIndex += 7;
-									var colorInfo = new ColorInformation
-									{
-										Color = color,
-										Range = new LspTypes.Range
-										{
-											Start = new Position((uint)(node.Location.LineNumber - 1), (uint)valueStartIndex),
-											End = new Position((uint)(node.Location.LineNumber - 1), (uint)(valueStartIndex + node.Value.Length))
-										}
-									};
-
-									results.Add(colorInfo);
-								}
-							}
-						}
-						else if (node.Key.EndsWith("Colors"))
-						{
-							var valueStartIndex = line.IndexOf("Colors: ", StringComparison.Ordinal);
+							var valueStartIndex = line.IndexOf(": ", StringComparison.Ordinal);
 							if (valueStartIndex < 0)
 								continue;
 
-							valueStartIndex += 8;
-							var colorsString = node.Value;
+							valueStartIndex += 2;
+							var valueString = node.Value;
 							var previousWasEmpty = true;
-							for (var i = 0; i < colorsString.Length; i++)
+							for (var i = 0; i < valueString.Length; i++)
 							{
-								if (colorsString[i] == '\t' || colorsString[i] == ' ' || colorsString[i] == ',')
+								if (valueString[i] == '\t' || valueString[i] == ' ' || valueString[i] == ',')
 								{
 									previousWasEmpty = true;
 									continue;
 								}
 
-								if (previousWasEmpty && char.IsLetterOrDigit(colorsString[i]))
+								if (previousWasEmpty && char.IsLetterOrDigit(valueString[i]))
 								{
 									previousWasEmpty = false;
 									var startIndex = i;
-									for (; i < colorsString.Length; i++)
-										if (!char.IsLetterOrDigit(colorsString[i]))
+									for (; i < valueString.Length; i++)
+										if (!char.IsLetterOrDigit(valueString[i]))
 											break;
 
 									var endIndex = i;
