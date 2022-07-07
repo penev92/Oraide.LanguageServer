@@ -195,6 +195,11 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 		protected bool TryGetModId(string fileUri, out string modId)
 		{
 			var match = Regex.Match(fileUri, "(\\/mods\\/[^\\/]*\\/)").Value;
+
+			// Workaround for when the file is in the SupportDir.
+			if (string.IsNullOrEmpty(match))
+				match = Regex.Match(fileUri, "(\\/maps\\/[^\\/]*\\/)").Value;
+
 			modId = match.Split('/')[2];
 			return true;
 		}
