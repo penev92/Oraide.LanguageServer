@@ -57,6 +57,11 @@ namespace Oraide.Csharp
 			return symbolGenerator.GetWeaponInfo();
 		}
 
+		public ILookup<string, TraitInfo> GetPaletteTraitInfos()
+		{
+			return symbolGenerator.GetPaletteTraitInfos();
+		}
+
 		string GetOpenRaFolder(string workspaceFolderPath, string defaultOpenRaFolderPath)
 		{
 			var oraFolderPath = "";

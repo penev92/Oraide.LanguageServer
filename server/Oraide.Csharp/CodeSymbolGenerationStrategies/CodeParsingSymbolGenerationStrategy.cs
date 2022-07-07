@@ -10,6 +10,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 
 		ILookup<string, TraitInfo> traitInfos;
 		WeaponInfo weaponInfo;
+		ILookup<string, TraitInfo> paletteTraitInfos;
 
 		public CodeParsingSymbolGenerationStrategy(string openRaFolder)
 		{
@@ -32,11 +33,20 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 			return weaponInfo;
 		}
 
+		public ILookup<string, TraitInfo> GetPaletteTraitInfos()
+		{
+			if (paletteTraitInfos == null)
+				Parse();
+
+			return paletteTraitInfos;
+		}
+
 		void Parse()
 		{
-			var (traits, weapons) = RoslynCodeParser.Parse(openRaFolder);
+			var (traits, weapons, palettes) = RoslynCodeParser.Parse(openRaFolder);
 			traitInfos = traits;
 			weaponInfo = weapons;
+			paletteTraitInfos = palettes;
 		}
 	}
 }

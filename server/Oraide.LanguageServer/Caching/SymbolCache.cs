@@ -50,6 +50,9 @@ namespace Oraide.LanguageServer.Caching
 			// that they would be watching the code files for changes.
 			var traitInfos = codeInformationProvider.GetTraitInfos();
 			var weaponInfo = codeInformationProvider.GetWeaponInfo();
+			var paletteTraitInfos = codeInformationProvider.GetPaletteTraitInfos();
+
+			var codeSymbols = new CodeSymbols(traitInfos, weaponInfo, paletteTraitInfos);
 
 			var elapsedTotal = stopwatchTotal.Elapsed;
 			Console.Error.WriteLine($"Took {elapsedTotal} to load code symbols:");
@@ -75,7 +78,6 @@ namespace Oraide.LanguageServer.Caching
 				var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(modManifest.RulesFiles, mods);
 				var cursorDefinitions = yamlInformationProvider.GetCursorDefinitions(modManifest.CursorsFiles, mods);
 
-				var codeSymbols = new CodeSymbols(traitInfos, weaponInfo);
 				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions);
 
 				var mapsDir = OpenRaFolderUtils.ResolveFilePath(modManifest.MapsFolder, mods);
