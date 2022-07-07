@@ -24,6 +24,17 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.5.0
+
+ - OpenRA Mod support:
+    - Added support for mod (and map) Palette definitions.
+    - Improved handling of Color values in MiniYAML files (now more cases are handled).
+    - Fixed not handling rules files from maps inside the SupportDirectory.
+ - VSCode integration:
+    - Updated [the MiniYAML.tmLanguage](https://github.com/OpenRA/MiniYAML.tmbundle) with further syntax highlighting bug fixes and improvements.
+ - Language server:
+    - Improved debug logging.
+
 ### 0.4.0
 
  - OpenRA Mod support:
