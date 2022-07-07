@@ -20,12 +20,18 @@ namespace Oraide.LanguageServer.Caching.Entities
 		/// </summary>
 		public ILookup<string, ConditionDefinition> ConditionDefinitions { get; }
 
+		/// <summary>
+		/// A collection of all palette definitions in the current map's YAML grouped by their name.
+		/// </summary>
+		public ILookup<string, PaletteDefinition> PaletteDefinitions { get; }
+
 		public MapSymbols(ILookup<string, ActorDefinition> actorDefinitions, ILookup<string, WeaponDefinition> weaponDefinitions,
-			ILookup<string, ConditionDefinition> conditionDefinitions)
+			ILookup<string, ConditionDefinition> conditionDefinitions, ILookup<string, PaletteDefinition> paletteDefinitions)
 		{
 			ActorDefinitions = actorDefinitions;
 			WeaponDefinitions = weaponDefinitions;
 			ConditionDefinitions = conditionDefinitions;
+			PaletteDefinitions = paletteDefinitions;
 		}
 	}
 }

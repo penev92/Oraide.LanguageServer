@@ -17,8 +17,10 @@ namespace Oraide.LanguageServer.Caching
 
 		public IDictionary<string, MapSymbols> Maps { get; } = new Dictionary<string, MapSymbols>();
 
-		private readonly CodeInformationProvider codeInformationProvider;
-		private readonly YamlInformationProvider yamlInformationProvider;
+		readonly CodeInformationProvider codeInformationProvider;
+		readonly YamlInformationProvider yamlInformationProvider;
+
+		HashSet<string> knownPaletteTypes;
 
 		public SymbolCache(CodeInformationProvider codeInformationProvider, YamlInformationProvider yamlInformationProvider)
 		{
@@ -66,6 +68,7 @@ namespace Oraide.LanguageServer.Caching
 
 			var modDataPerMod = new Dictionary<string, ModData>();
 
+			knownPaletteTypes = paletteTraitInfos.Select(x => x.FirstOrDefault().TraitName).ToHashSet();
 			foreach (var modId in mods.Keys)
 			{
 				var modFolder = mods[modId];
@@ -77,8 +80,9 @@ namespace Oraide.LanguageServer.Caching
 				var weaponDefinitions = yamlInformationProvider.GetWeaponDefinitions(modManifest.WeaponsFiles, mods);
 				var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(modManifest.RulesFiles, mods);
 				var cursorDefinitions = yamlInformationProvider.GetCursorDefinitions(modManifest.CursorsFiles, mods);
+				var paletteDefinitions = yamlInformationProvider.GetPaletteDefinitions(modManifest.RulesFiles, mods, knownPaletteTypes);
 
-				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions);
+				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions, paletteDefinitions);
 
 				var mapsDir = OpenRaFolderUtils.ResolveFilePath(modManifest.MapsFolder, mods);
 				var allMaps = mapsDir == null ? Enumerable.Empty<string>() : Directory.EnumerateDirectories(mapsDir);
@@ -105,8 +109,9 @@ namespace Oraide.LanguageServer.Caching
 			var actorDefinitions = yamlInformationProvider.GetActorDefinitions(mapManifest.RulesFiles, mods);
 			var weaponDefinitions = yamlInformationProvider.GetWeaponDefinitions(mapManifest.WeaponsFiles, mods);
 			var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(mapManifest.RulesFiles, mods);
+			var paletteDefinitions = yamlInformationProvider.GetPaletteDefinitions(mapManifest.RulesFiles, mods, knownPaletteTypes);
 
-			var mapSymbols = new MapSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions);
+			var mapSymbols = new MapSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, paletteDefinitions);
 			Maps.Add(mapManifest.MapReference, mapSymbols);
 		}
 

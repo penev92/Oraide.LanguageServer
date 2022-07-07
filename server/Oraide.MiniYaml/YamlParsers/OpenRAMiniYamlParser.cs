@@ -105,6 +105,35 @@ namespace Oraide.MiniYaml.YamlParsers
 			return result.ToLookup(n => n.Name, m => m);
 		}
 
+		public static ILookup<string, PaletteDefinition> GetPaletteDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods, HashSet<string> knownPaletteTypes)
+		{
+			var paletteDefinitions = new List<PaletteDefinition>();
+			var yamlNodes = YamlNodesFromReferencedFiles(referencedFiles, mods);
+			foreach (var node in yamlNodes)
+			{
+				if (node.ChildNodes == null)
+					continue;
+
+				foreach (var childNode in node.ChildNodes)
+				{
+					var split = childNode.Key.Split('@');
+					var type = split[0];
+					var identifier = split.Length > 1 ? split[1] : null;
+
+					if (!knownPaletteTypes.Contains(type))
+						continue;
+
+					var name = childNode.ChildNodes.FirstOrDefault(y => y.Key == "Name")?.Value;
+					var fileName = childNode.ChildNodes.FirstOrDefault(y => y.Key.ToLowerInvariant() == "filename")?.Value;
+					var basePalette = childNode.ChildNodes.FirstOrDefault(y => y.Key.ToLowerInvariant() == "BasePalette".ToLowerInvariant())?.Value;
+					var paletteLocation = new MemberLocation(childNode.Location.FilePath, childNode.Location.LineNumber, 1); // HACK HACK HACK: Until the YAML Loader learns about character positions, we hardcode 1 here (since this is all for traits on actor definitions).
+					paletteDefinitions.Add(new PaletteDefinition(name, fileName, basePalette, identifier, type, paletteLocation));
+				}
+			}
+
+			return paletteDefinitions.ToLookup(n => n.Name, m => m);
+		}
+
 		public static (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text)
 		{
 			var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromString(text, discardCommentsAndWhitespace: false)
