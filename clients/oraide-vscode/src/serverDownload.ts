@@ -58,10 +58,10 @@ export async function downloadLanguageServer(context: vscode.ExtensionContext): 
     if (!response.ok) {
         return false;
     }
-
-    const extensionStorageFolder = context.globalStorageUri;
-    let filePath = path.join(extensionStorageFolder.toString(true), 'LanguageServer', asset.name);
-    let resolvedFilePath = fileURLToPath(filePath);
+    
+    const extensionStorageFolder = context.globalStorageUri.fsPath;
+    let filePath = path.join(extensionStorageFolder, 'LanguageServer', asset.name);
+    let resolvedFilePath = filePath;
 
     // Write the downloaded zip file to disk.
     await streamPipeline(response.body, fileSystem.createWriteStream(resolvedFilePath));
