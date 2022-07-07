@@ -166,6 +166,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							var weaponDefinitions = modSymbols.WeaponDefinitions.Select(x => x.Key);
 							var conditionDefinitions = modSymbols.ConditionDefinitions.Select(x => x.Key);
 							var cursorDefinitions = modSymbols.CursorDefinitions.Select(x => x.Key);
+							var paletteDefinitions = modSymbols.PaletteDefinitions.Select(x => x.Key);
+
 							if (cursorTarget.FileType == FileType.MapRules)
 							{
 								var mapReference = symbolCache[cursorTarget.ModId].Maps
@@ -195,6 +197,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							{
 								var cursor = modSymbols.CursorDefinitions[cursorTarget.TargetString].First();
 								return HoverFromHoverInfo(cursor.ToMarkdownInfoString(), range);
+							}
+
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "PaletteReference") && paletteDefinitions.Contains(cursorTarget.TargetString))
+							{
+								var palette = modSymbols.PaletteDefinitions[cursorTarget.TargetString].First();
+								return HoverFromHoverInfo(palette.ToMarkdownInfoString(), range);
 							}
 						}
 

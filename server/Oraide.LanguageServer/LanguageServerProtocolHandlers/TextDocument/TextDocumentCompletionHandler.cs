@@ -20,6 +20,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		IEnumerable<CompletionItem> weaponNames;
 		IEnumerable<CompletionItem> conditionNames;
 		IEnumerable<CompletionItem> cursorNames;
+		IEnumerable<CompletionItem> paletteNames;
 		WeaponInfo weaponInfo;
 
 		readonly CompletionItem inheritsCompletionItem = new ()
@@ -150,6 +151,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			weaponNames = symbolCache[modId].ModSymbols.WeaponDefinitions.Select(x => x.First().ToCompletionItem());
 			conditionNames = symbolCache[modId].ModSymbols.ConditionDefinitions.Select(x => x.First().ToCompletionItem());
 			cursorNames = symbolCache[modId].ModSymbols.CursorDefinitions.Select(x => x.First().ToCompletionItem());
+			paletteNames = symbolCache[modId].ModSymbols.PaletteDefinitions.Select(x => x.First().ToCompletionItem());
 
 			weaponInfo = symbolCache[modId].CodeSymbols.WeaponInfo;
 		}
@@ -230,6 +232,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					var tempWeaponNames = weaponNames;
 					var tempConditionNames = conditionNames;
 					var tempCursorNames = cursorNames;
+					var tempPaletteNames = paletteNames;
+
 					if (cursorTarget.FileType == FileType.MapRules)
 					{
 						var mapReference = symbolCache[cursorTarget.ModId].Maps
@@ -240,6 +244,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							tempActorNames = tempActorNames.Union(mapSymbols.ActorDefinitions.Select(x => x.First().ToCompletionItem()));
 							tempWeaponNames = tempWeaponNames.Union(mapSymbols.WeaponDefinitions.Select(x => x.First().ToCompletionItem()));
 							tempConditionNames = tempConditionNames.Union(mapSymbols.ConditionDefinitions.Select(x => x.First().ToCompletionItem()));
+							tempPaletteNames = tempPaletteNames.Union(mapSymbols.PaletteDefinitions.Select(x => x.First().ToCompletionItem()));
 						}
 					}
 
@@ -257,6 +262,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					if (fieldInfo.OtherAttributes.Any(x => x.Name == "CursorReference"))
 						return tempCursorNames;
+
+					if (fieldInfo.OtherAttributes.Any(x => x.Name == "PaletteReference"))
+						return tempPaletteNames.Where(x => !string.IsNullOrEmpty(x.Label));
 
 					return Enumerable.Empty<CompletionItem>();
 				}

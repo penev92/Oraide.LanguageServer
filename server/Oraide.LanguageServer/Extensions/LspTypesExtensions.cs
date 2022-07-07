@@ -117,6 +117,17 @@ namespace Oraide.LanguageServer.Extensions
 			};
 		}
 
+		public static CompletionItem ToCompletionItem(this PaletteDefinition paletteDefinition)
+		{
+			return new CompletionItem
+			{
+				Label = paletteDefinition.Name,
+				Kind = CompletionItemKind.Value,
+				Detail = "Palette definition",
+				CommitCharacters = new[] { ":" }
+			};
+		}
+
 		public static IEnumerable<SymbolInformation> ToSymbolInformation(this ActorDefinition actorDefinition)
 		{
 			yield return new SymbolInformation

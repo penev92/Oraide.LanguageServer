@@ -143,6 +143,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							var weaponDefinitions = modSymbols.WeaponDefinitions[cursorTarget.TargetString];
 							var conditionDefinitions = modSymbols.ConditionDefinitions[cursorTarget.TargetString];
 							var cursorDefinitions = modSymbols.CursorDefinitions[cursorTarget.TargetString];
+							var paletteDefinitions = modSymbols.PaletteDefinitions[cursorTarget.TargetString];
+
 							if (cursorTarget.FileType == FileType.MapRules)
 							{
 								var mapReference = symbolCache[cursorTarget.ModId].Maps
@@ -170,6 +172,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 							if (fieldInfo.OtherAttributes.Any(x => x.Name == "CursorReference"))
 								return cursorDefinitions.Select(x => x.Location.ToLspLocation(x.Name.Length));
+
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "PaletteReference"))
+								return paletteDefinitions.Select(x => x.Location.ToLspLocation(x.Type.Length));
 						}
 					}
 
