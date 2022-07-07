@@ -31,8 +31,10 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 						.Select(condition => condition.First().ToSymbolInformation()));
 					var cursors = symbolCache.ModSymbols.SelectMany(x => x.Value.ModSymbols.CursorDefinitions
 						.Select(cursor => cursor.First().ToSymbolInformation()));
+					var palettes = symbolCache.ModSymbols.SelectMany(x => x.Value.ModSymbols.PaletteDefinitions
+						.Select(palette => palette.First().ToSymbolInformation()));
 
-					return actors.Union(weapons).Union(conditions).Union(cursors);
+					return actors.Union(weapons).Union(conditions).Union(cursors).Union(palettes);
 				}
 				catch (Exception e)
 				{

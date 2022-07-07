@@ -172,5 +172,17 @@ namespace Oraide.LanguageServer.Extensions
 				Location = cursorDefinition.Location.ToLspLocation(cursorDefinition.Name.Length)
 			};
 		}
+
+		public static SymbolInformation ToSymbolInformation(this PaletteDefinition paletteDefinition)
+		{
+			var name = paletteDefinition.Name ?? paletteDefinition.Type;
+			return new SymbolInformation
+			{
+				Name = name,
+				Kind = SymbolKind.String,
+				Tags = Array.Empty<SymbolTag>(),
+				Location = paletteDefinition.Location.ToLspLocation(paletteDefinition.Type.Length)
+			};
+		}
 	}
 }
