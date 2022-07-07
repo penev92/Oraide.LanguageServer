@@ -41,8 +41,8 @@ namespace Oraide.LanguageServer.Caching
 			// TODO: Remove this flex when the code is stable and we're sure it won't need optimizing.
 			Console.Error.WriteLine($"Found {mods.Count} mod(s): {string.Join(", ", mods.Keys)}.");
 			Console.Error.WriteLine("Start loading symbol information...");
-			var stopwatch = new Stopwatch();
-			stopwatch.Start();
+			var stopwatchTotal = new Stopwatch();
+			stopwatchTotal.Start();
 
 			// Intentionally synchronous code so the client can't continue working with a stale cache while we work on the update.
 			// TODO: The way I see code symbol update happening is by the user manually triggering an update via an IDE command
@@ -51,8 +51,15 @@ namespace Oraide.LanguageServer.Caching
 			var traitInfos = codeInformationProvider.GetTraitInfos();
 			var weaponInfo = codeInformationProvider.GetWeaponInfo();
 
-			var elapsed = stopwatch.Elapsed;
-			Console.Error.WriteLine($"Took {elapsed} to load {traitInfos.Count} traitInfos, {weaponInfo.ProjectileInfos.Length} projectileInfos and {weaponInfo.WarheadInfos.Length} warheadInfos.");
+			var elapsedTotal = stopwatchTotal.Elapsed;
+			Console.Error.WriteLine($"Took {elapsedTotal} to load code symbols:");
+			Console.Error.WriteLine($"    {traitInfos.Count} traitInfos");
+			Console.Error.WriteLine($"    {weaponInfo.ProjectileInfos.Length} projectileInfos");
+			Console.Error.WriteLine($"    {weaponInfo.WarheadInfos.Length} warheadInfos");
+			Console.Error.WriteLine($"    {paletteTraitInfos.Count} paletteTraitInfos");
+
+			var stopwatchYaml = new Stopwatch();
+			stopwatchYaml.Start();
 
 			var modDataPerMod = new Dictionary<string, ModData>();
 
@@ -79,8 +86,11 @@ namespace Oraide.LanguageServer.Caching
 				modDataPerMod.Add(modId, new ModData(modId, modFolder, modManifest, modSymbols, codeSymbols, maps.ToArray()));
 			}
 
-			elapsed = stopwatch.Elapsed;
-			Console.Error.WriteLine($"Took {elapsed} to load everything.");
+			var elapsed = stopwatchYaml.Elapsed;
+			elapsedTotal = stopwatchTotal.Elapsed;
+			Console.Error.WriteLine($"Took {elapsed} to load mod YAML symbols.");
+
+			Console.Error.WriteLine($"Took {elapsedTotal} to load everything.");
 
 			return modDataPerMod;
 		}

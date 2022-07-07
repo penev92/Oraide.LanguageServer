@@ -33,11 +33,17 @@ namespace Oraide.Csharp
 			{
 				// Strategy 1 - C# code parsing.
 				symbolGenerator = new CodeParsingSymbolGenerationStrategy(openRaFolder);
+
+				Console.Error.WriteLine("Loading code symbols from source code files.");
+				Console.Error.WriteLine("-------------");
 			}
 			else if (OpenRaFolderUtils.IsOpenRaInstallationFolder(openRaFolder))
 			{
 				// Strategy 2 - load data from static file.
 				symbolGenerator = new FromStaticFileSymbolGenerationStrategy(openRaFolder);
+
+				Console.Error.WriteLine($"Loading code symbols from static docs files - version {((FromStaticFileSymbolGenerationStrategy)symbolGenerator).LoadedVersion}.");
+				Console.Error.WriteLine("-------------");
 			}
 		}
 

@@ -10,6 +10,8 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 {
 	class FromStaticFileSymbolGenerationStrategy : ICodeSymbolGenerationStrategy
 	{
+		public readonly string LoadedVersion;
+
 		readonly JObject traitsData;
 		readonly JObject weaponsData;
 
@@ -20,15 +22,15 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 
 		public FromStaticFileSymbolGenerationStrategy(string openRaFolder)
 		{
-			var version = GetVersion(openRaFolder);
+			LoadedVersion = GetVersion(openRaFolder);
 			var assemblyLocation = Assembly.GetEntryAssembly().Location;
 			var assemblyFolder = Path.GetDirectoryName(assemblyLocation);
 
-			var traitsFile = Path.Combine(assemblyFolder, "docs", $"{version}-traits.json");
+			var traitsFile = Path.Combine(assemblyFolder, "docs", $"{LoadedVersion}-traits.json");
 			var traitsText = File.ReadAllText(traitsFile);
 			traitsData = JsonConvert.DeserializeObject<JObject>(traitsText);
 
-			var weaponsFile = Path.Combine(assemblyFolder, "docs", $"{version}-weapons.json");
+			var weaponsFile = Path.Combine(assemblyFolder, "docs", $"{LoadedVersion}-weapons.json");
 			var weaponsText = File.ReadAllText(weaponsFile);
 			weaponsData = JsonConvert.DeserializeObject<JObject>(weaponsText);
 		}
