@@ -12,7 +12,7 @@ namespace Oraide.Csharp.CodeParsers
 {
 	public static class RoslynCodeParser
 	{
-		public static (ILookup<string, TraitInfo>, WeaponInfo) Parse(in string oraFolderPath)
+		public static (ILookup<string, TraitInfo>, WeaponInfo, ILookup<string, TraitInfo>) Parse(in string oraFolderPath)
 		{
 			var traitInfos = new List<TraitInfo>();
 			var weaponInfoFields = Array.Empty<ClassFieldInfo>();
@@ -22,6 +22,7 @@ namespace Oraide.Csharp.CodeParsers
 			var filePaths = Directory.EnumerateFiles(oraFolderPath, "*.cs", SearchOption.AllDirectories)
 				.Where(x => !x.Contains("OpenRA.Test"));
 
+			// Split .cs files into traits/weapons/etc. and parse them.
 			foreach (var filePath in filePaths)
 			{
 				var fileText = File.ReadAllText(filePath);
@@ -151,7 +152,15 @@ namespace Oraide.Csharp.CodeParsers
 			}
 
 			var weaponInfo = new WeaponInfo(weaponInfoFields, projectileInfos.ToArray(), finalWarheadInfos.ToArray());
-			return (finalTraitInfos.ToLookup(x => x.TraitInfoName, y => y), weaponInfo);
+
+			// Palettes are just TraitInfos that have a name field with a PaletteDefinitionAttribute.
+			var paletteTraitInfos = finalTraitInfos
+				.Where(x => x.TraitPropertyInfos
+					.Any(y => y.OtherAttributes
+						.Any(z => z.Name == "PaletteDefinition")))
+				.ToLookup(x => x.TraitInfoName, y => y);
+
+			return (finalTraitInfos.ToLookup(x => x.TraitInfoName, y => y), weaponInfo, paletteTraitInfos);
 		}
 
 		// Files can potentially contain multiple TraitInfos.

@@ -16,10 +16,17 @@ namespace Oraide.LanguageServer.Caching.Entities
 		/// </summary>
 		public WeaponInfo WeaponInfo { get; }
 
-		public CodeSymbols(ILookup<string, TraitInfo> traitInfos, WeaponInfo weaponInfo)
+		/// <summary>
+		/// Palette TraitInfo information grouped by TraitInfoName.
+		/// Palettes are just TraitInfos that have a name field with a PaletteDefinitionAttribute.
+		/// </summary>
+		public ILookup<string, TraitInfo> PaletteTraitInfos { get; }
+
+		public CodeSymbols(ILookup<string, TraitInfo> traitInfos, WeaponInfo weaponInfo, ILookup<string, TraitInfo> paletteTraitInfos)
 		{
 			TraitInfos = traitInfos;
 			WeaponInfo = weaponInfo;
+			PaletteTraitInfos = paletteTraitInfos;
 		}
 	}
 }

@@ -52,6 +52,11 @@ namespace Oraide.MiniYaml
 			return OpenRAMiniYamlParser.GetCursorDefinitions(referencedFiles, mods);
 		}
 
+		public ILookup<string, PaletteDefinition> GetPaletteDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods, HashSet<string> knownPaletteTypes)
+		{
+			return OpenRAMiniYamlParser.GetPaletteDefinitions(referencedFiles, mods, knownPaletteTypes);
+		}
+
 		public (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text)
 		{
 			return OpenRAMiniYamlParser.ParseText(text);

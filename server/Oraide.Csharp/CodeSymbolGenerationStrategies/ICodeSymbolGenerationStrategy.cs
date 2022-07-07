@@ -5,8 +5,10 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 {
 	public interface ICodeSymbolGenerationStrategy
 	{
-		public ILookup<string, TraitInfo> GetTraitInfos();
+		ILookup<string, TraitInfo> GetTraitInfos();
 
-		public WeaponInfo GetWeaponInfo();
+		WeaponInfo GetWeaponInfo();
+
+		ILookup<string, TraitInfo> GetPaletteTraitInfos();
 	}
 }

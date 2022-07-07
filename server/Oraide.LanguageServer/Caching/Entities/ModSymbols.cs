@@ -25,13 +25,20 @@ namespace Oraide.LanguageServer.Caching.Entities
 		/// </summary>
 		public ILookup<string, CursorDefinition> CursorDefinitions { get; }
 
+		/// <summary>
+		/// A collection of all palette definitions.
+		/// </summary>
+		public ILookup<string, PaletteDefinition> PaletteDefinitions { get; }
+
 		public ModSymbols(ILookup<string, ActorDefinition> actorDefinitions, ILookup<string, WeaponDefinition> weaponDefinitions,
-			ILookup<string, ConditionDefinition> conditionDefinitions, ILookup<string, CursorDefinition> cursorDefinitions)
+			ILookup<string, ConditionDefinition> conditionDefinitions, ILookup<string, CursorDefinition> cursorDefinitions,
+			ILookup<string, PaletteDefinition> paletteDefinitions)
 		{
 			ActorDefinitions = actorDefinitions;
 			WeaponDefinitions = weaponDefinitions;
 			ConditionDefinitions = conditionDefinitions;
 			CursorDefinitions = cursorDefinitions;
+			PaletteDefinitions = paletteDefinitions;
 		}
 	}
 }

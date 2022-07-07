@@ -117,6 +117,17 @@ namespace Oraide.LanguageServer.Extensions
 			};
 		}
 
+		public static CompletionItem ToCompletionItem(this PaletteDefinition paletteDefinition)
+		{
+			return new CompletionItem
+			{
+				Label = paletteDefinition.Name,
+				Kind = CompletionItemKind.Value,
+				Detail = "Palette definition",
+				CommitCharacters = new[] { ":" }
+			};
+		}
+
 		public static IEnumerable<SymbolInformation> ToSymbolInformation(this ActorDefinition actorDefinition)
 		{
 			yield return new SymbolInformation
@@ -170,6 +181,18 @@ namespace Oraide.LanguageServer.Extensions
 				Kind = SymbolKind.String,
 				Tags = Array.Empty<SymbolTag>(),
 				Location = cursorDefinition.Location.ToLspLocation(cursorDefinition.Name.Length)
+			};
+		}
+
+		public static SymbolInformation ToSymbolInformation(this PaletteDefinition paletteDefinition)
+		{
+			var name = paletteDefinition.Name ?? paletteDefinition.Type;
+			return new SymbolInformation
+			{
+				Name = name,
+				Kind = SymbolKind.String,
+				Tags = Array.Empty<SymbolTag>(),
+				Location = paletteDefinition.Location.ToLspLocation(paletteDefinition.Type.Length)
 			};
 		}
 	}

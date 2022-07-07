@@ -19,6 +19,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 
 		ILookup<string, TraitInfo> traitInfos;
 		WeaponInfo weaponInfo;
+		ILookup<string, TraitInfo> paletteTraitInfos;
 
 		public FromStaticFileSymbolGenerationStrategy(string openRaFolder)
 		{
@@ -74,6 +75,26 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 				typeInfos.Where(x => x.InheritedTypes.Any(y => y == "Warhead")).ToArray());
 
 			return weaponInfo;
+		}
+
+		public ILookup<string, TraitInfo> GetPaletteTraitInfos()
+		{
+			if (paletteTraitInfos != null)
+				return paletteTraitInfos;
+
+			if (traitInfos == null)
+				GetTraitInfos();
+
+			// Palettes are just TraitInfos that have a name field with a PaletteDefinitionAttribute.
+			paletteTraitInfos = traitInfos
+				.Where(x => x
+					.Any(y => y.TraitPropertyInfos
+						.Any(z => z.OtherAttributes
+							.Any(a => a.Name == "PaletteDefinition"))))
+				.SelectMany(x => x)
+				.ToLookup(x => x.TraitInfoName, y => y);
+
+			return paletteTraitInfos;
 		}
 
 		string GetVersion(string openRaFolder)
