@@ -120,7 +120,7 @@ namespace Oraide.MiniYaml.YamlParsers
 					var type = split[0];
 					var identifier = split.Length > 1 ? split[1] : null;
 
-					if (!knownPaletteTypes.Contains(type))
+					if (!knownPaletteTypes.Contains(type) || childNode.ChildNodes == null)
 						continue;
 
 					var name = childNode.ChildNodes.FirstOrDefault(y => y.Key == "Name")?.Value;
