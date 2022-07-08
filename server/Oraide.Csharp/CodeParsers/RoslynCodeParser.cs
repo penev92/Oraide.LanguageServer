@@ -271,7 +271,9 @@ namespace Oraide.Csharp.CodeParsers
 							continue;
 
 						// Full set of attributes on trait properties for future reference.
+						// The TranslateAttribute was present in `release-20210321` and was removed some time later.
 						else if (attributeName == "FieldLoader.Require"
+								 || attributeName == "Translate"
 								 || attributeName == "ActorReference"
 								 || attributeName == "VoiceReference"
 								 || attributeName == "VoiceSetReference"
