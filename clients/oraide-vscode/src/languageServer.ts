@@ -4,7 +4,6 @@ import * as vscode from 'vscode';
 import * as vscodelc from 'vscode-languageclient/node';
 import { ChildProcess, spawn } from 'child_process';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 
 import { logger } from './logger';
 import * as serverDownload from './serverDownload';
@@ -56,8 +55,7 @@ async function findOrDownloadLanguageServer(context: vscode.ExtensionContext): P
         }
     }
 
-    let languageServerUri = path.join(globalStorageUri.toString(true), 'LanguageServer', currentServerVersion, LANGUAGE_SERVER_BINARY_NAME);
-    let languageServerPath = fileURLToPath(languageServerUri);
+    let languageServerPath = path.join(globalStorageUri.fsPath, 'LanguageServer', currentServerVersion, LANGUAGE_SERVER_BINARY_NAME);
     return languageServerPath;
 }
 

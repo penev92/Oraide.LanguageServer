@@ -8,7 +8,7 @@ export const IS_DEBUG = /--debug|--inspect/.test(process.execArgv.join(' '));
 
 export async function getCurrentServerVersion(extensionStorageFolder: vscode.Uri): Promise<string> {
     let languageServerRootFolder = vscode.Uri.joinPath(extensionStorageFolder, 'LanguageServer');
-    if (!fileSystem.existsSync(languageServerRootFolder.toString())) {
+    if (!fileSystem.existsSync(languageServerRootFolder.fsPath)) {
         await vscode.workspace.fs.createDirectory(languageServerRootFolder);
     }
 
