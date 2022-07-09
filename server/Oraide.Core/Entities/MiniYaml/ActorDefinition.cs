@@ -19,5 +19,7 @@ namespace Oraide.Core.Entities.MiniYaml
 			Location = location;
 			Traits = traits;
 		}
+
+		public override string ToString() => $"{nameof(ActorDefinition)}: {Name} ({TooltipName}), {Traits.Count} Traits";
 	}
 }

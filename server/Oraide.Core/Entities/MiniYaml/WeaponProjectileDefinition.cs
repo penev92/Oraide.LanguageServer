@@ -11,5 +11,7 @@
 			Name = name;
 			Location = location;
 		}
+
+		public override string ToString() => $"Projectile {Name}";
 	}
 }

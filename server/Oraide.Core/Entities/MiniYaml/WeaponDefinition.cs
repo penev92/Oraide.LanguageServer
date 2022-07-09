@@ -17,5 +17,7 @@
 			Warheads = warheads;
 			Location = location;
 		}
+
+		public override string ToString() => $"{nameof(WeaponDefinition)}: {Name}, {Projectile.Name}, {Warheads.Length} Warheads";
 	}
 }

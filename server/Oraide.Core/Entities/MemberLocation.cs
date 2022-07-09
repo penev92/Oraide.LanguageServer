@@ -14,5 +14,7 @@
 			LineNumber = lineNumber;
 			CharacterPosition = characterPosition;
 		}
+
+		public override string ToString() => $"{FilePath ?? "<empty>"}:{LineNumber},{CharacterPosition}";
 	}
 }

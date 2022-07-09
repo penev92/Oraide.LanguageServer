@@ -24,7 +24,7 @@
 			Location = location;
 		}
 
-		public override string ToString() => Name;
+		public override string ToString() => $"Palette {Name}";
 
 		public string ToMarkdownInfoString() => "```csharp\n" +
 		                                        $"Palette \"{Name}\"" +

@@ -18,7 +18,7 @@
 			Location = location;
 		}
 
-		public override string ToString() => Name;
+		public override string ToString() => $"Cursor {Name}";
 
 		public string ToMarkdownInfoString() => "```csharp\n" +
 		                                        $"Cursor \"{Name}\"" +

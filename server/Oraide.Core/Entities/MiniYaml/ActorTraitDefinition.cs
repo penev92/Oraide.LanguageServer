@@ -17,5 +17,7 @@
 			Name = nameWithIdentifier.Split('@')[0];
 			Location = location;
 		}
+
+		public override string ToString() => NameWithIdentifier;
 	}
 }
