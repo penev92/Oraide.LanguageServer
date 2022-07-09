@@ -57,9 +57,9 @@ namespace Oraide.MiniYaml
 			return OpenRAMiniYamlParser.GetPaletteDefinitions(referencedFiles, mods, knownPaletteTypes);
 		}
 
-		public (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text)
+		public (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text, string fileUriString = null)
 		{
-			return OpenRAMiniYamlParser.ParseText(text);
+			return OpenRAMiniYamlParser.ParseText(text, fileUriString);
 		}
 	}
 }

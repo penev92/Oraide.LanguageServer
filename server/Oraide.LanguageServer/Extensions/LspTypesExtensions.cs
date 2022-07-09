@@ -32,7 +32,7 @@ namespace Oraide.LanguageServer.Extensions
 		{
 			return new Location
 			{
-				Uri = new Uri(memberLocation.FilePath).ToString(),
+				Uri = memberLocation.FileUri.AbsoluteUri,
 				Range = memberLocation.ToRange(length)
 			};
 		}

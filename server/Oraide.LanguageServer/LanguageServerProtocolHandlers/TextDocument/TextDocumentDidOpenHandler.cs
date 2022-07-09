@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using LspTypes;
+using Oraide.Core;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
@@ -24,16 +25,21 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					if (trace)
 						Console.Error.WriteLine("<-- TextDocument-DidOpen");
 
-					openFileCache.AddOrUpdateOpenFile(request.TextDocument.Uri, request.TextDocument.Text);
+					// HACK HACK HACK!!!
+					// For whatever reason we receive the file URI borked - looks to be encoded for JSON, but the deserialization doesn't fix it.
+					// No idea if this is an issue with VSCode or the LSP library used as there are currently no clients for other text editors.
+					var incomingFileUriString = OpenRaFolderUtils.NormalizeFileUriString(request.TextDocument.Uri);
+
+					openFileCache.AddOrUpdateOpenFile(incomingFileUriString, request.TextDocument.Text);
 
 					// Check if this is a map-related file and potentially load the map into the symbol cache.
-					TryGetModId(request.TextDocument.Uri, out var modId);
-					var fileUri = request.TextDocument.Uri;
+					TryGetModId(incomingFileUriString, out var modId);
+					var fileUri = new Uri(incomingFileUriString);
 
 					var modManifest = symbolCache[modId].ModManifest;
-					var fileName = fileUri.Split($"mods/{modId}/")[1];
+					var fileName = fileUri.AbsoluteUri.Split($"mods/{modId}/")[1];
 					var fileReference = $"{modId}|{fileName}";
-					var filePath = fileUri.Replace("file:///", string.Empty).Replace("%3A", ":");
+					var filePath = fileUri.AbsolutePath;
 
 					if (!modManifest.RulesFiles.Contains(fileReference)
 						&& !modManifest.WeaponsFiles.Contains(fileReference)

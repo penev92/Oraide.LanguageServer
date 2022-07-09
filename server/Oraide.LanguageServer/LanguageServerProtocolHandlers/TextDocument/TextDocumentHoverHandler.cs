@@ -439,7 +439,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						}
 						else
 						{
-							var targetPath = cursorTarget.TargetStart.FilePath.Replace("file:///", string.Empty).Replace("%3A", ":");
+							var targetPath = cursorTarget.TargetStart.FileUri.AbsolutePath.Replace("file:///", string.Empty).Replace("%3A", ":");
 							var mapFolder = Path.GetDirectoryName(targetPath);
 							var mapName = Path.GetFileName(mapFolder);
 							var filePath = Path.Combine(mapFolder, cursorTarget.TargetString);

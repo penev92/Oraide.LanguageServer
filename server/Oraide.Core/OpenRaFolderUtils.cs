@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -94,7 +95,7 @@ namespace Oraide.Core
 			return fileFullPath;
 		}
 
-		public static string ResolveFilePath(string fileReference, IReadOnlyDictionary<string, string> mods)
+		public static Uri ResolveFilePath(string fileReference, IReadOnlyDictionary<string, string> mods)
 		{
 			string fileFullPath = null;
 			if (!string.IsNullOrWhiteSpace(fileReference))
@@ -106,7 +107,15 @@ namespace Oraide.Core
 					fileFullPath = Path.Combine(mods[modId], filePath);
 			}
 
-			return fileFullPath;
+			return fileFullPath == null ? null : new Uri(fileFullPath);
+		}
+
+		public static string NormalizeFileUriString(string fileUriString)
+		{
+			// HACK HACK HACK!!!
+			// For whatever reason we receive the file URI borked - looks to be encoded for JSON, but the deserialization doesn't fix it.
+			// No idea if this is an issue with VSCode or the LSP library used as there are currently no clients for other text editors.
+			return fileUriString.Replace("%3A", ":");
 		}
 	}
 }

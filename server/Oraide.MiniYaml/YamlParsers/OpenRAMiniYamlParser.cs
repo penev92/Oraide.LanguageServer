@@ -25,12 +25,12 @@ namespace Oraide.MiniYaml.YamlParsers
 			var yamlNodes = YamlNodesFromReferencedFiles(referencedFiles, mods);
 			foreach (var node in yamlNodes)
 			{
-				var location = new MemberLocation(node.Location.FilePath, node.Location.LineNumber, node.Location.CharacterPosition);
+				var location = new MemberLocation(node.Location.FileUri, node.Location.LineNumber, node.Location.CharacterPosition);
 
 				var actorTraits = node.ChildNodes == null
 					? Enumerable.Empty<ActorTraitDefinition>()
 					: node.ChildNodes.Select(x =>
-						new ActorTraitDefinition(x.Key, new MemberLocation(x.Location.FilePath, x.Location.LineNumber, 1))); // HACK HACK HACK: Until the YAML Loader learns about character positions, we hardcode 1 here (since this is all for traits on actor definitions).
+						new ActorTraitDefinition(x.Key, new MemberLocation(x.Location.FileUri, x.Location.LineNumber, 1))); // HACK HACK HACK: Until the YAML Loader learns about character positions, we hardcode 1 here (since this is all for traits on actor definitions).
 
 				var tooltipTrait = node.ChildNodes?.FirstOrDefault(x => x.Key.EndsWith("Tooltip"));
 				var displayName = tooltipTrait?.ChildNodes?.FirstOrDefault(x => x.Key == "Name")?.Value;
@@ -46,14 +46,14 @@ namespace Oraide.MiniYaml.YamlParsers
 			var yamlNodes = YamlNodesFromReferencedFiles(referencedFiles, mods);
 			foreach (var node in yamlNodes)
 			{
-				var location = new MemberLocation(node.Location.FilePath, node.Location.LineNumber, node.Location.CharacterPosition);
+				var location = new MemberLocation(node.Location.FileUri, node.Location.LineNumber, node.Location.CharacterPosition);
 
 				var projectile = node.ChildNodes?.FirstOrDefault(x => x.Key == "Projectile");
 				var warheads = node.ChildNodes?.Where(x => x.Key == "Warhead" || x.Key.StartsWith("Warhead@")) ?? Enumerable.Empty<YamlNode>();
 
 				weaponDefinitions.Add(new WeaponDefinition(node.Key,
-					projectile == null ? default : new WeaponProjectileDefinition(projectile.Value, new MemberLocation(projectile.Location.FilePath, projectile.Location.LineNumber, projectile.Location.CharacterPosition)),
-					warheads.Select(x => new WeaponWarheadDefinition(x.Value, new MemberLocation(x.Location.FilePath, x.Location.LineNumber, x.Location.CharacterPosition))).ToArray(),
+					projectile == null ? default : new WeaponProjectileDefinition(projectile.Value, new MemberLocation(projectile.Location.FileUri, projectile.Location.LineNumber, projectile.Location.CharacterPosition)),
+					warheads.Select(x => new WeaponWarheadDefinition(x.Value, new MemberLocation(x.Location.FileUri, x.Location.LineNumber, x.Location.CharacterPosition))).ToArray(),
 					location));
 			}
 
@@ -64,13 +64,13 @@ namespace Oraide.MiniYaml.YamlParsers
 		{
 			var result = new List<ConditionDefinition>();
 
-			var filePaths = referencedFiles.Select(fileReference => OpenRaFolderUtils.ResolveFilePath(fileReference, mods));
-			foreach (var filePath in filePaths)
+			var fileUris = referencedFiles.Select(fileReference => OpenRaFolderUtils.ResolveFilePath(fileReference, mods));
+			foreach (var fileUri in fileUris)
 			{
-				if (filePath == null)
+				if (fileUri == null)
 					continue;
 
-				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
+				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(fileUri.LocalPath);
 				var yamlNodes = nodes.Select(x => x.ToYamlNode());
 				var flattenedNodes = yamlNodes.SelectMany(FlattenChildNodes);
 				var conditions = flattenedNodes
@@ -87,13 +87,13 @@ namespace Oraide.MiniYaml.YamlParsers
 		{
 			var result = new List<CursorDefinition>();
 
-			var filePaths = referencedFiles.Select(fileReference => OpenRaFolderUtils.ResolveFilePath(fileReference, mods));
-			foreach (var filePath in filePaths)
+			var fileUris = referencedFiles.Select(fileReference => OpenRaFolderUtils.ResolveFilePath(fileReference, mods));
+			foreach (var fileUri in fileUris)
 			{
-				if (filePath == null)
+				if (fileUri == null)
 					continue;
 
-				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
+				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(fileUri.LocalPath);
 				var yamlNodes = nodes.SelectMany(x =>
 					x.Value.Nodes.SelectMany(y =>
 						y.Value.Nodes.Select(z => z.ToYamlNode(y.ToYamlNode()))));
@@ -126,7 +126,7 @@ namespace Oraide.MiniYaml.YamlParsers
 					var name = childNode.ChildNodes.FirstOrDefault(y => y.Key == "Name")?.Value;
 					var fileName = childNode.ChildNodes.FirstOrDefault(y => y.Key.ToLowerInvariant() == "filename")?.Value;
 					var basePalette = childNode.ChildNodes.FirstOrDefault(y => y.Key.ToLowerInvariant() == "BasePalette".ToLowerInvariant())?.Value;
-					var paletteLocation = new MemberLocation(childNode.Location.FilePath, childNode.Location.LineNumber, 1); // HACK HACK HACK: Until the YAML Loader learns about character positions, we hardcode 1 here (since this is all for traits on actor definitions).
+					var paletteLocation = new MemberLocation(childNode.Location.FileUri, childNode.Location.LineNumber, 1); // HACK HACK HACK: Until the YAML Loader learns about character positions, we hardcode 1 here (since this is all for traits on actor definitions).
 					paletteDefinitions.Add(new PaletteDefinition(name, fileName, basePalette, identifier, type, paletteLocation));
 				}
 			}
@@ -134,12 +134,17 @@ namespace Oraide.MiniYaml.YamlParsers
 			return paletteDefinitions.ToLookup(n => n.Name, m => m);
 		}
 
-		public static (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text)
+		public static (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text, string fileUriString = null)
 		{
 			var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromString(text, discardCommentsAndWhitespace: false)
-				.Select(x => x.ToYamlNode()).ToArray();
+				.Select(x => x.ToYamlNode(fileUriString: fileUriString)).ToArray();
 
-			return (nodes, nodes.SelectMany(FlattenChildNodes));
+			var result = (nodes, nodes.SelectMany(FlattenChildNodes));
+			if (!string.IsNullOrEmpty(fileUriString))
+				foreach (var node in result.Item2)
+					node.Location = new MemberLocation(node.Location.FileUri?.AbsoluteUri ?? fileUriString, node.Location.LineNumber, node.Location.CharacterPosition);
+
+			return result;
 		}
 
 		static IEnumerable<YamlNode> FlattenChildNodes(YamlNode rootNode)
@@ -155,14 +160,14 @@ namespace Oraide.MiniYaml.YamlParsers
 			return nodes;
 		}
 
-		static YamlNode ToYamlNode(this OpenRA.MiniYamlParser.MiniYamlNode source, YamlNode parentYamlNode = null)
+		static YamlNode ToYamlNode(this OpenRA.MiniYamlParser.MiniYamlNode source, YamlNode parentYamlNode = null, string fileUriString = null)
 		{
 			var result = new YamlNode
 			{
 				Key = source.Key,
 				Value = source.Value.Value,
 				Comment = source.Comment,
-				Location = source.Location.ToMemberLocation(),
+				Location = source.Location.ToMemberLocation(fileUriString),
 				ParentNode = parentYamlNode
 			};
 
@@ -171,9 +176,9 @@ namespace Oraide.MiniYaml.YamlParsers
 			return result;
 		}
 
-		static MemberLocation ToMemberLocation(this OpenRA.MiniYamlParser.MiniYamlNode.SourceLocation source)
+		static MemberLocation ToMemberLocation(this OpenRA.MiniYamlParser.MiniYamlNode.SourceLocation source, string fileUriString = null)
 		{
-			return new MemberLocation(source.Filename, source.Line, source.Character);
+			return new MemberLocation(fileUriString ?? source.Filename, source.Line, source.Character);
 		}
 
 		static List<YamlNode> YamlNodesFromReferencedFiles(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
@@ -186,7 +191,7 @@ namespace Oraide.MiniYaml.YamlParsers
 				if (filePath == null)
 					continue;
 
-				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath);
+				var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromFile(filePath.LocalPath);
 				var yamlNodes = nodes.Select(x => x.ToYamlNode());
 				result.AddRange(yamlNodes);
 			}

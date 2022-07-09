@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
+using Oraide.Core;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Caching;
@@ -11,7 +12,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 {
 	public abstract class BaseRpcMessageHandler : IRpcMessageHandler
 	{
-		protected static readonly object LockObject = new object();
+		protected static readonly object LockObject = new();
 
 		protected readonly bool trace = true;
 		protected readonly SymbolCache symbolCache;
@@ -25,16 +26,21 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 
 		protected virtual bool TryGetCursorTarget(TextDocumentPositionParams positionParams, out CursorTarget target)
 		{
-			TryGetModId(positionParams.TextDocument.Uri, out var modId);
-			var fileUri = positionParams.TextDocument.Uri;
+			// HACK HACK HACK!!!
+			// For whatever reason we receive the file URI borked - looks to be encoded for JSON, but the deserialization doesn't fix it.
+			// No idea if this is an issue with VSCode or the LSP library used as there are currently no clients for other text editors.
+			var incomingFileUriString = OpenRaFolderUtils.NormalizeFileUriString(positionParams.TextDocument.Uri);
+
+			TryGetModId(incomingFileUriString, out var modId);
+			var fileUri = new Uri(incomingFileUriString);
 			var targetLineIndex = (int)positionParams.Position.Line;
 			var targetCharacterIndex = (int)positionParams.Position.Character;
 
 			// Determine file type.
 			var modManifest = symbolCache[modId].ModManifest;
-			var fileName = fileUri.Split($"mods/{modId}/")[1];
+			var fileName = fileUri.AbsoluteUri.Split($"mods/{modId}/")[1];
 			var fileReference = $"{modId}|{fileName}";
-			var filePath = fileUri.Replace("file:///", string.Empty).Replace("%3A", ":");
+			var filePath = fileUri.AbsolutePath;
 
 			var fileType = FileType.Unknown;
 			if (modManifest.RulesFiles.Contains(fileReference))
@@ -50,13 +56,13 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			else if (symbolCache[modId].Maps.Any(x => x.WeaponsFiles.Contains(fileReference)))
 				fileType = FileType.MapWeapons;
 
-			if (!openFileCache.ContainsFile(fileUri))
+			if (!openFileCache.ContainsFile(fileUri.AbsoluteUri))
 			{
 				target = default;
 				return false;
 			}
 
-			var (fileNodes, flattenedNodes, fileLines) = openFileCache[fileUri];
+			var (fileNodes, flattenedNodes, fileLines) = openFileCache[fileUri.AbsoluteUri];
 
 			var targetLine = fileLines[targetLineIndex];
 			var pre = targetLine.Substring(0, targetCharacterIndex);
@@ -215,6 +221,12 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			}
 
 			return true;
+		}
+
+		protected string NormalizeFilePath(string filePath)
+		{
+			// Because VSCode sends us weird partially-url-encoded file paths.
+			return System.Web.HttpUtility.UrlDecode(filePath);
 		}
 
 		bool TryGetTargetString(string targetLine, int targetCharacterIndex, string sourceString, out string targetString, out int startIndex, out int endIndex)

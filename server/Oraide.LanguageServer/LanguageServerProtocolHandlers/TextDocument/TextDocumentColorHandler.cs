@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
+using Oraide.Core;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
 
@@ -26,8 +27,13 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					if (trace)
 						Console.Error.WriteLine("<-- TextDocument-DocumentColor");
 
+					// HACK HACK HACK!!!
+					// For whatever reason we receive the file URI borked - looks to be encoded for JSON, but the deserialization doesn't fix it.
+					// No idea if this is an issue with VSCode or the LSP library used as there are currently no clients for other text editors.
+					var incomingFileUriString = OpenRaFolderUtils.NormalizeFileUriString(request.TextDocument.Uri);
+
 					var results = new List<ColorInformation>();
-					var (yamlNodes, flattenedYamlNodes, lines) = openFileCache[request.TextDocument.Uri];
+					var (yamlNodes, flattenedYamlNodes, lines) = openFileCache[incomingFileUriString];
 					foreach (var node in flattenedYamlNodes)
 					{
 						if (node.Key == null || node.ChildNodes != null)
