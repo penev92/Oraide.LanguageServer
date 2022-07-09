@@ -229,6 +229,31 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			return System.Web.HttpUtility.UrlDecode(filePath);
 		}
 
+		protected ActorTraitDefinition[] GetInheritedTraitNodes(CursorTarget cursorTarget)
+		{
+			var actor = symbolCache[cursorTarget.ModId].ModSymbols.ActorDefinitions[cursorTarget.TargetNode.ParentNode.Key];
+			// var kor = GetInheritedActorsRecursively(cursorTarget.TargetNode.ParentNode, cursorTarget).ToArray();
+			//
+			// var modSymbols = symbolCache.ModSymbols[cursorTarget.ModId].ModSymbols;
+			// var inheritedNodes = cursorTarget.TargetNode.ParentNode.ChildNodes
+			// 	.Where(x => x.Key == "Inherits");
+			// 	// .SelectMany(x => modSymbols.ActorDefinitions[x.Value]);
+			//
+			// foreach (var node in inheritedNodes)
+			// {
+			//
+			// }
+			//
+			// var traitName = cursorTarget.TargetString[0] == '-'
+			// 	? cursorTarget.TargetString.Substring(1)
+			// 	: cursorTarget.TargetString;
+			//
+			// return inheritedDefinitions
+			// 	.SelectMany(x => x.Traits.Where(y => y.Name == traitName))
+			// 	.ToArray();
+			return null;
+		}
+
 		bool TryGetTargetString(string targetLine, int targetCharacterIndex, string sourceString, out string targetString, out int startIndex, out int endIndex)
 		{
 			targetString = string.Empty;
@@ -259,5 +284,22 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			endIndex = startIndex + targetString.Length;
 			return true;
 		}
+
+		// IEnumerable<ActorDefinition> GetInheritedActorDefinitionssRecursively(ActorDefinition actor, CursorTarget cursorTarget)
+		// {
+		// 	if (node?.ChildNodes == null)
+		// 		yield break;
+		//
+		// 	foreach (var childNode in node.ChildNodes.Where(x => x.Key == "Inherits"))
+		// 	{
+		// 		yield return childNode;
+		//
+		// 		var inheritedNode = symbolCache.ModSymbols[cursorTarget.ModId].ModSymbols.ActorDefinitions[childNode.Value]
+		// 			.Select(x => openFileCache[x.Location.FilePath].YamlNodes.FirstOrDefault(y => y.Key == childNode.Value));
+		// 		var fileNodes = openFileCache[cursorTarget.TargetStart.FilePath].YamlNodes;
+		// 		foreach (var yamlNode in GetInheritedActorsRecursively(childNode, cursorTarget))
+		// 			yield return yamlNode;
+		// 	}
+		// }
 	}
 }

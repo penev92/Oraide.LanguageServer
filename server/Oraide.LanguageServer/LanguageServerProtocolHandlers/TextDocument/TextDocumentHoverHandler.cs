@@ -99,6 +99,20 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						return HoverFromHoverInfo(content, range);
 					}
 
+					if (cursorTarget.TargetString[0] == '-')
+					{
+						traitInfoName = traitInfoName.Substring(1);
+						if (codeSymbols.TraitInfos.Contains(traitInfoName))
+						{
+							// var inheritedDefinitions = cursorTarget.TargetNode.ParentNode.ChildNodes
+							// 	.Where(x => x.Key == "Inherits")
+							// 	.Select(x => x.Value);
+							var inheritedTraits = GetInheritedTraitNodes(cursorTarget);
+
+							return HoverFromHoverInfo($"Removes trait `{cursorTarget.TargetString.Substring(1)}` from the actor, defined on TODO", range);
+						}
+					}
+
 					return null;
 				}
 
