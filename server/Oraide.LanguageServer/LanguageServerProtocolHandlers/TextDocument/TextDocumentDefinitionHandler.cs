@@ -306,48 +306,35 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			{
 				case 0:
 				{
+					string filePath = null;
 					if (cursorTarget.TargetNode.Key is "Rules" or "Sequences" or "ModelSequences" or "Weapons" or "Voices" or "Music" or "Notifications")
 					{
 						if (cursorTarget.TargetString.Contains('|'))
 						{
-							var resolvedFile = OpenRaFolderUtils.ResolveFilePath(cursorTarget.TargetString, (cursorTarget.ModId, symbolCache[cursorTarget.ModId].ModFolder));
-							if (File.Exists(resolvedFile))
-							{
-								return new[]
-								{
-									new Location
-									{
-										Uri = new Uri(resolvedFile).ToString(),
-										Range = new LspTypes.Range
-										{
-											Start = new Position(0, 0),
-											End = new Position(0, 0)
-										}
-									}
-								};
-							}
+							filePath = OpenRaFolderUtils.ResolveFilePath(cursorTarget.TargetString, (cursorTarget.ModId, symbolCache[cursorTarget.ModId].ModFolder));
 						}
 						else
 						{
-							var targetPath = cursorTarget.TargetStart.FilePath.Replace("file:///", string.Empty).Replace("%3A", ":");
+							var targetPath = cursorTarget.TargetStart.FileUri.AbsolutePath;
 							var mapFolder = Path.GetDirectoryName(targetPath);
-							var filePath = Path.Combine(mapFolder, cursorTarget.TargetString);
-							if (File.Exists(filePath))
-							{
-								return new[]
-								{
-									new Location
-									{
-										Uri = new Uri(filePath).ToString(),
-										Range = new LspTypes.Range
-										{
-											Start = new Position(0, 0),
-											End = new Position(0, 0)
-										}
-									}
-								};
-							}
+							filePath = Path.Combine(mapFolder, cursorTarget.TargetString);
 						}
+					}
+
+					if (filePath != null && File.Exists(filePath))
+					{
+						return new[]
+						{
+							new Location
+							{
+								Uri = new Uri(filePath).ToString(),
+								Range = new LspTypes.Range
+								{
+									Start = new Position(0, 0),
+									End = new Position(0, 0)
+								}
+							}
+						};
 					}
 
 					return null;

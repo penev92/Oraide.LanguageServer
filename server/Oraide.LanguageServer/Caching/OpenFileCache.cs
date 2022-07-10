@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using Oraide.Core;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.MiniYaml;
 
@@ -26,31 +27,35 @@ namespace Oraide.LanguageServer.Caching
 			ReadOnlyCollection<string> Lines)
 			this[string filePath] => openFiles[filePath];
 
-		public void AddOrUpdateOpenFile(string fileUri)
+		public void AddOrUpdateOpenFile(string fileUriString)
 		{
-			var filePath = fileUri.Replace("file:///", string.Empty).Replace("%3A", ":");
+			var uriString = OpenRaFolderUtils.NormalizeFileUriString(fileUriString);
+			var filePath = new Uri(uriString).AbsolutePath;
 			var text = File.ReadAllText(filePath);
-			AddOrUpdateOpenFile(fileUri, text);
+			AddOrUpdateOpenFile(uriString, text);
 		}
 
-		public void AddOrUpdateOpenFile(string fileUri, string content)
+		public void AddOrUpdateOpenFile(string fileUriString, string content)
 		{
+			var uriString = OpenRaFolderUtils.NormalizeFileUriString(fileUriString);
 			var lines = content.Split(new[] {"\r\n", "\n"}, StringSplitOptions.None);
-			var nodes = yamlInformationProvider.ParseText(content);
-			openFiles[fileUri] = (
+			var nodes = yamlInformationProvider.ParseText(content, uriString);
+			openFiles[uriString] = (
 				new ReadOnlyCollection<YamlNode>(nodes.Original.ToArray()),
 				new ReadOnlyCollection<YamlNode>(nodes.Flattened.ToArray()),
 				new ReadOnlyCollection<string>(lines));
 		}
 
-		public void RemoveOpenFile(string filePath)
+		public void RemoveOpenFile(string fileUriString)
 		{
-			openFiles.Remove(filePath);
+			var uriString = OpenRaFolderUtils.NormalizeFileUriString(fileUriString);
+			openFiles.Remove(uriString);
 		}
 
-		public bool ContainsFile(string filePath)
+		public bool ContainsFile(string fileUriString)
 		{
-			return openFiles.ContainsKey(filePath);
+			var uriString = OpenRaFolderUtils.NormalizeFileUriString(fileUriString);
+			return openFiles.ContainsKey(uriString);
 		}
 	}
 }

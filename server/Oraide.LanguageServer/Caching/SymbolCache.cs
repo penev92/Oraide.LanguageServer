@@ -85,7 +85,7 @@ namespace Oraide.LanguageServer.Caching
 				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions, paletteDefinitions);
 
 				var mapsDir = OpenRaFolderUtils.ResolveFilePath(modManifest.MapsFolder, mods);
-				var allMaps = mapsDir == null ? Enumerable.Empty<string>() : Directory.EnumerateDirectories(mapsDir);
+				var allMaps = mapsDir == null ? Enumerable.Empty<string>() : Directory.EnumerateDirectories(mapsDir.AbsolutePath);
 				var mapDirs = allMaps.Where(x => File.Exists(Path.Combine(x, "map.yaml")) && File.Exists(Path.Combine(x, "map.bin"))).ToArray();
 				var maps = mapDirs.Select(x => new MapManifest(x, yamlInformationProvider.ReadMapFile(x), modManifest.MapsFolder));
 
