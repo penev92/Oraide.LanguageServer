@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -231,8 +232,12 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 
 		protected ActorTraitDefinition[] GetInheritedTraitNodes(CursorTarget cursorTarget)
 		{
-			var actor = symbolCache[cursorTarget.ModId].ModSymbols.ActorDefinitions[cursorTarget.TargetNode.ParentNode.Key];
-			// var kor = GetInheritedActorsRecursively(cursorTarget.TargetNode.ParentNode, cursorTarget).ToArray();
+			var actorDefinitions = symbolCache[cursorTarget.ModId].ModSymbols.ActorDefinitions[cursorTarget.TargetNode.ParentNode.Key];
+			var actor = actorDefinitions.First(x => x.Location == cursorTarget.TargetNode.Location);
+			// var kor = GetInheritedActorDefinitionsRecursively(cursorTarget.TargetNode.ParentNode, cursorTarget).ToArray();
+			var kor = GetInheritedActorDefinitionsRecursively(actor, cursorTarget)
+				.DistinctBy(x => x.Location)
+				.ToArray();
 			//
 			// var modSymbols = symbolCache.ModSymbols[cursorTarget.ModId].ModSymbols;
 			// var inheritedNodes = cursorTarget.TargetNode.ParentNode.ChildNodes
@@ -285,21 +290,33 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			return true;
 		}
 
-		// IEnumerable<ActorDefinition> GetInheritedActorDefinitionssRecursively(ActorDefinition actor, CursorTarget cursorTarget)
-		// {
-		// 	if (node?.ChildNodes == null)
-		// 		yield break;
-		//
-		// 	foreach (var childNode in node.ChildNodes.Where(x => x.Key == "Inherits"))
-		// 	{
-		// 		yield return childNode;
-		//
-		// 		var inheritedNode = symbolCache.ModSymbols[cursorTarget.ModId].ModSymbols.ActorDefinitions[childNode.Value]
-		// 			.Select(x => openFileCache[x.Location.FilePath].YamlNodes.FirstOrDefault(y => y.Key == childNode.Value));
-		// 		var fileNodes = openFileCache[cursorTarget.TargetStart.FilePath].YamlNodes;
-		// 		foreach (var yamlNode in GetInheritedActorsRecursively(childNode, cursorTarget))
-		// 			yield return yamlNode;
-		// 	}
-		// }
+		IEnumerable<ActorDefinition> GetInheritedActorDefinitionsRecursively(ActorDefinition actor, CursorTarget cursorTarget)
+		{
+			foreach (var inherits in actor.Traits.Where(x => x.Name == "Inherits"))
+			{
+				var inheritedActor = symbolCache[cursorTarget.ModId].ModSymbols.ActorDefinitions[inherits.Value];
+				foreach (var actorDefinition in inheritedActor)
+				{
+					yield return actorDefinition;
+					var inherited = GetInheritedActorDefinitionsRecursively(actorDefinition, cursorTarget);
+					foreach (var inheritedDefinition in inherited)
+						yield return inheritedDefinition;
+				}
+			}
+			yield break;
+			// if (node?.ChildNodes == null)
+			// 	yield break;
+			//
+			// foreach (var childNode in node.ChildNodes.Where(x => x.Key == "Inherits"))
+			// {
+			// 	yield return childNode;
+			//
+			// 	var inheritedNode = symbolCache.ModSymbols[cursorTarget.ModId].ModSymbols.ActorDefinitions[childNode.Value]
+			// 		.Select(x => openFileCache[x.Location.FilePath].YamlNodes.FirstOrDefault(y => y.Key == childNode.Value));
+			// 	var fileNodes = openFileCache[cursorTarget.TargetStart.FilePath].YamlNodes;
+			// 	foreach (var yamlNode in GetInheritedActorsRecursively(childNode, cursorTarget))
+			// 		yield return yamlNode;
+			// }
+		}
 	}
 }

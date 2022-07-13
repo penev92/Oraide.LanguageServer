@@ -26,5 +26,7 @@ namespace Oraide.Core.Entities
 		}
 
 		public override string ToString() => $"{FileUri?.AbsolutePath ?? "<empty>"}:{LineNumber},{CharacterPosition}";
+
+		// TODO: Implement equality.
 	}
 }

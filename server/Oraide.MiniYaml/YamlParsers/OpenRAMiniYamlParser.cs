@@ -30,7 +30,7 @@ namespace Oraide.MiniYaml.YamlParsers
 				var actorTraits = node.ChildNodes == null
 					? Enumerable.Empty<ActorTraitDefinition>()
 					: node.ChildNodes.Select(x =>
-						new ActorTraitDefinition(x.Key, new MemberLocation(x.Location.FileUri, x.Location.LineNumber, 1))); // HACK HACK HACK: Until the YAML Loader learns about character positions, we hardcode 1 here (since this is all for traits on actor definitions).
+						new ActorTraitDefinition(x.Key, x.Value, new MemberLocation(x.Location.FileUri, x.Location.LineNumber, 1))); // HACK HACK HACK: Until the YAML Loader learns about character positions, we hardcode 1 here (since this is all for traits on actor definitions).
 
 				var tooltipTrait = node.ChildNodes?.FirstOrDefault(x => x.Key.EndsWith("Tooltip"));
 				var displayName = tooltipTrait?.ChildNodes?.FirstOrDefault(x => x.Key == "Name")?.Value;
