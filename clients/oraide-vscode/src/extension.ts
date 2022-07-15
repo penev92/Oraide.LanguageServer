@@ -4,7 +4,6 @@
 import * as vscode from 'vscode';
 import * as vscodelc from 'vscode-languageclient/node';
 
-import * as utils from './utils';
 import { logger } from './logger';
 import * as languageServer from './languageServer';
 
@@ -13,12 +12,6 @@ let client: vscodelc.LanguageClient;
 export async function activate(context: vscode.ExtensionContext) {
     
     logger.appendLine(`Activating...`);
-
-    if (utils.IS_DEBUG) {
-        logger.appendLine(`This is running in DEBUG!`);
-    } else {
-        logger.appendLine("This is running for real!");
-    }
 
     // Just a sanity check for the workspace folder.
     if (vscode.workspace.workspaceFolders === undefined || vscode.workspace.workspaceFolders.length === 0) {

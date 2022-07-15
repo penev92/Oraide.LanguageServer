@@ -37,7 +37,7 @@
 				"oraide.server.binary": {
 					"type": "string",
 					"default": "./bin/Oraide.LanguageServer.dll",
-					"description": "Path to the Language Server executable/binary to run.\nLeave empty to use the installed one."
+					"description": "Path to the Language Server executable/binary to run."
 				},
 				"oraide.game.path": {
 					"type": "string",

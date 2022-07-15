@@ -6,61 +6,17 @@ import { ChildProcess, spawn } from 'child_process';
 import * as path from 'path';
 
 import { logger } from './logger';
-import * as serverDownload from './serverDownload';
 import * as utils from './utils';
-
-const LANGUAGE_SERVER_BINARY_NAME = "Oraide.LanguageServer.dll"
 
 async function getLanguageServerPath(context: vscode.ExtensionContext, config: vscode.WorkspaceConfiguration) : Promise<string | undefined> {
     let serverPath = undefined;
 
-    if (utils.IS_DEBUG) {
-        serverPath = config.get<string>('oraide.server.binary');
-    } else {
-        serverPath = await findOrDownloadLanguageServer(context);
-    }
-
+    serverPath = config.get<string>('oraide.server.binary');
     if (!path.isAbsolute(serverPath!)) {
         serverPath = context.asAbsolutePath(serverPath!);
     }
 
     return serverPath;
-}
-
-async function findOrDownloadLanguageServer(context: vscode.ExtensionContext): Promise<string | undefined> {
-    const globalStorageUri = context.globalStorageUri;
-    let currentServerVersion = await utils.getCurrentServerVersion(globalStorageUri);
-    let latestServerVersion = await serverDownload.getLatestServerVersion();
-
-    logger.appendLine("METHOD findOrDownloadLanguageServer");
-
-    if (currentServerVersion === '' && latestServerVersion === '') {
-        return undefined; // Nothing to do here - there is no language server and we couldn't find a version to download.
-    }
-
-    if (currentServerVersion === '') {
-        logger.appendLine("NO SERVER FOUND");
-
-        const userResponse = await vscode.window.showInformationMessage("ORAIDE needs to download the ORAIDE language server to function.", "Download now");
-        if (userResponse !== "Download now") {
-            return undefined;
-        } else {
-            if (await serverDownload.downloadLanguageServer(context)) {
-                currentServerVersion = await utils.getCurrentServerVersion(globalStorageUri);
-            } else {
-                return undefined;
-            }
-        }
-    }
-
-    if (latestServerVersion.localeCompare(currentServerVersion) > 0) {
-        if (await serverDownload.downloadLanguageServer(context)) {
-            currentServerVersion = await utils.getCurrentServerVersion(globalStorageUri);
-        }
-    }
-
-    let languageServerPath = path.join(globalStorageUri.fsPath, 'LanguageServer', currentServerVersion, LANGUAGE_SERVER_BINARY_NAME);
-    return languageServerPath;
 }
 
 async function spawnServerProcess(serverPath: string, workspaceFolderPath: string, defaultOpenRaPath: string): Promise<ChildProcess> {
@@ -107,9 +63,9 @@ export async function tryStart(context: vscode.ExtensionContext, config: vscode.
         // Locate language server binary.
         let serverPath = await getLanguageServerPath(context, config);
         if (!serverPath) {
-            logger.appendLine("Extension ORAIDE failed to find or download its language server and will abort.");
-            logger.appendLine("If you are running in debug mode, configure the path to the language server in the extension settings!");
-            vscode.window.showInformationMessage("Extension ORAIDE failed to find or download its language server and will abort.");
+            logger.appendLine("Extension ORAIDE failed to find its language server and will abort.");
+            logger.appendLine("Please configure the path to the language server in the extension settings!");
+            vscode.window.showInformationMessage("Extension ORAIDE failed to find its language server and will abort.");
             return { isSuccessful: false, client: null };
         }
 
