@@ -15,9 +15,13 @@ async function getLanguageServerPath(context: vscode.ExtensionContext, config: v
     let serverPath = undefined;
 
     if (utils.IS_DEBUG) {
-        serverPath = config.get<string>('oraide.server.path');
+        serverPath = config.get<string>('oraide.server.binary');
     } else {
         serverPath = await findOrDownloadLanguageServer(context);
+    }
+
+    if (!path.isAbsolute(serverPath!)) {
+        serverPath = context.asAbsolutePath(serverPath!);
     }
 
     return serverPath;

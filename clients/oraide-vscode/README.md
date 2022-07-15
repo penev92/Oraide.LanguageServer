@@ -19,7 +19,7 @@ The language server requires .NET 6 to run.
 
 This extension contributes the following settings:
 
- - `oraide.server.path`: Path to the language server.
+ - `oraide.server.binary`: Path to the language server.
  - `oraide.game.path`: A fallback OpenRA directory path.
 
 ## Release Notes

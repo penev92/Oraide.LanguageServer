@@ -32,17 +32,16 @@
 	"main": "./out/extension.js",
 	"contributes": {
 		"configuration": {
-			"type": "object",
-			"title": "ORAIDE Configuration",
+			"title": "ORAIDE",
 			"properties": {
-				"oraide.server.path": {
+				"oraide.server.binary": {
 					"type": "string",
-					"default": "",
+					"default": "./bin/Oraide.LanguageServer.dll",
 					"description": "Path to the Language Server executable/binary to run.\nLeave empty to use the installed one."
 				},
 				"oraide.game.path": {
 					"type": "string",
-					"default": "",
+					"default": null,
 					"description": "Path to the default OpenRA repository or installation folder.\nThis is used as a fallback when looking for engine information if none is found."
 				}
 			}
