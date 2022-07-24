@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using LspTypes;
+using Oraide.Core;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
@@ -24,7 +25,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					if (trace)
 						Console.Error.WriteLine("<-- TextDocument-DocumentSymbol");
 
-					return openFileCache[request.TextDocument.Uri].YamlNodes.Where(x => x.Key != null).Select(ConvertNodeToDocumentSymbol);
+					var incomingFileUriString = OpenRaFolderUtils.NormalizeFileUriString(request.TextDocument.Uri);
+					return openFileCache[incomingFileUriString].YamlNodes.Where(x => x.Key != null).Select(ConvertNodeToDocumentSymbol);
 				}
 				catch (Exception e)
 				{
