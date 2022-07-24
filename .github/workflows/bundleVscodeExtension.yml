@@ -1,11 +1,11 @@
-name: Package server
+name: Bundle VSCode extension
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Server version tag'
-        default: 'server-v0.0.0'
+        description: 'Extension version tag'
+        default: 'vscode-v0.0.0'
         required: true
 
 jobs:
@@ -21,13 +21,21 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
-      - name: Create package
+      - name: Compile server
         run: dotnet build server/Oraide.LanguageServer.sln
       #  run: |
       #    mkdir -p build/server
       #    dotnet build server/Oraide.LanguageServer.sln
 
-      - name: Zip Release
+      - name: Copy server
+        run: |
+          mkdir clients/oraide-vscode/bin
+          cp -r server/bin/* clients/oraide-vscode/bin
+      
+      - name: Package VS Code extension
+        uses: nhedger/package-vscode-extension@v1
+
+      - name: Bundle release
         uses: TheDoctor0/zip-release@0.6.0
         with:
           filename: "${{ github.event.inputs.version }}.zip"
