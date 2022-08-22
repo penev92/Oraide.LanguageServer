@@ -24,6 +24,15 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.5.1 - 0.5.3
+
+ - VSCode integration:
+    - Fixed several issues related to language server downloading and storage path.
+    - Removed Output window opening on startup.
+ - Language server:
+    - Fixed a crash when loading empty mod palette definitions.
+    - Reworked internal handling of mod file paths.
+
 ### 0.5.0
 
  - OpenRA Mod support:
@@ -157,6 +166,8 @@ First public release.
  - The hover tooltip links to the online documentation may or may not work depending on your local version of OpenRA, as the links are never checked for validity and they always target the current release's documentation.
  - Neither hovering/navigation nor autocomplete work very well for traits that match other traits' names from other namespaces.
  - Support for GoToReferences/FindAllReferences currently only works for traits.
+
+ - As of 16.08.2022 a VSCode update broke something about Ctrl+hovering over symbols, defined in an unopened file. I currently have no idea what's going on or how to fix it.
 
 **Enjoy!**
 
