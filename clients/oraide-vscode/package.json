@@ -14,7 +14,7 @@
 		"yaml",
 		"miniyaml"
 	],
-	"version": "0.5.3",
+	"version": "0.5.4",
 	"publisher": "openra",
 	"private": false,
 	"icon": "images/icon.png",

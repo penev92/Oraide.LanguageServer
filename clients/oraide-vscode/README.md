@@ -24,6 +24,11 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.5.4
+
+ - Language server:
+    - Fixed more issues related to internal file/folder path handling in the server.
+
 ### 0.5.1 - 0.5.3
 
  - VSCode integration:
