@@ -13,7 +13,7 @@ namespace Oraide.Core.Entities.MiniYaml
 
 		public readonly IReadOnlyList<string> WeaponsFiles;
 
-		public string MapFile => MapFolder == null ? null : Path.Combine(MapFolder, "map.yaml");
+		public string MapFile => MapFolder == null ? null : $"{MapFolder}/map.yaml";
 
 		public string MapReference => MapFolder == null ? null : $"{mapsFolder}/{Path.GetFileName(MapFolder)}";
 

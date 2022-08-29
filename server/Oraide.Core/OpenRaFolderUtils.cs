@@ -117,5 +117,14 @@ namespace Oraide.Core
 			// No idea if this is an issue with VSCode or the LSP library used as there are currently no clients for other text editors.
 			return fileUriString.Replace("%3A", ":");
 		}
+
+		public static string NormalizeFilePathString(string filePathString)
+		{
+			// HACK HACK HACK!!!
+			// Normalize directory separators to consistently use '/'.
+			// And then unescape the resulting path to avoid issues with some "special" characters.
+			var t = Uri.UnescapeDataString(filePathString);
+			return Uri.UnescapeDataString(new Uri(t).AbsolutePath);
+		}
 	}
 }

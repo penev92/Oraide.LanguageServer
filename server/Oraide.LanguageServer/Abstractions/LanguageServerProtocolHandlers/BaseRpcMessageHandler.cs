@@ -38,9 +38,9 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 
 			// Determine file type.
 			var modManifest = symbolCache[modId].ModManifest;
-			var fileName = fileUri.AbsoluteUri.Split($"mods/{modId}/")[1];
-			var fileReference = $"{modId}|{fileName}";
 			var filePath = fileUri.AbsolutePath;
+			var fileName = filePath.Split($"mods/{modId}/")[1];
+			var fileReference = $"{modId}|{fileName}";
 
 			var fileType = FileType.Unknown;
 			if (modManifest.RulesFiles.Contains(fileReference))
@@ -49,7 +49,8 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				fileType = FileType.Weapons;
 			else if (modManifest.CursorsFiles.Contains(fileReference))
 				fileType = FileType.Cursors;
-			else if (Path.GetFileName(filePath) == "map.yaml" && symbolCache[modId].Maps.Any(x => x.MapFolder == Path.GetDirectoryName(filePath)))
+			else if (Path.GetFileName(filePath) == "map.yaml"
+			         && symbolCache[modId].Maps.Any(x => x.MapFolder == OpenRaFolderUtils.NormalizeFilePathString(Path.GetDirectoryName(filePath))))
 				fileType = FileType.MapFile;
 			else if (symbolCache[modId].Maps.Any(x => x.RulesFiles.Contains(fileReference)))
 				fileType = FileType.MapRules;

@@ -37,15 +37,15 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					var fileUri = new Uri(incomingFileUriString);
 
 					var modManifest = symbolCache[modId].ModManifest;
-					var fileName = fileUri.AbsoluteUri.Split($"mods/{modId}/")[1];
-					var fileReference = $"{modId}|{fileName}";
 					var filePath = fileUri.AbsolutePath;
+					var fileName = filePath.Split($"mods/{modId}/")[1];
+					var fileReference = $"{modId}|{fileName}";
 
 					if (!modManifest.RulesFiles.Contains(fileReference)
 						&& !modManifest.WeaponsFiles.Contains(fileReference)
 						&& !modManifest.CursorsFiles.Contains(fileReference))
 					{
-						var targetFileDir = Path.GetDirectoryName(filePath);
+						var targetFileDir = OpenRaFolderUtils.NormalizeFilePathString(Path.GetDirectoryName(filePath));
 						MapManifest mapManifest = default;
 						if (Path.GetFileName(filePath) == "map.yaml")
 							mapManifest = symbolCache[modId].Maps.FirstOrDefault(x => x.MapFolder == targetFileDir);

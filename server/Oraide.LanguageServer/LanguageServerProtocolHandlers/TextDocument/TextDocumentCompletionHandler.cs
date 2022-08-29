@@ -85,9 +85,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 			// Determine file type.
 			var modManifest = symbolCache[modId].ModManifest;
-			var fileName = fileUri.AbsoluteUri.Split($"mods/{modId}/")[1];
-			var fileReference = $"{modId}|{fileName}";
 			var filePath = fileUri.AbsolutePath;
+			var fileName = filePath.Split($"mods/{modId}/")[1];
+			var fileReference = $"{modId}|{fileName}";
 
 			var fileType = FileType.Unknown;
 			if (modManifest.RulesFiles.Contains(fileReference))
