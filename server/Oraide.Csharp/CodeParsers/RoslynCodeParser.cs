@@ -12,13 +12,18 @@ namespace Oraide.Csharp.CodeParsers
 {
 	public static class RoslynCodeParser
 	{
-		public static (ILookup<string, TraitInfo>, WeaponInfo, ILookup<string, TraitInfo>, ILookup<string, SimpleClassInfo>) Parse(in string oraFolderPath)
+		public static (ILookup<string, TraitInfo>,
+			WeaponInfo, ILookup<string, TraitInfo>,
+			ILookup<string, SimpleClassInfo>,
+			ILookup<string, EnumInfo>
+			) Parse(in string oraFolderPath)
 		{
 			var traitInfos = new List<TraitInfo>();
 			var weaponInfoFields = Array.Empty<ClassFieldInfo>();
 			var warheadInfos = new List<SimpleClassInfo>();
 			var projectileInfos = new List<SimpleClassInfo>();
 			var spriteSequences = new List<SimpleClassInfo>();
+			var enumInfos = new List<EnumInfo>();
 
 			var filePaths = Directory.EnumerateFiles(oraFolderPath, "*.cs", SearchOption.AllDirectories)
 				.Where(x => !x.Contains("OpenRA.Test"));
@@ -32,9 +37,9 @@ namespace Oraide.Csharp.CodeParsers
 
 				foreach (var element in root.Members)
 				{
-					if (element is NamespaceDeclarationSyntax namespaceElement)
+					if (element is NamespaceDeclarationSyntax namespaceDeclaration)
 					{
-						foreach (var namespaceMember in namespaceElement.Members)
+						foreach (var namespaceMember in namespaceDeclaration.Members)
 						{
 							if (namespaceMember is ClassDeclarationSyntax classDeclaration)
 							{
@@ -95,6 +100,20 @@ namespace Oraide.Csharp.CodeParsers
 
 									spriteSequences.Add(newClassInfo);
 								}
+							}
+							else if (namespaceMember is EnumDeclarationSyntax enumDeclaration)
+							{
+								var name = enumDeclaration.Identifier.ValueText;
+								var namespaceName = namespaceDeclaration.Name.GetText().ToString().Trim();
+								var fullName = $"{namespaceName}.{name}";
+								var values = enumDeclaration.Members.Select(x => x.Identifier.ValueText).ToArray();
+								var isFlagsEnum = enumDeclaration.AttributeLists.Any(x => x.Attributes.Any(y => y.Name.GetText().ToString().Trim() == "Flags"));
+
+								// Some manual string nonsense to determine the class name location inside the file.
+								var enumDeclarationStart = enumDeclaration.GetLocation().SourceSpan.Start;
+								var enumDeclarationLocation = FindTypeLocationInText(filePath, fileText, name, enumDeclarationStart, "enum");
+
+								enumInfos.Add(new EnumInfo(name, fullName, "", values, isFlagsEnum, enumDeclarationLocation));
 							}
 						}
 					}
@@ -219,7 +238,8 @@ namespace Oraide.Csharp.CodeParsers
 			return (finalTraitInfos.ToLookup(x => x.TraitInfoName, y => y),
 				weaponInfo,
 				paletteTraitInfos,
-				finalSpriteSequenceInfos.ToLookup(x => x.Name, y => y));
+				finalSpriteSequenceInfos.ToLookup(x => x.Name, y => y),
+				enumInfos.ToLookup(x => x.Name, y => y));
 		}
 
 		// Files can potentially contain multiple TraitInfos.
@@ -246,7 +266,7 @@ namespace Oraide.Csharp.CodeParsers
 
 			// Some manual string nonsense to determine trait name location inside the file.
 			var classStart = classDeclaration.GetLocation().SourceSpan.Start;
-			var classLocation = FindClassLocationInText(filePath, fileText, traitInfoName, classStart);
+			var classLocation = FindTypeLocationInText(filePath, fileText, traitInfoName, classStart);
 
 			yield return new TraitInfo(traitInfoName.Substring(0, traitInfoName.Length - 4), traitInfoName,
 				traitDesc, classLocation, baseTypes, traitProperties.ToArray(), isAbstract);
@@ -277,7 +297,7 @@ namespace Oraide.Csharp.CodeParsers
 
 			// Some manual string nonsense to determine the class name location inside the file.
 			var classStart = classDeclaration.GetLocation().SourceSpan.Start;
-			var classLocation = FindClassLocationInText(filePath, fileText, projectileName, classStart);
+			var classLocation = FindTypeLocationInText(filePath, fileText, projectileName, classStart);
 			var baseTypes = ParseBaseTypes(classDeclaration).ToArray();
 			var fields = ParseClassFields(filePath, fileText, classDeclaration).ToArray();
 
@@ -406,13 +426,13 @@ namespace Oraide.Csharp.CodeParsers
 			}
 		}
 
-		static MemberLocation FindClassLocationInText(string filePath, string text, string traitInfoName, int definitionStartIndex)
+		static MemberLocation FindTypeLocationInText(string filePath, string text, string traitInfoName, int definitionStartIndex, string memberType = "class")
 		{
 			var subtext = text.Substring(0, definitionStartIndex);
-			subtext += text.Substring(definitionStartIndex, text.IndexOf($"class {traitInfoName}", definitionStartIndex, StringComparison.InvariantCulture) - definitionStartIndex);
+			subtext += text.Substring(definitionStartIndex, text.IndexOf($"{memberType} {traitInfoName}", definitionStartIndex, StringComparison.InvariantCulture) - definitionStartIndex);
 			var lines = subtext.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
 			var lineNumber = lines.Length;
-			var characterNumber = lines.Last().Length + 6;
+			var characterNumber = lines.Last().Length + memberType.Length + 1; // Add 1 for the space because reasons.
 			return new MemberLocation(filePath, lineNumber, characterNumber);
 		}
 

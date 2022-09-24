@@ -26,14 +26,20 @@ namespace Oraide.LanguageServer.Caching.Entities
 		/// SpriteSequence information grouped by name.
 		/// </summary>
 		public ILookup<string, SimpleClassInfo> SpriteSequenceInfos { get; }
+		
+		/// <summary>
+		/// Enum type information grouped by type name.
+		/// </summary>
+		public ILookup<string, EnumInfo> EnumInfos { get; }
 
 		public CodeSymbols(ILookup<string, TraitInfo> traitInfos, WeaponInfo weaponInfo, ILookup<string, TraitInfo> paletteTraitInfos,
-			ILookup<string, SimpleClassInfo> spriteSequenceInfos)
+			ILookup<string, SimpleClassInfo> spriteSequenceInfos, ILookup<string, EnumInfo> enumInfos)
 		{
 			TraitInfos = traitInfos;
 			WeaponInfo = weaponInfo;
 			PaletteTraitInfos = paletteTraitInfos;
 			SpriteSequenceInfos = spriteSequenceInfos;
+			EnumInfos = enumInfos;
 		}
 	}
 }
