@@ -1,5 +1,8 @@
 {
     "folding": {
         "offSide": true
+    },
+    "comments": {
+        "lineComment": "#"
     }
 }
