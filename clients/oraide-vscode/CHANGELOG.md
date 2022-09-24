@@ -2,8 +2,152 @@
 
 All notable changes to the "oraide" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## 0.5.5 - 2022.09.25
 
-## [Unreleased]
+ - VSCode integration:
+    - Fixed the MiniYAML language definition not defining a comment symbol.
 
-- Initial release
+## 0.5.4 - 2022.08.29
+
+ - Language server:
+    - Fixed more issues related to internal file/folder path handling in the server.
+
+## 0.5.1 - 0.5.3 - 2022.08.22
+
+ - VSCode integration:
+    - Fixed several issues related to language server downloading and storage path.
+    - Removed Output window opening on startup.
+ - Language server:
+    - Fixed a crash when loading empty mod palette definitions.
+    - Reworked internal handling of mod file paths.
+
+## 0.5.0 - 2022.07.07
+
+ - OpenRA Mod support:
+    - Added support for mod (and map) Palette definitions.
+    - Improved handling of Color values in MiniYAML files (now more cases are handled).
+    - Fixed not handling rules files from maps inside the SupportDirectory.
+ - VSCode integration:
+    - Updated [the MiniYAML.tmLanguage](https://github.com/OpenRA/MiniYAML.tmbundle) with further syntax highlighting bug fixes and improvements.
+ - Language server:
+    - Improved debug logging.
+
+## 0.4.0 - 2022.04.27
+
+ - OpenRA Mod support:
+    - Added support for working with OpenRA install directories via static docs files (previously could only parse C# code to generate symbols).
+    - Fixed abstract traits/weapons showing up as code completion suggestions.
+ - VSCode integration:
+    - Fixed a bug that would cause the VSCode extension to hang indefinitely on startup if it couldn't access https://api.github.com/ to check for updates.
+    - Updated [the MiniYAML.tmLanguage](https://github.com/OpenRA/MiniYAML.tmbundle) with some syntax highlighting bug fixes and improvements.
+
+## 0.3.1 - 2022.03.29
+
+ - VSCode integration:
+    - Allowed the extension to work (for the sake of syntax highlighting) even if the language server can't be started.
+
+## 0.3.0 - 2022.03.27
+
+ - OpenRA Mod support:
+    - Added extra hover info for abstract Actor and Weapon definitions.
+    - Added hover info for actor names in `map.yaml` files.
+    - Added actor `Tooltip.Name` text as navigatable workspace symbols (open with `Ctrl+T`/`Cmd+T`).
+ - VSCode integration:
+    - Fixed color picker/preview not appearing on lines with multiple color values.
+    - Improved syntax highlighting thanks to improvements to [the MiniYAML.tmLanguage](https://github.com/OpenRA/MiniYAML.tmbundle) file.
+
+## 0.2.0 - 2022.03.21
+
+ - OpenRA Mod support:
+    - Added proper mod support - loading of `mod.yaml` and referenced rules/weapons/etc. files.
+    - Added proper map support - loading of `map.yaml` and referenced rules/weapons/etc. files.
+    - Added support for `map.yaml` files (GoTo, AutoComplete, hover information) for relevant supported featuers (actor definitions, referenced files).
+ - VSCode integration:
+    - Added support for the VSCode color picker and in-line color visualization.
+    - Fixed a low-level issue with detecting duplicate strings in a line.
+
+## 0.1.4 - 2022.03.14
+
+ - OpenRA Mod support:
+    - Added support for Cursors (GoTo, AutoComplete, information).
+ - VSCode integration:
+    - Added support for [Breadcrumbs](https://code.visualstudio.com/docs/editor/editingevolved#_breadcrumbs), file [Outline view](https://code.visualstudio.com/docs/getstarted/userinterface#_outline-view) and [DocumentSymbols](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-symbol).
+    - The VSCode extension will no longer prompt the user when a new server version is available, instead automatically downloading it.
+
+## 0.1.3 - 2022.03.08
+
+ - Added a "custom" language icon for MiniYAML to match the official YAML icon.
+ - Fixed weapon parsing crashing on empty weapons.
+ - Fixed symbol cache updating crashing due wrongly handled file paths/urls.
+ - Switched to OpenRA/MiniYAML.tmbundle for the MiniYAML language.
+
+## 0.1.2 - 2022.02.17
+
+ - Reintroduced MiniYAML as a custom language for OpenRA .yaml files.
+
+## 0.1.1 - 2022.02.04
+
+ - Improved parsing of C# files:
+    - Fixed loading of base types.
+    - Added loading of inherited fields/properties.
+    - Added loading of class field attributes.
+ - Fixed a long-standing issue with the `Name` field of traits implementing `TooltipInfoBase`.
+ - Fixed a long-standing issue with IntelliSense suggestions now knowing about inherited fields.
+ - Changed extension activation event from *"on YAML file"* to *"if there is a `mod.yaml` file in the workspace"*.
+
+## 0.1.0 (server-v0.1.0) - 2022.02.02
+
+- Added support for weapons:
+    - Hover information and navigate to Weapons, Projectiles and Warheads in C# code (if available).
+    - IntelliSense for Weapon properties, Projectiles, Warheads and their properties.
+    - Find Projectile and Warhead references.
+- A lot less excessive debug logging in VSCode's Output window.
+- Better handling of map files.
+- Major refactorings.
+- Some bugfixes.
+
+## 0.0.9 (server-v0.0.6)
+
+- Mostly minor refactoring and bug hunting.
+
+## 0.0.8 (server-v0.0.5)
+
+- Added support for `GoToDeclaration` and `GoToImplementations`/`FindAllImplementations` (both redundant to `GoToDefinition`, but added for completeness).
+- Added limited support for `GoToReferences`/`FindAllReferences`.
+- Added support for getting workspace symbols (for quick navigation).
+- Fixed icon background not being transparent.
+- Improved IntelliSense suggestions for trait properties.
+- Improved hover tooltip Trait and Trait property descriptions.
+
+## 0.0.7 (server-v0.0.4)
+
+ - Fixed language server sometimes not accepting a mod directory because of a missing `icon.png`.
+ - Fixed the language server crashing when there are multiple traits with the same name across namespaces.
+ - Fixed IntelliSense not working for trait properties when the current trait has a `@` suffix.
+ - Resolved `nameof()` usages in Trait and Trait property descriptions when parsing C# files for code symbols.
+ - Improved VSCode extension's contributed settings' descriptions.
+
+## 0.0.6 - 2022.01.31
+
+ - Improved extension README and added feature preview gifs.
+ - Added extension icon.
+ - Changed extension display name from "ORAIDE" to "OpenRA MiniYAML Language Extension (ORAIDE)"
+
+## 0.0.4 and 0.0.5 - 2022.01.26
+
+ - Fixed extension being broken after custom "miniyaml" language removal. 
+
+## 0.0.3 (server-v0.0.3) - 2022.01.23
+
+ - Started beautifying hover tooltips by using Markdown and by fixing parsing of Desc attributes on traits and trait properties.
+ - Added links to online trait documentation.
+ - Fixed a couple of small issues with the extension.
+ - **Removed custom "miniyaml" language handling to not mess with defaults. That broke some things!**
+
+## 0.0.2 - 2022.01.23
+
+First public release.
+
+## 0.0.2 - 2021.11.08
+
+First private release.
