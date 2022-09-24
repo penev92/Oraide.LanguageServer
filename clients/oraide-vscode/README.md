@@ -24,6 +24,11 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 0.5.5
+
+ - VSCode integration:
+    - Fixed the MiniYAML language definition not defining a comment symbol.
+
 ### 0.5.4
 
  - Language server:
