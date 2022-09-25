@@ -81,8 +81,9 @@ namespace Oraide.LanguageServer.Caching
 				var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(modManifest.RulesFiles, mods);
 				var cursorDefinitions = yamlInformationProvider.GetCursorDefinitions(modManifest.CursorsFiles, mods);
 				var paletteDefinitions = yamlInformationProvider.GetPaletteDefinitions(modManifest.RulesFiles, mods, knownPaletteTypes);
+				var spriteSequenceDefinitions = yamlInformationProvider.GetSpriteSequenceDefinitions(modManifest.SpriteSequences, mods);
 
-				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions, paletteDefinitions);
+				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions, paletteDefinitions, spriteSequenceDefinitions);
 
 				var mapsDir = OpenRaFolderUtils.ResolveFilePath(modManifest.MapsFolder, mods);
 				var allMaps = mapsDir == null

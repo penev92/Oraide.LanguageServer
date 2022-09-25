@@ -30,15 +30,21 @@ namespace Oraide.LanguageServer.Caching.Entities
 		/// </summary>
 		public ILookup<string, PaletteDefinition> PaletteDefinitions { get; }
 
+		/// <summary>
+		/// A collection of all sprite sequence definitions.
+		/// </summary>
+		public ILookup<string, SpriteSequenceImageDefinition> SpriteSequenceImageDefinitions { get; }
+
 		public ModSymbols(ILookup<string, ActorDefinition> actorDefinitions, ILookup<string, WeaponDefinition> weaponDefinitions,
 			ILookup<string, ConditionDefinition> conditionDefinitions, ILookup<string, CursorDefinition> cursorDefinitions,
-			ILookup<string, PaletteDefinition> paletteDefinitions)
+			ILookup<string, PaletteDefinition> paletteDefinitions, ILookup<string, SpriteSequenceImageDefinition> spriteSequenceImageDefinitions)
 		{
 			ActorDefinitions = actorDefinitions;
 			WeaponDefinitions = weaponDefinitions;
 			ConditionDefinitions = conditionDefinitions;
 			CursorDefinitions = cursorDefinitions;
 			PaletteDefinitions = paletteDefinitions;
+			SpriteSequenceImageDefinitions = spriteSequenceImageDefinitions;
 		}
 	}
 }
