@@ -53,8 +53,9 @@ namespace Oraide.LanguageServer.Caching
 			var traitInfos = codeInformationProvider.GetTraitInfos();
 			var weaponInfo = codeInformationProvider.GetWeaponInfo();
 			var paletteTraitInfos = codeInformationProvider.GetPaletteTraitInfos();
+			var spriteSequenceInfos = codeInformationProvider.GetSpriteSequenceInfos();
 
-			var codeSymbols = new CodeSymbols(traitInfos, weaponInfo, paletteTraitInfos);
+			var codeSymbols = new CodeSymbols(traitInfos, weaponInfo, paletteTraitInfos, spriteSequenceInfos);
 
 			var elapsedTotal = stopwatchTotal.Elapsed;
 			Console.Error.WriteLine($"Took {elapsedTotal} to load code symbols:");
@@ -62,6 +63,7 @@ namespace Oraide.LanguageServer.Caching
 			Console.Error.WriteLine($"    {weaponInfo.ProjectileInfos.Length} projectileInfos");
 			Console.Error.WriteLine($"    {weaponInfo.WarheadInfos.Length} warheadInfos");
 			Console.Error.WriteLine($"    {paletteTraitInfos.Count} paletteTraitInfos");
+			Console.Error.WriteLine($"    {spriteSequenceInfos.Count} spriteSequenceInfos");
 
 			var stopwatchYaml = new Stopwatch();
 			stopwatchYaml.Start();

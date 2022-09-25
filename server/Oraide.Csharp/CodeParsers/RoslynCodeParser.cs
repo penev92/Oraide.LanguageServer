@@ -12,12 +12,13 @@ namespace Oraide.Csharp.CodeParsers
 {
 	public static class RoslynCodeParser
 	{
-		public static (ILookup<string, TraitInfo>, WeaponInfo, ILookup<string, TraitInfo>) Parse(in string oraFolderPath)
+		public static (ILookup<string, TraitInfo>, WeaponInfo, ILookup<string, TraitInfo>, ILookup<string, SimpleClassInfo>) Parse(in string oraFolderPath)
 		{
 			var traitInfos = new List<TraitInfo>();
 			var weaponInfoFields = Array.Empty<ClassFieldInfo>();
 			var warheadInfos = new List<SimpleClassInfo>();
 			var projectileInfos = new List<SimpleClassInfo>();
+			var spriteSequences = new List<SimpleClassInfo>();
 
 			var filePaths = Directory.EnumerateFiles(oraFolderPath, "*.cs", SearchOption.AllDirectories)
 				.Where(x => !x.Contains("OpenRA.Test"));
@@ -63,6 +64,36 @@ namespace Oraide.Csharp.CodeParsers
 								{
 									var warheadInfo = ParseWarheadInfo(filePath, fileText, classDeclaration);
 									warheadInfos.Add(warheadInfo);
+								}
+								else if (classDeclaration.Identifier.ValueText.EndsWith("SpriteSequence"))
+								{
+									var classInfo = ParseSimpleClass(filePath, fileText, classDeclaration);
+
+									// Sequences need special member field parsing...
+									var fields = new List<ClassFieldInfo>();
+									foreach (var member in classDeclaration.Members)
+									{
+										if (member is FieldDeclarationSyntax fieldMember
+										    && fieldMember.Modifiers.Any(x => x.ValueText == "static")
+										    && fieldMember.Modifiers.Any(x => x.ValueText == "readonly")
+										    && (fieldMember.Declaration.Type as GenericNameSyntax).Identifier.ValueText == "SpriteSequenceField")
+										{
+											foreach (var fieldInfo in ParseClassField(filePath, fileText, fieldMember))
+											{
+												var type = string.Join(", ", (fieldMember.Declaration.Type as GenericNameSyntax).TypeArgumentList.Arguments);
+												var defaultValue = fieldInfo.DefaultValue.Split(',').Last().Trim();
+												var newFieldInfo = new ClassFieldInfo(fieldInfo.Name, type, UserFriendlyTypeName(type),
+													defaultValue, fieldInfo.ClassName, fieldInfo.Location, fieldInfo.Description, fieldInfo.OtherAttributes);
+
+												fields.Add(newFieldInfo);
+											}
+										}
+									}
+
+									var newClassInfo = new SimpleClassInfo(classInfo.Name, classInfo.InfoName, classInfo.Description, classInfo.Location,
+										classInfo.InheritedTypes, fields.ToArray(), classInfo.IsAbstract);
+
+									spriteSequences.Add(newClassInfo);
 								}
 							}
 						}
@@ -124,6 +155,7 @@ namespace Oraide.Csharp.CodeParsers
 				var fieldInfos = new List<ClassFieldInfo>();
 				foreach (var (className, classFieldNames) in baseTypes)
 				{
+					// TODO: This seems like it could be simplified a lot like SpriteSequences below.
 					foreach (var typeFieldName in classFieldNames)
 					{
 						var fi = wi.PropertyInfos.FirstOrDefault(z => z.Name == typeFieldName);
@@ -160,7 +192,34 @@ namespace Oraide.Csharp.CodeParsers
 						.Any(z => z.Name == "PaletteDefinition")))
 				.ToLookup(x => x.TraitInfoName, y => y);
 
-			return (finalTraitInfos.ToLookup(x => x.TraitInfoName, y => y), weaponInfo, paletteTraitInfos);
+			// Resolve warhead inheritance - load base types and a full list in fields - inherited or not.
+			var finalSpriteSequenceInfos = new List<SimpleClassInfo>(spriteSequences.Count);
+			foreach (var ssi in spriteSequences)
+			{
+				var baseTypes = GetWarheadBaseTypes(spriteSequences, ssi.Name);
+				var fieldInfos = new List<ClassFieldInfo>();
+				foreach (var (baseClassName, _) in baseTypes)
+				{
+					var baseClassInfo = spriteSequences.FirstOrDefault(x => x.Name == baseClassName);
+					fieldInfos.AddRange(baseClassInfo.PropertyInfos);
+				}
+
+				var spriteSequenceInfo = new SimpleClassInfo(
+					ssi.Name,
+					ssi.InfoName,
+					ssi.Description,
+					ssi.Location,
+					baseTypes.Where(x => x.TypeName != ssi.InfoName).Select(x => x.TypeName).ToArray(),
+					fieldInfos.ToArray(),
+					ssi.IsAbstract);
+
+				finalSpriteSequenceInfos.Add(spriteSequenceInfo);
+			}
+
+			return (finalTraitInfos.ToLookup(x => x.TraitInfoName, y => y),
+				weaponInfo,
+				paletteTraitInfos,
+				finalSpriteSequenceInfos.ToLookup(x => x.Name, y => y));
 		}
 
 		// Files can potentially contain multiple TraitInfos.
@@ -231,8 +290,8 @@ namespace Oraide.Csharp.CodeParsers
 			foreach (var member in classDeclaration.Members)
 				if (member is FieldDeclarationSyntax fieldMember
 					&& fieldMember.Modifiers.Any(x => x.ValueText == "public")
-					&& fieldMember.Modifiers.Any(x => x.ValueText == "readonly")
-					&& fieldMember.Modifiers.All(x => x.ValueText != "static"))
+					&& fieldMember.Modifiers.All(x => x.ValueText != "static")
+					&& fieldMember.Modifiers.Any(x => x.ValueText == "readonly"))
 					foreach (var fieldInfo in ParseClassField(filePath, fileText, fieldMember))
 						yield return fieldInfo;
 		}

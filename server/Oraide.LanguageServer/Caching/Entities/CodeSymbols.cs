@@ -22,11 +22,18 @@ namespace Oraide.LanguageServer.Caching.Entities
 		/// </summary>
 		public ILookup<string, TraitInfo> PaletteTraitInfos { get; }
 
-		public CodeSymbols(ILookup<string, TraitInfo> traitInfos, WeaponInfo weaponInfo, ILookup<string, TraitInfo> paletteTraitInfos)
+		/// <summary>
+		/// SpriteSequence information grouped by name.
+		/// </summary>
+		public ILookup<string, SimpleClassInfo> SpriteSequenceInfos { get; }
+
+		public CodeSymbols(ILookup<string, TraitInfo> traitInfos, WeaponInfo weaponInfo, ILookup<string, TraitInfo> paletteTraitInfos,
+			ILookup<string, SimpleClassInfo> spriteSequenceInfos)
 		{
 			TraitInfos = traitInfos;
 			WeaponInfo = weaponInfo;
 			PaletteTraitInfos = paletteTraitInfos;
+			SpriteSequenceInfos = spriteSequenceInfos;
 		}
 	}
 }
