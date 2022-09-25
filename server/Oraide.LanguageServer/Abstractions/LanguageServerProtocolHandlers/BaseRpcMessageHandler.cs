@@ -51,6 +51,8 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				fileType = FileType.Weapons;
 			else if (modManifest.CursorsFiles.Contains(fileReference))
 				fileType = FileType.Cursors;
+			else if (modManifest.SpriteSequences.Contains(fileReference))
+				fileType = FileType.SpriteSequences;
 			else if (Path.GetFileName(filePath) == "map.yaml"
 			         && symbolCache[modId].Maps.Any(x => x.MapFolder == OpenRaFolderUtils.NormalizeFilePathString(Path.GetDirectoryName(filePath))))
 				fileType = FileType.MapFile;
@@ -58,6 +60,8 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				fileType = FileType.MapRules;
 			else if (symbolCache[modId].Maps.Any(x => x.WeaponsFiles.Contains(fileReference)))
 				fileType = FileType.MapWeapons;
+			else if (symbolCache[modId].Maps.Any(x => x.SpriteSequenceFiles.Contains(fileReference)))
+				fileType = FileType.MapSpriteSequences;
 
 			if (!openFileCache.ContainsFile(fileUri.AbsoluteUri))
 			{
@@ -144,9 +148,11 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				FileType.Rules => HandleRulesFile(cursorTarget),
 				FileType.Weapons => HandleWeaponFile(cursorTarget),
 				FileType.Cursors => HandleCursorsFile(cursorTarget),
+				FileType.SpriteSequences => HandleSpriteSequenceFile(cursorTarget),
 				FileType.MapFile => HandleMapFile(cursorTarget),
 				FileType.MapRules => HandleRulesFile(cursorTarget),
 				FileType.MapWeapons => HandleWeaponFile(cursorTarget),
+				FileType.MapSpriteSequences => HandleSpriteSequenceFile(cursorTarget),
 				_ => null
 			};
 		}
@@ -191,6 +197,16 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			};
 		}
 
+		protected virtual object HandleSpriteSequenceFile(CursorTarget cursorTarget)
+		{
+			return cursorTarget.TargetType switch
+			{
+				"key" => HandleSpriteSequenceFileKey(cursorTarget),
+				"value" => HandleSpriteSequenceFileValue(cursorTarget),
+				_ => null
+			};
+		}
+
 		protected virtual object HandleRulesKey(CursorTarget cursorTarget) { return null; }
 
 		protected virtual object HandleRulesValue(CursorTarget cursorTarget) { return null; }
@@ -206,6 +222,10 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 		protected virtual object HandleMapFileKey(CursorTarget cursorTarget) { return null; }
 
 		protected virtual object HandleMapFileValue(CursorTarget cursorTarget) { return null; }
+
+		protected virtual object HandleSpriteSequenceFileKey(CursorTarget cursorTarget) { return null; }
+
+		protected virtual object HandleSpriteSequenceFileValue(CursorTarget cursorTarget) { return null; }
 
 		#endregion
 

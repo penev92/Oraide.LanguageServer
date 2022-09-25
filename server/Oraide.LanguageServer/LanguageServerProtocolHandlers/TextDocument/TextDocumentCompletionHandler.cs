@@ -23,6 +23,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		IEnumerable<CompletionItem> conditionNames;
 		IEnumerable<CompletionItem> cursorNames;
 		IEnumerable<CompletionItem> paletteNames;
+		IEnumerable<CompletionItem> spriteSequenceImageNames;
 		WeaponInfo weaponInfo;
 
 		readonly CompletionItem inheritsCompletionItem = new ()
@@ -30,6 +31,14 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			Label = "Inherits",
 			Kind = CompletionItemKind.Constructor,
 			Detail = "Allows rule inheritance.",
+			CommitCharacters = new[] { ":" }
+		};
+
+		readonly CompletionItem defaultsCompletionItem = new()
+		{
+			Label = "Defaults",
+			Kind = CompletionItemKind.Constructor,
+			Detail = "Sets default values for all sequences of this image.",
 			CommitCharacters = new[] { ":" }
 		};
 
@@ -97,12 +106,16 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				fileType = FileType.Weapons;
 			else if (modManifest.CursorsFiles.Contains(fileReference))
 				fileType = FileType.Cursors;
+			else if (modManifest.SpriteSequences.Contains(fileReference))
+				fileType = FileType.SpriteSequences;
 			else if (Path.GetFileName(filePath) == "map.yaml" && symbolCache[modId].Maps.Any(x => x.MapFolder == Path.GetDirectoryName(filePath)))
 				fileType = FileType.MapFile;
 			else if (symbolCache[modId].Maps.Any(x => x.RulesFiles.Contains(fileReference)))
 				fileType = FileType.MapRules;
 			else if (symbolCache[modId].Maps.Any(x => x.WeaponsFiles.Contains(fileReference)))
 				fileType = FileType.MapWeapons;
+			else if (symbolCache[modId].Maps.Any(x => x.SpriteSequenceFiles.Contains(fileReference)))
+				fileType = FileType.MapSpriteSequences;
 
 			if (!openFileCache.ContainsFile(fileUri.AbsoluteUri))
 			{
@@ -167,6 +180,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			conditionNames = symbolCache[modId].ModSymbols.ConditionDefinitions.Select(x => x.First().ToCompletionItem());
 			cursorNames = symbolCache[modId].ModSymbols.CursorDefinitions.Select(x => x.First().ToCompletionItem());
 			paletteNames = symbolCache[modId].ModSymbols.PaletteDefinitions.Select(x => x.First().ToCompletionItem());
+			spriteSequenceImageNames = symbolCache[modId].ModSymbols.SpriteSequenceImageDefinitions.Select(x => x.First().ToCompletionItem());
 
 			weaponInfo = symbolCache[modId].CodeSymbols.WeaponInfo;
 		}
@@ -406,6 +420,75 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 				default:
 					return null;
+			}
+		}
+
+		protected override IEnumerable<CompletionItem> HandleSpriteSequenceFileKey(CursorTarget cursorTarget)
+		{
+			IEnumerable<CompletionItem> HandleSpriteSequenceProperty()
+			{
+				var presentProperties = cursorTarget.TargetNode.ParentNode.ChildNodes.Select(x => x.Key).ToHashSet();
+				var spriteSequenceFormat = symbolCache[modId].ModManifest.SpriteSequenceFormat.Type;
+
+				// NOTE: This is copied from HandleRulesKey()!
+				return symbolCache[modId].CodeSymbols.SpriteSequenceInfos[spriteSequenceFormat]
+					.SelectMany(x => x.PropertyInfos)
+					.DistinctBy(y => y.Name)
+					.Where(x => !presentProperties.Contains(x.Name))
+					.Select(z => z.ToCompletionItem());
+			}
+
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				// Get only sprite sequence image definitions. Presumably for reference and for overriding purposes.
+				case 0:
+					return spriteSequenceImageNames;
+
+				// Get only "Inherits" and "Defaults".
+				case 1:
+					return new[] { inheritsCompletionItem, defaultsCompletionItem };
+
+				case 2:
+					return HandleSpriteSequenceProperty();
+
+				case 4:
+				{
+					if (cursorTarget.TargetNode.ParentNode.ParentNode.Key == "Combine")
+						return HandleSpriteSequenceProperty();
+
+					return Enumerable.Empty<CompletionItem>();
+				}
+
+				default:
+					return Enumerable.Empty<CompletionItem>();
+			}
+		}
+
+		protected override IEnumerable<CompletionItem> HandleSpriteSequenceFileValue(CursorTarget cursorTarget)
+		{
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 1:
+				{
+					if (cursorTarget.TargetNode.Key == "Inherits")
+					{
+						if (cursorTarget.FileType == FileType.MapSpriteSequences)
+						{
+							var mapReference = symbolCache[cursorTarget.ModId].Maps
+								.FirstOrDefault(x => x.SpriteSequenceFiles.Contains(cursorTarget.FileReference));
+
+							if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+								return spriteSequenceImageNames.Union(mapSymbols.SpriteSequenceImageDefinitions.Select(x => x.First().ToCompletionItem()));
+						}
+
+						return spriteSequenceImageNames;
+					}
+
+					return Enumerable.Empty<CompletionItem>();
+				}
+
+				default:
+					return Enumerable.Empty<CompletionItem>();
 			}
 		}
 

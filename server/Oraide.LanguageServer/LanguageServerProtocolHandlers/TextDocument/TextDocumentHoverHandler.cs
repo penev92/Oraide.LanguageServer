@@ -515,6 +515,114 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			}
 		}
 
+		protected override Hover HandleSpriteSequenceFileKey(CursorTarget cursorTarget)
+		{
+			Hover HandleSpriteSequenceName()
+			{
+				var content = $"```csharp\nSequence \"{cursorTarget.TargetString}\"\n```";
+				return HoverFromHoverInfo(content, range);
+			}
+
+			Hover HandleSpriteSequenceProperty()
+			{
+				var spriteSequenceFormat = symbolCache[cursorTarget.ModId].ModManifest.SpriteSequenceFormat.Type;
+				var fieldInfo = codeSymbols.SpriteSequenceInfos[spriteSequenceFormat].FirstOrDefault().PropertyInfos
+					.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+
+				var content = fieldInfo.ToMarkdownInfoString();
+				return HoverFromHoverInfo(content, range);
+			}
+
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+				{
+					var content = $"```csharp\nImage \"{cursorTarget.TargetString}\"\n```";
+					return HoverFromHoverInfo(content, range);
+				}
+
+				case 1:
+				{
+					if (cursorTarget.TargetString == "Inherits")
+						return HoverFromHoverInfo($"Inherits (and possibly overwrites) sequences from image {cursorTarget.TargetNode.Value}", range);
+
+					if (cursorTarget.TargetString == "Defaults")
+						return HoverFromHoverInfo("Sets default values for all sequences of this image.", range);
+
+					return HandleSpriteSequenceName();
+				}
+
+				case 2:
+					return HandleSpriteSequenceProperty();
+
+				case 3:
+				{
+					if (cursorTarget.TargetNode.ParentNode.Key == "Combine")
+						return HandleSpriteSequenceName();
+
+					return null;
+				}
+
+				case 4:
+				{
+					if (cursorTarget.TargetNode.ParentNode.ParentNode.Key == "Combine")
+						return HandleSpriteSequenceProperty();
+
+					return null;
+				}
+			}
+
+			return null;
+		}
+
+		protected override Hover HandleSpriteSequenceFileValue(CursorTarget cursorTarget)
+		{
+			Hover HandleSpriteSequenceFileName()
+			{
+				var content = $"```csharp\nFile \"{cursorTarget.TargetString}\"\n```";
+				return HoverFromHoverInfo(content, range);
+			}
+
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 1:
+				{
+					if (cursorTarget.TargetNode.Key == "Inherits")
+					{
+						if (modSymbols.SpriteSequenceImageDefinitions.Contains(cursorTarget.TargetString))
+							return HoverFromHoverInfo($"```csharp\nImage \"{cursorTarget.TargetString}\"\n```", range);
+
+						if (cursorTarget.FileType == FileType.MapSpriteSequences)
+						{
+							var mapReference = symbolCache[cursorTarget.ModId].Maps
+								.FirstOrDefault(x => x.SpriteSequenceFiles.Contains(cursorTarget.FileReference));
+
+							if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+								if (mapSymbols.SpriteSequenceImageDefinitions.Contains(cursorTarget.TargetString))
+									return HoverFromHoverInfo($"```csharp\nImage \"{cursorTarget.TargetString}\"\n```", range);
+						}
+					}
+					else
+					{
+						return HandleSpriteSequenceFileName();
+					}
+
+					return null;
+				}
+
+				case 3:
+				{
+					if (cursorTarget.TargetNode.ParentNode.Key == "Combine")
+						return HandleSpriteSequenceFileName();
+
+					return null;
+				}
+
+				default:
+					return null;
+			}
+		}
+
 		#endregion
 
 		private static Hover HoverFromHoverInfo(string content, Range range)
