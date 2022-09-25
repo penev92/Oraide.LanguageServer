@@ -172,6 +172,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		{
 			modId = cursorTarget.ModId;
 
+			// TODO: Don't map everything to CompletionItems here! Defer that until we know what we need, then only map that (like in DefinitionHandler).
 			// Using .First() is not great but we have no way to differentiate between traits of the same name
 			// until the server learns the concept of a mod and loaded assemblies.
 			traitNames = symbolCache[modId].CodeSymbols.TraitInfos.Where(x => !x.First().IsAbstract).Select(x => x.First().ToCompletionItem());
@@ -263,17 +264,21 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					var tempCursorNames = cursorNames;
 					var tempPaletteNames = paletteNames;
 
+					MapManifest mapManifest = default;
 					if (cursorTarget.FileType == FileType.MapRules)
 					{
-						var mapReference = symbolCache[cursorTarget.ModId].Maps
+						mapManifest = symbolCache[cursorTarget.ModId].Maps
 							.FirstOrDefault(x => x.RulesFiles.Contains(cursorTarget.FileReference));
 
-						if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+						if (mapManifest.MapReference != null && symbolCache.Maps.TryGetValue(mapManifest.MapReference, out var mapSymbols))
 						{
+							// TODO: Don't map to everything CompletionItems here! Defer that until we know what we need, then only map that (like in DefinitionHandler).
 							tempActorNames = tempActorNames.Union(mapSymbols.ActorDefinitions.Select(x => x.First().ToCompletionItem()));
 							tempWeaponNames = tempWeaponNames.Union(mapSymbols.WeaponDefinitions.Select(x => x.First().ToCompletionItem()));
 							tempConditionNames = tempConditionNames.Union(mapSymbols.ConditionDefinitions.Select(x => x.First().ToCompletionItem()));
 							tempPaletteNames = tempPaletteNames.Union(mapSymbols.PaletteDefinitions.Select(x => x.First().ToCompletionItem()));
+							spriteSequenceImageNames = spriteSequenceImageNames.Union(
+								mapSymbols.SpriteSequenceImageDefinitions.Select(x => x.First().ToCompletionItem()));
 						}
 					}
 
@@ -294,6 +299,23 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					if (fieldInfo.OtherAttributes.Any(x => x.Name == "PaletteReference"))
 						return tempPaletteNames.Where(x => !string.IsNullOrEmpty(x.Label));
+
+					// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
+					// NOTE: This will improve if/when we add the attribute.
+					if (traitInfo.TraitPropertyInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
+						    && y.Value != null
+						    && y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name)))
+					{
+						return spriteSequenceImageNames;
+					}
+
+					if (fieldInfo.OtherAttributes.Any(x => x.Name == "SequenceReference"))
+					{
+						// Resolve sequence image inheritance so we can show all inherited sequences.
+						var imageName = ResolveSpriteSequenceImageNameForRules(cursorTarget, fieldInfo, mapManifest);
+						var sequences = GetSpriteSequencesForImage(cursorTarget.ModId, imageName, mapManifest);
+						return sequences.Select(x => x.ToCompletionItem());
+					}
 
 					return Enumerable.Empty<CompletionItem>();
 				}
@@ -378,7 +400,60 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				}
 
 				case 2:
+				{
+					ClassFieldInfo fieldInfo = default;
+					var fieldInfos = Array.Empty<ClassFieldInfo>();
+					var parentNode = cursorTarget.TargetNode.ParentNode;
+					if (parentNode.Key == "Projectile")
+					{
+						var projectileInfo = symbolCache[modId].CodeSymbols.WeaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+						if (projectileInfo.Name != null)
+						{
+							fieldInfo = projectileInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+							fieldInfos = projectileInfo.PropertyInfos;
+						}
+					}
+					else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
+					{
+						var warheadInfo = symbolCache[modId].CodeSymbols.WeaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+						if (warheadInfo.Name != null)
+						{
+							fieldInfo = warheadInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+							fieldInfos = warheadInfo.PropertyInfos;
+						}
+					}
+
+					MapManifest mapManifest = default;
+					if (cursorTarget.FileType == FileType.MapRules)
+					{
+						mapManifest = symbolCache[cursorTarget.ModId].Maps
+							.FirstOrDefault(x => x.RulesFiles.Contains(cursorTarget.FileReference));
+
+						if (mapManifest.MapReference != null && symbolCache.Maps.TryGetValue(mapManifest.MapReference, out var mapSymbols))
+						{
+							spriteSequenceImageNames = spriteSequenceImageNames.Union(
+								mapSymbols.SpriteSequenceImageDefinitions.Select(x => x.First().ToCompletionItem()));
+						}
+					}
+
+					// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
+					// NOTE: This will improve if/when we add the attribute.
+					if (fieldInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
+					        && y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name)))
+					{
+						return spriteSequenceImageNames;
+					}
+
+					if (fieldInfo.OtherAttributes.Any(x => x.Name == "SequenceReference"))
+					{
+						// Resolve sequence image inheritance so we can show all inherited sequences.
+						var imageName = ResolveSpriteSequenceImageNameForWeapons(cursorTarget, fieldInfo, mapManifest);
+						var sequences = GetSpriteSequencesForImage(cursorTarget.ModId, imageName, mapManifest);
+						return sequences.Select(x => x.ToCompletionItem());
+					}
+
 					return Enumerable.Empty<CompletionItem>();
+				}
 
 				default:
 					return Enumerable.Empty<CompletionItem>();
