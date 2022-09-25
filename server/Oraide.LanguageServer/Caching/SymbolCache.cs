@@ -115,8 +115,9 @@ namespace Oraide.LanguageServer.Caching
 			var weaponDefinitions = yamlInformationProvider.GetWeaponDefinitions(mapManifest.WeaponsFiles, mods);
 			var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(mapManifest.RulesFiles, mods);
 			var paletteDefinitions = yamlInformationProvider.GetPaletteDefinitions(mapManifest.RulesFiles, mods, knownPaletteTypes);
+			var spriteSequenceImageDefinitions = yamlInformationProvider.GetSpriteSequenceDefinitions(mapManifest.SpriteSequenceFiles, mods);
 
-			var mapSymbols = new MapSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, paletteDefinitions);
+			var mapSymbols = new MapSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, paletteDefinitions, spriteSequenceImageDefinitions);
 			Maps.Add(mapManifest.MapReference, mapSymbols);
 		}
 

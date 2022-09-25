@@ -25,13 +25,20 @@ namespace Oraide.LanguageServer.Caching.Entities
 		/// </summary>
 		public ILookup<string, PaletteDefinition> PaletteDefinitions { get; }
 
+		/// <summary>
+		/// A collection of all sprite sequence definitions in the current map's YAML grouped by their name.
+		/// </summary>
+		public ILookup<string, SpriteSequenceImageDefinition> SpriteSequenceImageDefinitions { get; }
+
 		public MapSymbols(ILookup<string, ActorDefinition> actorDefinitions, ILookup<string, WeaponDefinition> weaponDefinitions,
-			ILookup<string, ConditionDefinition> conditionDefinitions, ILookup<string, PaletteDefinition> paletteDefinitions)
+			ILookup<string, ConditionDefinition> conditionDefinitions, ILookup<string, PaletteDefinition> paletteDefinitions,
+			ILookup<string, SpriteSequenceImageDefinition> spriteSequenceImageDefinitions)
 		{
 			ActorDefinitions = actorDefinitions;
 			WeaponDefinitions = weaponDefinitions;
 			ConditionDefinitions = conditionDefinitions;
 			PaletteDefinitions = paletteDefinitions;
+			SpriteSequenceImageDefinitions = spriteSequenceImageDefinitions;
 		}
 	}
 }
