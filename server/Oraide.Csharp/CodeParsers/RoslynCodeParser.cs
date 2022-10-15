@@ -175,7 +175,7 @@ namespace Oraide.Csharp.CodeParsers
 				yield break;
 
 			// Get trait's DescAttribute.
-			var traitDesc = ParseClassDescAttribute(classDeclaration);
+			var traitDesc = ParseDescAttribute(classDeclaration);
 
 			// Get TraitInfo property (actually field) list.
 			foreach (var member in classDeclaration.Members)
@@ -213,7 +213,7 @@ namespace Oraide.Csharp.CodeParsers
 			var projectileInfoName = classDeclaration.Identifier.ValueText;
 			var projectileName = projectileInfoName.EndsWith("Info") ? projectileInfoName.Substring(0, projectileInfoName.Length - 4) : projectileInfoName;
 			projectileName = projectileName.EndsWith("Warhead") ? projectileName.Substring(0, projectileName.Length - 7) : projectileName;
-			var description = ParseClassDescAttribute(classDeclaration);
+			var description = ParseDescAttribute(classDeclaration);
 			var isAbstract = classDeclaration.Modifiers.Any(x => x.ValueText == "abstract");
 
 			// Some manual string nonsense to determine the class name location inside the file.
@@ -241,7 +241,6 @@ namespace Oraide.Csharp.CodeParsers
 		{
 			foreach (var variableDeclaratorSyntax in fieldDeclarationSyntax.Declaration.Variables)
 			{
-				var fieldDesc = "";
 				var otherAttributes = new List<(string Name, string Value)>();
 				foreach (var attributeList in fieldDeclarationSyntax.AttributeLists)
 				{
@@ -250,32 +249,18 @@ namespace Oraide.Csharp.CodeParsers
 						var attributeName = attribute.Name.GetText().ToString();
 						var attributeValue = attribute.ArgumentList?.Arguments.ToString();
 
-						if (attributeName == "Desc")
-						{
-							var strings = attribute.ArgumentList?.Arguments
-								.Select(x => x.GetText().ToString())
-								.Select(x => x.Substring(x.IndexOf('"') + 1))
-								.Select(x => x.Substring(0, x.Length - 1));
-
-							if (strings != null)
-								fieldDesc = string.Join(" ", strings);
-
-							// Resolve `nameof(...)`.
-							fieldDesc = Regex.Replace(fieldDesc, "(\"\\s*\\+\\s*nameof\\(([A-Za-z0-9.\\S]*)\\)\\s*\\+\\s*\")", "$2");
-
-							// Resolve (multi-line) string concatenation.
-							fieldDesc = Regex.Replace(fieldDesc, "(\"\\s*\\+\\s*\")", "");
-						}
-
-						else if (attributeName == "FieldLoader.Ignore")
+						// Break because we shouldn't be parsing this field.
+						if (attributeName == "FieldLoader.Ignore")
 							yield break;
 
-						else if (attributeName == "FieldLoader.LoadUsing")
+						// Continue so we don't run into the "unknown field attribute" case.
+						if (attributeName == "Desc"
+						    || attributeName == "FieldLoader.LoadUsing")
 							continue;
 
 						// Full set of attributes on trait properties for future reference.
 						// The TranslateAttribute was present in `release-20210321` and was removed some time later.
-						else if (attributeName == "FieldLoader.Require"
+						if (attributeName == "FieldLoader.Require"
 								 || attributeName == "Translate"
 								 || attributeName == "ActorReference"
 								 || attributeName == "VoiceReference"
@@ -308,27 +293,30 @@ namespace Oraide.Csharp.CodeParsers
 				var userFriendlyType = UserFriendlyTypeName(propertyType);
 				var defaultValue = HumanReadablePropertyDefaultValue(variableDeclaratorSyntax);
 				var location = FindPropertyLocationInText(filePath, fileText, variableDeclaratorSyntax.GetLocation().SourceSpan.Start);
+				var description = ParseDescAttribute(fieldDeclarationSyntax);
 
 				// Using "???" as class name here as a temporary placeholder. That should be replaced later when resolving inheritance and inherited fields.
-				yield return new ClassFieldInfo(propertyName, propertyType, userFriendlyType, defaultValue, "???", location, fieldDesc, otherAttributes.ToArray());
+				yield return new ClassFieldInfo(propertyName, propertyType, userFriendlyType, defaultValue, "???", location, description, otherAttributes.ToArray());
 			}
 		}
 
-		static string ParseClassDescAttribute(ClassDeclarationSyntax classDeclaration)
+		static string ParseDescAttribute(MemberDeclarationSyntax memberDeclarationSyntax)
 		{
+			// NOTE: Intentionally leaving the two cycles finish iterating and keeping the final result
+			// because I can't be bothered to check what AttributeLists are at present.
 			var description = "";
-			foreach (var attributeList in classDeclaration.AttributeLists)
+			foreach (var attributeList in memberDeclarationSyntax.AttributeLists)
 			{
 				foreach (var attribute in attributeList.Attributes)
 				{
 					if (attribute.Name.GetText().ToString() == "Desc")
 					{
-						var strings = attribute.ArgumentList.Arguments
+						var strings = attribute.ArgumentList?.Arguments
 							.Select(x => x.GetText().ToString())
 							.Select(x => x.Substring(x.IndexOf('"') + 1))
 							.Select(x => x.Substring(0, x.Length - 1));
 
-						description = string.Join(" ", strings);
+						description = string.Join(" ", strings ?? Array.Empty<string>());
 					}
 				}
 			}
