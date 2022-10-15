@@ -262,6 +262,9 @@ namespace Oraide.Csharp.CodeParsers
 
 							// Resolve `nameof(...)`.
 							fieldDesc = Regex.Replace(fieldDesc, "(\"\\s*\\+\\s*nameof\\(([A-Za-z0-9.\\S]*)\\)\\s*\\+\\s*\")", "$2");
+
+							// Resolve (multi-line) string concatenation.
+							fieldDesc = Regex.Replace(fieldDesc, "(\"\\s*\\+\\s*\")", "");
 						}
 
 						else if (attributeName == "FieldLoader.Ignore")
@@ -332,6 +335,9 @@ namespace Oraide.Csharp.CodeParsers
 
 			// Resolve `nameof(...)`.
 			description = Regex.Replace(description, "(\"\\s*\\+\\s*nameof\\(([A-Za-z0-9.\\S]*)\\)\\s*\\+\\s*\")", "$2");
+
+			// Resolve (multi-line) string concatenation.
+			description = Regex.Replace(description, "(\"\\s*\\+\\s*\")", "");
 
 			return description;
 		}
