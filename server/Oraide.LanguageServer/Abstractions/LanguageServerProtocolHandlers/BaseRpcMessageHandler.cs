@@ -66,6 +66,14 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			var (fileNodes, flattenedNodes, fileLines) = openFileCache[fileUri.AbsoluteUri];
 
 			var targetLine = fileLines[targetLineIndex];
+
+			// If the target line is a comment we probably don't care about it - bail out early.
+			if (Regex.IsMatch(targetLine, "^\\s#"))
+			{
+				target = default;
+				return false;
+			}
+
 			var pre = targetLine.Substring(0, targetCharacterIndex);
 			var post = targetLine.Substring(targetCharacterIndex);
 
