@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OpenRA.MiniYamlParser
 {
@@ -90,6 +91,12 @@ namespace OpenRA.MiniYamlParser
 			if (Nodes != null)
 				foreach (var line in Nodes.ToLines())
 					yield return "\t" + line;
+		}
+
+		public static List<MiniYamlNode> Load(IEnumerable<string> files)
+		{
+			var yaml = files.Select(f => MiniYamlLoader.FromFile(f));
+			return MiniYamlMerger.Merge(yaml);
 		}
 	}
 }

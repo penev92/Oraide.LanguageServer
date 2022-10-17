@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
+using OpenRA.MiniYamlParser;
 using Oraide.Core;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.MiniYaml;
@@ -230,6 +232,22 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			}
 
 			return true;
+		}
+
+		protected bool TryMergeYamlFiles(IEnumerable<string> filePaths, out List<MiniYamlNode> nodes)
+		{
+			// As long as the merging passes there's a good chance we really do have a node like the target one to be removed.
+			// If the target node removal doesn't have a corresponding node addition (is invalid), MiniYaml loading will throw.
+			try
+			{
+				nodes = OpenRA.MiniYamlParser.MiniYaml.Load(filePaths);
+				return true;
+			}
+			catch (Exception)
+			{
+				nodes = null;
+				return false;
+			}
 		}
 
 		protected string NormalizeFilePath(string filePath)
