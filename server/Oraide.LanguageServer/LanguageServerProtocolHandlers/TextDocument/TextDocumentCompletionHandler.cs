@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using LspTypes;
 using Oraide.Core;
 using Oraide.Core.Entities;
@@ -112,6 +113,14 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			var (fileNodes, flattenedNodes, fileLines) = openFileCache[fileUri.AbsoluteUri];
 
 			var targetLine = fileLines[targetLineIndex];
+
+			// If the target line is a comment we probably don't care about it - bail out early.
+			if (Regex.IsMatch(targetLine, "^\\s#"))
+			{
+				target = default;
+				return false;
+			}
+
 			var pre = targetLine.Substring(0, targetCharacterIndex);
 
 			var targetNode = flattenedNodes[targetLineIndex];

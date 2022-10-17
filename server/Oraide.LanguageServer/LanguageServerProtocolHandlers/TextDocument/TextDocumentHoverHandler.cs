@@ -99,6 +99,20 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						return HoverFromHoverInfo(content, range);
 					}
 
+					if (cursorTarget.TargetString[0] == '-')
+					{
+						traitInfoName = traitInfoName.Substring(1);
+						if (codeSymbols.TraitInfos.Contains(traitInfoName))
+						{
+							var modData = symbolCache[cursorTarget.ModId];
+							var fileList = modData.ModManifest.RulesFiles;
+							var resolvedFileList = fileList.Select(x => OpenRaFolderUtils.ResolveFilePath(x, (modData.ModId, modData.ModFolder)));
+
+							if (TryMergeYamlFiles(resolvedFileList, out _))
+								return HoverFromHoverInfo($"Removes trait `{cursorTarget.TargetString.Substring(1)}` from the actor.", range);
+						}
+					}
+
 					return null;
 				}
 
@@ -266,6 +280,16 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					var prop = codeSymbols.WeaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
 					if (prop.Name != null)
 						return HoverFromHoverInfo(prop.ToMarkdownInfoString(), range);
+
+					if (cursorTarget.TargetString[0] == '-')
+					{
+						var modData = symbolCache[cursorTarget.ModId];
+						var fileList = modData.ModManifest.WeaponsFiles;
+						var resolvedFileList = fileList.Select(x => OpenRaFolderUtils.ResolveFilePath(x, (modData.ModId, modData.ModFolder)));
+
+						if (TryMergeYamlFiles(resolvedFileList, out _))
+							return HoverFromHoverInfo($"Removes `{cursorTarget.TargetNode.Key.Substring(1)}` from the weapon.", range);
+					}
 
 					return null;
 				}
