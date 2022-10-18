@@ -157,6 +157,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									actorDefinitions = actorDefinitions.Union(mapSymbols.ActorDefinitions[cursorTarget.TargetString]);
 									weaponDefinitions = weaponDefinitions.Union(mapSymbols.WeaponDefinitions[cursorTarget.TargetString]);
 									conditionDefinitions = conditionDefinitions.Union(mapSymbols.ConditionDefinitions[cursorTarget.TargetString]);
+									paletteDefinitions = paletteDefinitions.Union(mapSymbols.PaletteDefinitions[cursorTarget.TargetString]);
 
 									spriteSequenceImageDefinitions = spriteSequenceImageDefinitions
 										.SelectMany(x => x)

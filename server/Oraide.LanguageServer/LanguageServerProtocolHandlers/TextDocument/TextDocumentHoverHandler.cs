@@ -181,7 +181,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							var weaponDefinitions = modSymbols.WeaponDefinitions.Select(x => x.Key);
 							var conditionDefinitions = modSymbols.ConditionDefinitions.Select(x => x.Key);
 							var cursorDefinitions = modSymbols.CursorDefinitions.Select(x => x.Key);
-							var paletteDefinitions = modSymbols.PaletteDefinitions.Select(x => x.Key);
+							var paletteDefinitions = modSymbols.PaletteDefinitions;
 							var spriteSequenceImageDefinitions = modSymbols.SpriteSequenceImageDefinitions;
 
 							MapManifest mapManifest = default;
@@ -195,6 +195,12 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									actorDefinitions = actorDefinitions.Union(mapSymbols.ActorDefinitions.Select(x => x.Key));
 									weaponDefinitions = weaponDefinitions.Union(mapSymbols.WeaponDefinitions.Select(x => x.Key));
 									conditionDefinitions = conditionDefinitions.Union(mapSymbols.ConditionDefinitions.Select(x => x.Key));
+
+									// Merge mod symbols with map symbols.
+									paletteDefinitions = paletteDefinitions
+										.SelectMany(x => x)
+										.Union(mapSymbols.PaletteDefinitions.SelectMany(x => x))
+										.ToLookup(x => x.Name, y => y);
 									spriteSequenceImageDefinitions = spriteSequenceImageDefinitions
 										.SelectMany(x => x)
 										.Union(mapSymbols.SpriteSequenceImageDefinitions.SelectMany(x => x))
@@ -223,7 +229,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 							if (fieldInfo.OtherAttributes.Any(x => x.Name == "PaletteReference") && paletteDefinitions.Contains(cursorTarget.TargetString))
 							{
-								var palette = modSymbols.PaletteDefinitions[cursorTarget.TargetString].First();
+								var palette = paletteDefinitions[cursorTarget.TargetString].First();
 								return HoverFromHoverInfo(palette.ToMarkdownInfoString(), range);
 							}
 
