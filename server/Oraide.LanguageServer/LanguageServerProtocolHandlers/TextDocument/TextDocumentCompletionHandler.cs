@@ -34,7 +34,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			CommitCharacters = new[] { ":" }
 		};
 
-		readonly CompletionItem defaultsCompletionItem = new()
+		readonly CompletionItem defaultsCompletionItem = new ()
 		{
 			Label = "Defaults",
 			Kind = CompletionItemKind.Constructor,
@@ -262,7 +262,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					var tempWeaponNames = weaponNames;
 					var tempConditionNames = conditionNames;
 					var tempCursorNames = cursorNames;
-					var tempPaletteNames = paletteNames;
 
 					MapManifest mapManifest = default;
 					if (cursorTarget.FileType == FileType.MapRules)
@@ -276,7 +275,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							tempActorNames = tempActorNames.Union(mapSymbols.ActorDefinitions.Select(x => x.First().ToCompletionItem()));
 							tempWeaponNames = tempWeaponNames.Union(mapSymbols.WeaponDefinitions.Select(x => x.First().ToCompletionItem()));
 							tempConditionNames = tempConditionNames.Union(mapSymbols.ConditionDefinitions.Select(x => x.First().ToCompletionItem()));
-							tempPaletteNames = tempPaletteNames.Union(mapSymbols.PaletteDefinitions.Select(x => x.First().ToCompletionItem()));
+							paletteNames = paletteNames.Union(mapSymbols.PaletteDefinitions.Select(x => x.First().ToCompletionItem()));
 							spriteSequenceImageNames = spriteSequenceImageNames.Union(
 								mapSymbols.SpriteSequenceImageDefinitions.Select(x => x.First().ToCompletionItem()));
 						}
@@ -298,7 +297,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						return tempCursorNames;
 
 					if (fieldInfo.OtherAttributes.Any(x => x.Name == "PaletteReference"))
-						return tempPaletteNames.Where(x => !string.IsNullOrEmpty(x.Label));
+						return paletteNames.Where(x => !string.IsNullOrEmpty(x.Label));
 
 					// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
 					// NOTE: This will improve if/when we add the attribute.
@@ -431,10 +430,14 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 						if (mapManifest.MapReference != null && symbolCache.Maps.TryGetValue(mapManifest.MapReference, out var mapSymbols))
 						{
+							paletteNames = paletteNames.Union(mapSymbols.PaletteDefinitions.Select(x => x.First().ToCompletionItem()));
 							spriteSequenceImageNames = spriteSequenceImageNames.Union(
 								mapSymbols.SpriteSequenceImageDefinitions.Select(x => x.First().ToCompletionItem()));
 						}
 					}
+
+					if (fieldInfo.OtherAttributes.Any(x => x.Name == "PaletteReference"))
+						return paletteNames.Where(x => !string.IsNullOrEmpty(x.Label));
 
 					// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
 					// NOTE: This will improve if/when we add the attribute.

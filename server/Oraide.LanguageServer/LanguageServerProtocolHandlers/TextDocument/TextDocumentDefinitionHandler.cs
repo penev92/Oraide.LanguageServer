@@ -334,6 +334,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						}
 					}
 
+					var paletteDefinitions = modSymbols.PaletteDefinitions[cursorTarget.TargetString];
 					var spriteSequenceImageDefinitions = symbolCache[cursorTarget.ModId].ModSymbols.SpriteSequenceImageDefinitions;
 
 					MapManifest mapManifest = default;
@@ -345,12 +346,16 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						if (mapManifest.MapReference != null && symbolCache.Maps.TryGetValue(mapManifest.MapReference, out var mapSymbols))
 						{
 							// Merge mod symbols with map symbols.
+							paletteDefinitions = paletteDefinitions.Union(mapSymbols.PaletteDefinitions[cursorTarget.TargetString]);
 							spriteSequenceImageDefinitions = spriteSequenceImageDefinitions
 								.SelectMany(x => x)
 								.Union(mapSymbols.SpriteSequenceImageDefinitions.SelectMany(x => x))
 								.ToLookup(x => x.Name, y => y);
 						}
 					}
+
+					if (fieldInfo.OtherAttributes.Any(x => x.Name == "PaletteReference"))
+						return paletteDefinitions.Select(x => x.Location.ToLspLocation(x.Type.Length));
 
 					// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
 					// NOTE: This will improve if/when we add the attribute.
