@@ -20,14 +20,13 @@ Parsing:
  This is a rough list of features and some of them may get dropped as inapplicable.
 
   - [X] Hover
-  - [X] Goto Definition
+  - [X] Goto/Peek/Find Definition/Declaration/Implementations
   - [ ] Find All References
   - [X] Auto Completion
-  - [X] IntelliSense
-  - [ ] Rename
-  - [ ] Document Symbols
+  - [X] Document Symbols
   - [X] Workspace Symbols
   - [X] Syntax Highlight
+  - [ ] Rename
   - [ ] Diagnostics
   - [ ] Syntax Check
   - [ ] Code Action

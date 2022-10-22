@@ -2,6 +2,16 @@
 
 All notable changes to the "oraide" extension will be documented in this file.
 
+## 0.6.0 - 2022.10.23
+
+ - OpenRA Mod support:
+    - Added support for mod (and map) SpriteSequence definitions.
+    - Added missed cases to the Palette support.
+ - Language server:
+    - Added Hover info on node removal.
+    - Fixed comments causing exceptions.
+    - Improved parsing of class/field/property descriptions from code.
+
 ## 0.5.5 - 2022.09.25
 
  - VSCode integration:

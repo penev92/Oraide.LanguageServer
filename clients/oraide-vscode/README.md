@@ -24,12 +24,11 @@ This extension contributes the following settings:
 
 ### Known issues
 
- - Currently only parsing code symbols from C# files is supported. Decompiling game binaries and reading trait information from a static file are not yet implemented.
  - The hover tooltip links to the online documentation may or may not work depending on your local version of OpenRA, as the links are never checked for validity and they always target the current release's documentation.
  - Neither hovering/navigation nor autocomplete work very well for traits that match other traits' names from other namespaces.
  - Support for GoToReferences/FindAllReferences currently only works for traits.
-
  - As of 16.08.2022 a VSCode update broke something about Ctrl+hovering over symbols, defined in an unopened file. I currently have no idea what's going on or how to fix it.
+ - Hover and GoTo don't work for sequences that are inherited by another image. Only for sequences defined on the referenced image.
 
 **Enjoy!**
 
