@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
 using Oraide.Core;
+using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
 using Oraide.LanguageServer.Caching;
@@ -181,17 +182,23 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							var conditionDefinitions = modSymbols.ConditionDefinitions.Select(x => x.Key);
 							var cursorDefinitions = modSymbols.CursorDefinitions.Select(x => x.Key);
 							var paletteDefinitions = modSymbols.PaletteDefinitions.Select(x => x.Key);
+							var spriteSequenceImageDefinitions = modSymbols.SpriteSequenceImageDefinitions;
 
+							MapManifest mapManifest = default;
 							if (cursorTarget.FileType == FileType.MapRules)
 							{
-								var mapReference = symbolCache[cursorTarget.ModId].Maps
+								mapManifest = symbolCache[cursorTarget.ModId].Maps
 									.FirstOrDefault(x => x.RulesFiles.Contains(cursorTarget.FileReference));
 
-								if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+								if (mapManifest.MapReference != null && symbolCache.Maps.TryGetValue(mapManifest.MapReference, out var mapSymbols))
 								{
 									actorDefinitions = actorDefinitions.Union(mapSymbols.ActorDefinitions.Select(x => x.Key));
 									weaponDefinitions = weaponDefinitions.Union(mapSymbols.WeaponDefinitions.Select(x => x.Key));
 									conditionDefinitions = conditionDefinitions.Union(mapSymbols.ConditionDefinitions.Select(x => x.Key));
+									spriteSequenceImageDefinitions = spriteSequenceImageDefinitions
+										.SelectMany(x => x)
+										.Union(mapSymbols.SpriteSequenceImageDefinitions.SelectMany(x => x))
+										.ToLookup(x => x.Name, y => y);
 								}
 							}
 
@@ -209,6 +216,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 							if (fieldInfo.OtherAttributes.Any(x => x.Name == "CursorReference") && cursorDefinitions.Contains(cursorTarget.TargetString))
 							{
+								// Maps can't define cursors, so this is fine using mod symbols only.
 								var cursor = modSymbols.CursorDefinitions[cursorTarget.TargetString].First();
 								return HoverFromHoverInfo(cursor.ToMarkdownInfoString(), range);
 							}
@@ -217,6 +225,24 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							{
 								var palette = modSymbols.PaletteDefinitions[cursorTarget.TargetString].First();
 								return HoverFromHoverInfo(palette.ToMarkdownInfoString(), range);
+							}
+
+							// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
+							// NOTE: This will improve if/when we add the attribute.
+							if (traitInfo.TraitPropertyInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
+								    && y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name))
+							    && spriteSequenceImageDefinitions.Contains(cursorTarget.TargetString))
+							{
+								var image = spriteSequenceImageDefinitions[cursorTarget.TargetString].First();
+								return HoverFromHoverInfo(image.ToMarkdownInfoString(), range);
+							}
+
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "SequenceReference"))
+							{
+								var imageName = ResolveSpriteSequenceImageNameForRules(cursorTarget, fieldInfo, mapManifest);
+								var image = spriteSequenceImageDefinitions[imageName].First();
+								var spriteSequence = image.Sequences.First(x => x.Name == cursorTarget.TargetString);
+								return HoverFromHoverInfo(spriteSequence.ToMarkdownInfoString(), range);
 							}
 						}
 
@@ -396,6 +422,64 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						return HoverFromHoverInfo(content, range);
 					}
 
+					ClassFieldInfo fieldInfo = default;
+					var fieldInfos = Array.Empty<ClassFieldInfo>();
+					var parentNode = cursorTarget.TargetNode.ParentNode;
+					if (parentNode.Key == "Projectile")
+					{
+						var projectileInfo = codeSymbols.WeaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+						if (projectileInfo.Name != null)
+						{
+							fieldInfo = projectileInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+							fieldInfos = projectileInfo.PropertyInfos;
+						}
+					}
+					else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
+					{
+						var warheadInfo = codeSymbols.WeaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+						if (warheadInfo.Name != null)
+						{
+							fieldInfo = warheadInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+							fieldInfos = warheadInfo.PropertyInfos;
+						}
+					}
+
+					var spriteSequenceImageDefinitions = modSymbols.SpriteSequenceImageDefinitions;
+
+					MapManifest mapManifest = default;
+					if (cursorTarget.FileType == FileType.MapRules)
+					{
+						mapManifest = symbolCache[cursorTarget.ModId].Maps
+							.FirstOrDefault(x => x.RulesFiles.Contains(cursorTarget.FileReference));
+
+						if (mapManifest.MapReference != null && symbolCache.Maps.TryGetValue(mapManifest.MapReference, out var mapSymbols))
+						{
+							// Merge mod symbols with map symbols.
+							spriteSequenceImageDefinitions = spriteSequenceImageDefinitions
+								.SelectMany(x => x)
+								.Union(mapSymbols.SpriteSequenceImageDefinitions.SelectMany(x => x))
+								.ToLookup(x => x.Name, y => y);
+						}
+					}
+
+					// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
+					// NOTE: This will improve if/when we add the attribute.
+					if (fieldInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
+							&& y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name))
+					    && spriteSequenceImageDefinitions.Contains(cursorTarget.TargetString))
+					{
+						var image = spriteSequenceImageDefinitions[cursorTarget.TargetString].First();
+						return HoverFromHoverInfo(image.ToMarkdownInfoString(), range);
+					}
+
+					if (fieldInfo.OtherAttributes.Any(x => x.Name == "SequenceReference"))
+					{
+						var imageName = ResolveSpriteSequenceImageNameForWeapons(cursorTarget, fieldInfo, mapManifest);
+						var image = spriteSequenceImageDefinitions[imageName].First();
+						var spriteSequence = image.Sequences.First(x => x.Name == cursorTarget.TargetString);
+						return HoverFromHoverInfo(spriteSequence.ToMarkdownInfoString(), range);
+					}
+
 					return null;
 				}
 
@@ -506,6 +590,114 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					{
 						// TODO: Add support for ActorInits one day.
 					}
+
+					return null;
+				}
+
+				default:
+					return null;
+			}
+		}
+
+		protected override Hover HandleSpriteSequenceFileKey(CursorTarget cursorTarget)
+		{
+			Hover HandleSpriteSequenceName()
+			{
+				var content = $"```csharp\nSequence \"{cursorTarget.TargetString}\"\n```";
+				return HoverFromHoverInfo(content, range);
+			}
+
+			Hover HandleSpriteSequenceProperty()
+			{
+				var spriteSequenceFormat = symbolCache[cursorTarget.ModId].ModManifest.SpriteSequenceFormat.Type;
+				var fieldInfo = codeSymbols.SpriteSequenceInfos[spriteSequenceFormat].FirstOrDefault().PropertyInfos
+					.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+
+				var content = fieldInfo.ToMarkdownInfoString();
+				return HoverFromHoverInfo(content, range);
+			}
+
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 0:
+				{
+					var content = $"```csharp\nImage \"{cursorTarget.TargetString}\"\n```";
+					return HoverFromHoverInfo(content, range);
+				}
+
+				case 1:
+				{
+					if (cursorTarget.TargetString == "Inherits")
+						return HoverFromHoverInfo($"Inherits (and possibly overwrites) sequences from image {cursorTarget.TargetNode.Value}", range);
+
+					if (cursorTarget.TargetString == "Defaults")
+						return HoverFromHoverInfo("Sets default values for all sequences of this image.", range);
+
+					return HandleSpriteSequenceName();
+				}
+
+				case 2:
+					return HandleSpriteSequenceProperty();
+
+				case 3:
+				{
+					if (cursorTarget.TargetNode.ParentNode.Key == "Combine")
+						return HandleSpriteSequenceName();
+
+					return null;
+				}
+
+				case 4:
+				{
+					if (cursorTarget.TargetNode.ParentNode.ParentNode.Key == "Combine")
+						return HandleSpriteSequenceProperty();
+
+					return null;
+				}
+			}
+
+			return null;
+		}
+
+		protected override Hover HandleSpriteSequenceFileValue(CursorTarget cursorTarget)
+		{
+			Hover HandleSpriteSequenceFileName()
+			{
+				var content = $"```csharp\nFile \"{cursorTarget.TargetString}\"\n```";
+				return HoverFromHoverInfo(content, range);
+			}
+
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				case 1:
+				{
+					if (cursorTarget.TargetNode.Key == "Inherits")
+					{
+						if (modSymbols.SpriteSequenceImageDefinitions.Contains(cursorTarget.TargetString))
+							return HoverFromHoverInfo($"```csharp\nImage \"{cursorTarget.TargetString}\"\n```", range);
+
+						if (cursorTarget.FileType == FileType.MapSpriteSequences)
+						{
+							var mapReference = symbolCache[cursorTarget.ModId].Maps
+								.FirstOrDefault(x => x.SpriteSequenceFiles.Contains(cursorTarget.FileReference));
+
+							if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+								if (mapSymbols.SpriteSequenceImageDefinitions.Contains(cursorTarget.TargetString))
+									return HoverFromHoverInfo($"```csharp\nImage \"{cursorTarget.TargetString}\"\n```", range);
+						}
+					}
+					else
+					{
+						return HandleSpriteSequenceFileName();
+					}
+
+					return null;
+				}
+
+				case 3:
+				{
+					if (cursorTarget.TargetNode.ParentNode.Key == "Combine")
+						return HandleSpriteSequenceFileName();
 
 					return null;
 				}

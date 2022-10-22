@@ -134,6 +134,26 @@ namespace Oraide.MiniYaml.YamlParsers
 			return paletteDefinitions.ToLookup(n => n.Name, m => m);
 		}
 
+		public static ILookup<string, SpriteSequenceImageDefinition> GetSpriteSequenceDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
+		{
+			var result = new List<SpriteSequenceImageDefinition>();
+
+			var yamlNodes = YamlNodesFromReferencedFiles(referencedFiles, mods);
+			foreach (var node in yamlNodes)
+			{
+				var location = new MemberLocation(node.Location.FileUri, node.Location.LineNumber, node.Location.CharacterPosition);
+
+				var sequences = node.ChildNodes == null
+					? Enumerable.Empty<SpriteSequenceDefinition>()
+					: node.ChildNodes.Select(x =>
+						new SpriteSequenceDefinition(x.Key, x.ParentNode.Key, x.Value, new MemberLocation(x.Location.FileUri, x.Location.LineNumber, 1))); // HACK HACK HACK: Until the YAML Loader learns about character positions, we hardcode 1 here (since this is all for traits on actor definitions).
+
+				result.Add(new SpriteSequenceImageDefinition(node.Key, location, sequences.ToArray()));
+			}
+
+			return result.ToLookup(n => n.Name, m => m);
+		}
+
 		public static (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text, string fileUriString = null)
 		{
 			var nodes = OpenRA.MiniYamlParser.MiniYamlLoader.FromString(text, discardCommentsAndWhitespace: false)

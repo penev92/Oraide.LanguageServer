@@ -33,8 +33,10 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 						.Select(cursor => cursor.First().ToSymbolInformation()));
 					var palettes = symbolCache.ModSymbols.SelectMany(x => x.Value.ModSymbols.PaletteDefinitions
 						.Select(palette => palette.First().ToSymbolInformation()));
+					var spriteSequenceImages = symbolCache.ModSymbols.SelectMany(x => x.Value.ModSymbols.SpriteSequenceImageDefinitions
+						.Select(spriteSequenceImage => spriteSequenceImage.First().ToSymbolInformation()));
 
-					return actors.Union(weapons).Union(conditions).Union(cursors).Union(palettes);
+					return actors.Union(weapons).Union(conditions).Union(cursors).Union(palettes).Union(spriteSequenceImages);
 				}
 				catch (Exception e)
 				{

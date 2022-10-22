@@ -57,6 +57,11 @@ namespace Oraide.MiniYaml
 			return OpenRAMiniYamlParser.GetPaletteDefinitions(referencedFiles, mods, knownPaletteTypes);
 		}
 
+		public ILookup<string, SpriteSequenceImageDefinition> GetSpriteSequenceDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
+		{
+			return OpenRAMiniYamlParser.GetSpriteSequenceDefinitions(referencedFiles, mods);
+		}
+
 		public (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text, string fileUriString = null)
 		{
 			return OpenRAMiniYamlParser.ParseText(text, fileUriString);

@@ -13,6 +13,8 @@ namespace Oraide.Core.Entities.MiniYaml
 
 		public readonly IReadOnlyList<string> WeaponsFiles;
 
+		public readonly IReadOnlyList<string> SpriteSequenceFiles;
+
 		public string MapFile => MapFolder == null ? null : $"{MapFolder}/map.yaml";
 
 		public string MapReference => MapFolder == null ? null : $"{mapsFolder}/{Path.GetFileName(MapFolder)}";
@@ -26,6 +28,7 @@ namespace Oraide.Core.Entities.MiniYaml
 			MapFolder = mapFolder;
 			RulesFiles = new ReadOnlyCollection<string>(GetValues(yamlNodes, "Rules", Path.GetFileName(mapFolder), mapsFolder).ToList());
 			WeaponsFiles = new ReadOnlyCollection<string>(GetValues(yamlNodes, "Weapons", Path.GetFileName(mapFolder), mapsFolder).ToList());
+			SpriteSequenceFiles = new ReadOnlyCollection<string>(GetValues(yamlNodes, "Sequences", Path.GetFileName(mapFolder), mapsFolder).ToList());
 
 			this.mapsFolder = mapsFolder;
 		}

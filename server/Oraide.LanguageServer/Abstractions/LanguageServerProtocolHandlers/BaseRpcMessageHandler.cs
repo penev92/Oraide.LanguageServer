@@ -7,6 +7,7 @@ using LspTypes;
 using OpenRA.MiniYamlParser;
 using Oraide.Core;
 using Oraide.Core.Entities;
+using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Caching;
 
@@ -51,6 +52,8 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				fileType = FileType.Weapons;
 			else if (modManifest.CursorsFiles.Contains(fileReference))
 				fileType = FileType.Cursors;
+			else if (modManifest.SpriteSequences.Contains(fileReference))
+				fileType = FileType.SpriteSequences;
 			else if (Path.GetFileName(filePath) == "map.yaml"
 			         && symbolCache[modId].Maps.Any(x => x.MapFolder == OpenRaFolderUtils.NormalizeFilePathString(Path.GetDirectoryName(filePath))))
 				fileType = FileType.MapFile;
@@ -58,6 +61,8 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				fileType = FileType.MapRules;
 			else if (symbolCache[modId].Maps.Any(x => x.WeaponsFiles.Contains(fileReference)))
 				fileType = FileType.MapWeapons;
+			else if (symbolCache[modId].Maps.Any(x => x.SpriteSequenceFiles.Contains(fileReference)))
+				fileType = FileType.MapSpriteSequences;
 
 			if (!openFileCache.ContainsFile(fileUri.AbsoluteUri))
 			{
@@ -144,9 +149,11 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				FileType.Rules => HandleRulesFile(cursorTarget),
 				FileType.Weapons => HandleWeaponFile(cursorTarget),
 				FileType.Cursors => HandleCursorsFile(cursorTarget),
+				FileType.SpriteSequences => HandleSpriteSequenceFile(cursorTarget),
 				FileType.MapFile => HandleMapFile(cursorTarget),
 				FileType.MapRules => HandleRulesFile(cursorTarget),
 				FileType.MapWeapons => HandleWeaponFile(cursorTarget),
+				FileType.MapSpriteSequences => HandleSpriteSequenceFile(cursorTarget),
 				_ => null
 			};
 		}
@@ -191,6 +198,16 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			};
 		}
 
+		protected virtual object HandleSpriteSequenceFile(CursorTarget cursorTarget)
+		{
+			return cursorTarget.TargetType switch
+			{
+				"key" => HandleSpriteSequenceFileKey(cursorTarget),
+				"value" => HandleSpriteSequenceFileValue(cursorTarget),
+				_ => null
+			};
+		}
+
 		protected virtual object HandleRulesKey(CursorTarget cursorTarget) { return null; }
 
 		protected virtual object HandleRulesValue(CursorTarget cursorTarget) { return null; }
@@ -206,6 +223,10 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 		protected virtual object HandleMapFileKey(CursorTarget cursorTarget) { return null; }
 
 		protected virtual object HandleMapFileValue(CursorTarget cursorTarget) { return null; }
+
+		protected virtual object HandleSpriteSequenceFileKey(CursorTarget cursorTarget) { return null; }
+
+		protected virtual object HandleSpriteSequenceFileValue(CursorTarget cursorTarget) { return null; }
 
 		#endregion
 
@@ -248,6 +269,72 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				nodes = null;
 				return false;
 			}
+		}
+
+		protected string ResolveSpriteSequenceImageNameForRules(CursorTarget cursorTarget, ClassFieldInfo fieldInfo, MapManifest? mapManifest)
+		{
+			var files = new List<string>(symbolCache[cursorTarget.ModId].ModManifest.RulesFiles);
+			if (mapManifest?.RulesFiles != null)
+				files.AddRange(mapManifest?.RulesFiles);
+
+			return ResolveSpriteSequenceImageName(cursorTarget, fieldInfo, files);
+		}
+
+		protected string ResolveSpriteSequenceImageNameForWeapons(CursorTarget cursorTarget, ClassFieldInfo fieldInfo, MapManifest? mapManifest)
+		{
+			var files = new List<string>(symbolCache[cursorTarget.ModId].ModManifest.WeaponsFiles);
+			if (mapManifest?.WeaponsFiles != null)
+				files.AddRange(mapManifest?.WeaponsFiles);
+
+			return ResolveSpriteSequenceImageName(cursorTarget, fieldInfo, files);
+		}
+
+		private string ResolveSpriteSequenceImageName(CursorTarget cursorTarget, ClassFieldInfo fieldInfo, IEnumerable<string> files)
+		{
+			// Initializing the target image name as the obscure default OpenRA uses - the actor name.
+			var imageName = cursorTarget.TargetNode.ParentNode.ParentNode.Key;
+
+			// Resolve the actual name that we need to use.
+			var sequenceAttribute = fieldInfo.OtherAttributes.FirstOrDefault(x => x.Name == "SequenceReference");
+			var imageFieldName = sequenceAttribute.Value != null && sequenceAttribute.Value.Contains(',')
+				? sequenceAttribute.Value.Substring(0, sequenceAttribute.Value.IndexOf(','))
+				: sequenceAttribute.Value;
+
+			var modData = symbolCache[cursorTarget.ModId];
+			var resolvedFileList = files.Select(x => OpenRaFolderUtils.ResolveFilePath(x, (modData.ModId, modData.ModFolder)));
+			if (TryMergeYamlFiles(resolvedFileList, out var nodes))
+			{
+				// Check for overriding image names on the trait in question.
+				var actorNode = nodes.First(x => x.Key == cursorTarget.TargetNode.ParentNode.ParentNode.Key);
+				var traitNode = actorNode.Value.Nodes.FirstOrDefault(x => x.Key == cursorTarget.TargetNode.ParentNode.Key);
+				var imageNode = traitNode?.Value.Nodes.FirstOrDefault(x => x.Key == imageFieldName);
+				if (imageNode?.Value.Value != null)
+					imageName = imageNode.Value.Value;
+			}
+
+			return imageName;
+		}
+
+		protected IEnumerable<SpriteSequenceDefinition> GetSpriteSequencesForImage(string modId, string imageName, MapManifest? mapManifest)
+		{
+			var files = new List<string>(symbolCache[modId].ModManifest.SpriteSequences);
+			if (mapManifest?.WeaponsFiles != null)
+				files.AddRange(mapManifest?.SpriteSequenceFiles);
+
+			var resolvedFileList = files.Select(x => OpenRaFolderUtils.ResolveFilePath(x, (modId, symbolCache[modId].ModFolder)));
+
+			if (TryMergeYamlFiles(resolvedFileList, out var imageNodes))
+			{
+				var sequenceNodes = imageNodes.FirstOrDefault(x => x.Key == imageName)?.Value.Nodes;
+				var sequences = sequenceNodes?
+					.Where(x => x.Key != "Defaults")
+					.Select(x => new SpriteSequenceDefinition(x.Key, x.ParentNode?.Key, x.Value.Value,
+						new MemberLocation("", 0, 0)));
+
+				return sequences ?? Enumerable.Empty<SpriteSequenceDefinition>();
+			}
+
+			return Enumerable.Empty<SpriteSequenceDefinition>();
 		}
 
 		protected string NormalizeFilePath(string filePath)

@@ -53,8 +53,9 @@ namespace Oraide.LanguageServer.Caching
 			var traitInfos = codeInformationProvider.GetTraitInfos();
 			var weaponInfo = codeInformationProvider.GetWeaponInfo();
 			var paletteTraitInfos = codeInformationProvider.GetPaletteTraitInfos();
+			var spriteSequenceInfos = codeInformationProvider.GetSpriteSequenceInfos();
 
-			var codeSymbols = new CodeSymbols(traitInfos, weaponInfo, paletteTraitInfos);
+			var codeSymbols = new CodeSymbols(traitInfos, weaponInfo, paletteTraitInfos, spriteSequenceInfos);
 
 			var elapsedTotal = stopwatchTotal.Elapsed;
 			Console.Error.WriteLine($"Took {elapsedTotal} to load code symbols:");
@@ -62,6 +63,7 @@ namespace Oraide.LanguageServer.Caching
 			Console.Error.WriteLine($"    {weaponInfo.ProjectileInfos.Length} projectileInfos");
 			Console.Error.WriteLine($"    {weaponInfo.WarheadInfos.Length} warheadInfos");
 			Console.Error.WriteLine($"    {paletteTraitInfos.Count} paletteTraitInfos");
+			Console.Error.WriteLine($"    {spriteSequenceInfos.Count} spriteSequenceInfos");
 
 			var stopwatchYaml = new Stopwatch();
 			stopwatchYaml.Start();
@@ -81,8 +83,9 @@ namespace Oraide.LanguageServer.Caching
 				var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(modManifest.RulesFiles, mods);
 				var cursorDefinitions = yamlInformationProvider.GetCursorDefinitions(modManifest.CursorsFiles, mods);
 				var paletteDefinitions = yamlInformationProvider.GetPaletteDefinitions(modManifest.RulesFiles, mods, knownPaletteTypes);
+				var spriteSequenceDefinitions = yamlInformationProvider.GetSpriteSequenceDefinitions(modManifest.SpriteSequences, mods);
 
-				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions, paletteDefinitions);
+				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions, paletteDefinitions, spriteSequenceDefinitions);
 
 				var mapsDir = OpenRaFolderUtils.ResolveFilePath(modManifest.MapsFolder, mods);
 				var allMaps = mapsDir == null
@@ -114,8 +117,9 @@ namespace Oraide.LanguageServer.Caching
 			var weaponDefinitions = yamlInformationProvider.GetWeaponDefinitions(mapManifest.WeaponsFiles, mods);
 			var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(mapManifest.RulesFiles, mods);
 			var paletteDefinitions = yamlInformationProvider.GetPaletteDefinitions(mapManifest.RulesFiles, mods, knownPaletteTypes);
+			var spriteSequenceImageDefinitions = yamlInformationProvider.GetSpriteSequenceDefinitions(mapManifest.SpriteSequenceFiles, mods);
 
-			var mapSymbols = new MapSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, paletteDefinitions);
+			var mapSymbols = new MapSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, paletteDefinitions, spriteSequenceImageDefinitions);
 			Maps.Add(mapManifest.MapReference, mapSymbols);
 		}
 

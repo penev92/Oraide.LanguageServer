@@ -144,17 +144,24 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							var conditionDefinitions = modSymbols.ConditionDefinitions[cursorTarget.TargetString];
 							var cursorDefinitions = modSymbols.CursorDefinitions[cursorTarget.TargetString];
 							var paletteDefinitions = modSymbols.PaletteDefinitions[cursorTarget.TargetString];
+							var spriteSequenceImageDefinitions = modSymbols.SpriteSequenceImageDefinitions;
 
+							MapManifest mapManifest = default;
 							if (cursorTarget.FileType == FileType.MapRules)
 							{
-								var mapReference = symbolCache[cursorTarget.ModId].Maps
+								mapManifest = symbolCache[cursorTarget.ModId].Maps
 									.FirstOrDefault(x => x.RulesFiles.Contains(cursorTarget.FileReference));
 
-								if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+								if (mapManifest.MapReference != null && symbolCache.Maps.TryGetValue(mapManifest.MapReference, out var mapSymbols))
 								{
 									actorDefinitions = actorDefinitions.Union(mapSymbols.ActorDefinitions[cursorTarget.TargetString]);
 									weaponDefinitions = weaponDefinitions.Union(mapSymbols.WeaponDefinitions[cursorTarget.TargetString]);
 									conditionDefinitions = conditionDefinitions.Union(mapSymbols.ConditionDefinitions[cursorTarget.TargetString]);
+
+									spriteSequenceImageDefinitions = spriteSequenceImageDefinitions
+										.SelectMany(x => x)
+										.Union(mapSymbols.SpriteSequenceImageDefinitions.SelectMany(x => x))
+										.ToLookup(x => x.Name, y => y);
 								}
 							}
 
@@ -175,6 +182,22 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 							if (fieldInfo.OtherAttributes.Any(x => x.Name == "PaletteReference"))
 								return paletteDefinitions.Select(x => x.Location.ToLspLocation(x.Type.Length));
+
+							// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
+							// NOTE: This will improve if/when we add the attribute.
+							if (traitInfo.TraitPropertyInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
+								    && y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name)))
+							{
+								return spriteSequenceImageDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
+							}
+
+							if (fieldInfo.OtherAttributes.Any(x => x.Name == "SequenceReference"))
+							{
+								var imageName = ResolveSpriteSequenceImageNameForRules(cursorTarget, fieldInfo, mapManifest);
+								return spriteSequenceImageDefinitions[imageName].SelectMany(x => x.Sequences)
+									.Where(x => x.Name == cursorTarget.TargetString)
+									.Select(x => x.Location.ToLspLocation(x.Name.Length));
+							}
 						}
 					}
 
@@ -287,7 +310,65 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				}
 
 				case 2:
+				{
+					ClassFieldInfo fieldInfo = default;
+					var fieldInfos = Array.Empty<ClassFieldInfo>();
+					var parentNode = cursorTarget.TargetNode.ParentNode;
+					if (parentNode.Key == "Projectile")
+					{
+						var projectileInfo = codeSymbols.WeaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+						if (projectileInfo.Name != null)
+						{
+							fieldInfo = projectileInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+							fieldInfos = projectileInfo.PropertyInfos;
+						}
+					}
+					else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
+					{
+						var warheadInfo = codeSymbols.WeaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+						if (warheadInfo.Name != null)
+						{
+							fieldInfo = warheadInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+							fieldInfos = warheadInfo.PropertyInfos;
+						}
+					}
+
+					var spriteSequenceImageDefinitions = symbolCache[cursorTarget.ModId].ModSymbols.SpriteSequenceImageDefinitions;
+
+					MapManifest mapManifest = default;
+					if (cursorTarget.FileType == FileType.MapRules)
+					{
+						mapManifest = symbolCache[cursorTarget.ModId].Maps
+							.FirstOrDefault(x => x.RulesFiles.Contains(cursorTarget.FileReference));
+
+						if (mapManifest.MapReference != null && symbolCache.Maps.TryGetValue(mapManifest.MapReference, out var mapSymbols))
+						{
+							// Merge mod symbols with map symbols.
+							spriteSequenceImageDefinitions = spriteSequenceImageDefinitions
+								.SelectMany(x => x)
+								.Union(mapSymbols.SpriteSequenceImageDefinitions.SelectMany(x => x))
+								.ToLookup(x => x.Name, y => y);
+						}
+					}
+
+					// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
+					// NOTE: This will improve if/when we add the attribute.
+					if (fieldInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
+					        && y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name)))
+					{
+						return spriteSequenceImageDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
+					}
+
+					if (fieldInfo.OtherAttributes.Any(x => x.Name == "SequenceReference"))
+					{
+						var imageName = ResolveSpriteSequenceImageNameForWeapons(cursorTarget, fieldInfo, mapManifest);
+						return spriteSequenceImageDefinitions[imageName].SelectMany(x => x.Sequences)
+							.Where(x => x.Name == cursorTarget.TargetString)
+							.Select(x => x.Location.ToLspLocation(x.Name.Length));
+					}
+
 					return Enumerable.Empty<Location>();
+				}
 
 				default:
 					return Enumerable.Empty<Location>();
@@ -362,6 +443,80 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 				case 2:
 					return Enumerable.Empty<Location>();
+
+				default:
+					return Enumerable.Empty<Location>();
+			}
+		}
+
+		// NOTE: Rules and Weapons don't handle these the same ;(
+		protected override IEnumerable<Location> HandleSpriteSequenceFileKey(CursorTarget cursorTarget)
+		{
+			IEnumerable<Location> HandleSpriteSequenceProperty()
+			{
+				var spriteSequenceFormat = symbolCache[cursorTarget.ModId].ModManifest.SpriteSequenceFormat.Type;
+				var spriteSequenceType = symbolCache[cursorTarget.ModId].CodeSymbols.SpriteSequenceInfos[spriteSequenceFormat].First();
+
+				var fieldInfo = spriteSequenceType.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+				if (fieldInfo.Name != null)
+					return new[] { fieldInfo.Location.ToLspLocation(cursorTarget.TargetString.Length) };
+
+				return Enumerable.Empty<Location>();
+			}
+
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				// NOTE: Copied from HandleWeaponsFileKey.
+				case 0:
+				{
+					var imageDefinitions = modSymbols.SpriteSequenceImageDefinitions.FirstOrDefault(x => x.Key == cursorTarget.TargetString);
+					if (imageDefinitions != null)
+						return imageDefinitions.Select(x => x.Location.ToLspLocation(imageDefinitions.Key.Length));
+
+					return Enumerable.Empty<Location>();
+				}
+
+				case 2:
+					return HandleSpriteSequenceProperty();
+
+				case 4:
+				{
+					if (cursorTarget.TargetNode.ParentNode.ParentNode.Key == "Combine")
+						return HandleSpriteSequenceProperty();
+
+					return Enumerable.Empty<Location>();
+				}
+
+				default:
+					return Enumerable.Empty<Location>();
+			}
+		}
+
+		protected override IEnumerable<Location> HandleSpriteSequenceFileValue(CursorTarget cursorTarget)
+		{
+			switch (cursorTarget.TargetNodeIndentation)
+			{
+				// NOTE: Copied from HandleWeaponsFileKey.
+				case 1:
+				{
+					if (cursorTarget.TargetNode.Key == "Inherits")
+					{
+						if (modSymbols.SpriteSequenceImageDefinitions.Contains(cursorTarget.TargetString))
+							return modSymbols.SpriteSequenceImageDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
+
+						if (cursorTarget.FileType == FileType.MapRules)
+						{
+							var mapReference = symbolCache[cursorTarget.ModId].Maps
+								.FirstOrDefault(x => x.SpriteSequenceFiles.Contains(cursorTarget.FileReference));
+
+							if (mapReference.MapReference != null && symbolCache.Maps.TryGetValue(mapReference.MapReference, out var mapSymbols))
+								if (mapSymbols.SpriteSequenceImageDefinitions.Contains(cursorTarget.TargetString))
+									return mapSymbols.SpriteSequenceImageDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
+						}
+					}
+
+					return Enumerable.Empty<Location>();
+				}
 
 				default:
 					return Enumerable.Empty<Location>();

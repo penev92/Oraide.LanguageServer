@@ -14,12 +14,14 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 
 		readonly JObject traitsData;
 		readonly JObject weaponsData;
+		readonly JObject spriteSequencesData;
 
 		static readonly MemberLocation NoLocation = new MemberLocation(string.Empty, 0, 0);
 
 		ILookup<string, TraitInfo> traitInfos;
 		WeaponInfo weaponInfo;
 		ILookup<string, TraitInfo> paletteTraitInfos;
+		ILookup<string, SimpleClassInfo> spriteSequenceInfos;
 
 		public FromStaticFileSymbolGenerationStrategy(string openRaFolder)
 		{
@@ -34,6 +36,10 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 			var weaponsFile = Path.Combine(assemblyFolder, "docs", $"{LoadedVersion}-weapons.json");
 			var weaponsText = File.ReadAllText(weaponsFile);
 			weaponsData = JsonConvert.DeserializeObject<JObject>(weaponsText);
+
+			var spriteSequencesFile = Path.Combine(assemblyFolder, "docs", $"{LoadedVersion}-sprite-sequences.json");
+			var spriteSequencesText = File.ReadAllText(spriteSequencesFile);
+			spriteSequencesData = JsonConvert.DeserializeObject<JObject>(spriteSequencesText);
 		}
 
 		public ILookup<string, TraitInfo> GetTraitInfos()
@@ -97,6 +103,28 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 			return paletteTraitInfos;
 		}
 
+		public ILookup<string, SimpleClassInfo> GetSpriteSequenceInfos()
+		{
+			if (spriteSequenceInfos != null)
+				return spriteSequenceInfos;
+
+
+			var typeInfos = spriteSequencesData["SpriteSequenceTypes"]!.Select(x =>
+			{
+				var baseTypes = GetBaseTypes(x);
+				var properties = ReadProperties(x);
+
+				var name = x["Name"].ToString();
+				return new SimpleClassInfo(name, name, x["Description"].ToString(),
+					NoLocation, baseTypes, properties, false);
+			});
+
+			return typeInfos.ToLookup(x => x.Name, y => y);
+		}
+
+
+		#region Private methods
+
 		string GetVersion(string openRaFolder)
 		{
 			var versionFile = Path.Combine(openRaFolder, "VERSION");
@@ -109,8 +137,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 			{
 				var attributes = prop["OtherAttributes"]
 					.Select(attribute =>
-						(attribute["Name"].ToString(),
-							attribute["Value"].ToString().Replace("\r\n", "").Replace(" ", "").Replace(",", ", ")))
+						(attribute["Name"].ToString(), ""))
 					.ToArray();
 
 				var p = new ClassFieldInfo(prop["PropertyName"].ToString(), prop["InternalType"].ToString(), prop["UserFriendlyType"].ToString(),
@@ -126,5 +153,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 				.Select(y => y.ToString())
 				.ToArray();
 		}
+
+		#endregion
 	}
 }

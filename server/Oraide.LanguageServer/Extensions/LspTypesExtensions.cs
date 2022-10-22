@@ -128,6 +128,28 @@ namespace Oraide.LanguageServer.Extensions
 			};
 		}
 
+		public static CompletionItem ToCompletionItem(this SpriteSequenceImageDefinition spriteSequenceImageDefinition)
+		{
+			return new CompletionItem
+			{
+				Label = spriteSequenceImageDefinition.Name,
+				Kind = CompletionItemKind.Unit,
+				Detail = "Sprite sequence image definition",
+				CommitCharacters = new[] { ":" }
+			};
+		}
+
+		public static CompletionItem ToCompletionItem(this SpriteSequenceDefinition spriteSequenceDefinition)
+		{
+			return new CompletionItem
+			{
+				Label = spriteSequenceDefinition.Name,
+				Kind = CompletionItemKind.Value,
+				Detail = "Sprite sequence definition",
+				CommitCharacters = new[] { ":" }
+			};
+		}
+
 		public static IEnumerable<SymbolInformation> ToSymbolInformation(this ActorDefinition actorDefinition)
 		{
 			yield return new SymbolInformation
@@ -193,6 +215,17 @@ namespace Oraide.LanguageServer.Extensions
 				Kind = SymbolKind.String,
 				Tags = Array.Empty<SymbolTag>(),
 				Location = paletteDefinition.Location.ToLspLocation(paletteDefinition.Type.Length)
+			};
+		}
+
+		public static SymbolInformation ToSymbolInformation(this SpriteSequenceImageDefinition spriteSequenceImageDefinition)
+		{
+			return new SymbolInformation
+			{
+				Name = spriteSequenceImageDefinition.Name,
+				Kind = SymbolKind.Struct,
+				Tags = Array.Empty<SymbolTag>(),
+				Location = spriteSequenceImageDefinition.Location.ToLspLocation(spriteSequenceImageDefinition.Name.Length)
 			};
 		}
 	}
