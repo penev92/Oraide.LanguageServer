@@ -199,6 +199,14 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									.Where(x => x.Name == cursorTarget.TargetString)
 									.Select(x => x.Location.ToLspLocation(x.Name.Length));
 							}
+
+							// Try to check if this is an enum type field.
+							var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos
+								.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
+							if (enumInfo != null)
+							{
+								return new[] { enumInfo.First().Location.ToLspLocation(enumInfo.Key.Length) };
+							}
 						}
 					}
 
@@ -373,6 +381,14 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							.Select(x => x.Location.ToLspLocation(x.Name.Length));
 					}
 
+					// Try to check if this is an enum type field.
+					var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos
+						.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
+					if (enumInfo != null)
+					{
+						return new[] { enumInfo.First().Location.ToLspLocation(enumInfo.Key.Length) };
+					}
+
 					return Enumerable.Empty<Location>();
 				}
 
@@ -500,6 +516,26 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		protected override IEnumerable<Location> HandleSpriteSequenceFileValue(CursorTarget cursorTarget)
 		{
+			IEnumerable<Location> HandleSpriteSequenceProperty()
+			{
+				var spriteSequenceFormat = symbolCache[cursorTarget.ModId].ModManifest.SpriteSequenceFormat.Type;
+				var spriteSequenceType = symbolCache[cursorTarget.ModId].CodeSymbols.SpriteSequenceInfos[spriteSequenceFormat].First();
+
+				var fieldInfo = spriteSequenceType.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+				if (fieldInfo.Name != null)
+				{
+					// Try to check if this is an enum type field.
+					var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos
+						.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
+					if (enumInfo != null)
+					{
+						return new[] { enumInfo.First().Location.ToLspLocation(enumInfo.Key.Length) };
+					}
+				}
+
+				return Enumerable.Empty<Location>();
+			}
+
 			switch (cursorTarget.TargetNodeIndentation)
 			{
 				// NOTE: Copied from HandleWeaponsFileKey.
@@ -520,6 +556,17 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 									return mapSymbols.SpriteSequenceImageDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
 						}
 					}
+
+					return Enumerable.Empty<Location>();
+				}
+
+				case 2:
+					return HandleSpriteSequenceProperty();
+
+				case 4:
+				{
+					if (cursorTarget.TargetNode.ParentNode.ParentNode.Key == "Combine")
+						return HandleSpriteSequenceProperty();
 
 					return Enumerable.Empty<Location>();
 				}
