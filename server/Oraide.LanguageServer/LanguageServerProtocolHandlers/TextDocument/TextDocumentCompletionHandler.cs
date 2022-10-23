@@ -50,6 +50,20 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			CommitCharacters = new[] { ":" }
 		};
 
+		readonly CompletionItem trueCompletionItem = new ()
+		{
+			Label = "true",
+			Kind = CompletionItemKind.Value,
+			Detail = "A boolean value."
+		};
+
+		readonly CompletionItem falseCompletionItem = new ()
+		{
+			Label = "false",
+			Kind = CompletionItemKind.Value,
+			Detail = "A boolean value."
+		};
+
 		public TextDocumentCompletionHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
 			: base(symbolCache, openFileCache) { }
 
@@ -329,6 +343,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						});
 					}
 
+					if (fieldInfo.InternalType == "bool")
+					{
+						return new[] { trueCompletionItem, falseCompletionItem };
+					}
+
 					return Enumerable.Empty<CompletionItem>();
 				}
 
@@ -481,6 +500,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						});
 					}
 
+					if (fieldInfo.InternalType == "bool")
+					{
+						return new[] { trueCompletionItem, falseCompletionItem };
+					}
+
 					return Enumerable.Empty<CompletionItem>();
 				}
 
@@ -591,6 +615,11 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							Documentation = $"{enumInfo.Key}.{x}"
 						});
 					}
+				}
+
+				if (fieldInfo.InternalType == "bool")
+				{
+					return new[] { trueCompletionItem, falseCompletionItem };
 				}
 
 				return Enumerable.Empty<CompletionItem>();
