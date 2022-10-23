@@ -2,6 +2,13 @@
 
 All notable changes to the "oraide" extension will be documented in this file.
 
+## 0.7.0 - 2022.10.24
+
+ - Language server:
+    - Added support for enum-type field values.
+    - Added support for boolean field values.
+    - Fixed sprite image field detection.
+
 ## 0.6.0 - 2022.10.23
 
  - OpenRA Mod support:
