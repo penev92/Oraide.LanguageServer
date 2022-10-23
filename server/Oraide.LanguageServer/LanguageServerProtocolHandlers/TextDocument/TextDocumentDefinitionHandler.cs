@@ -187,7 +187,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
 							// NOTE: This will improve if/when we add the attribute.
 							if (traitInfo.TraitPropertyInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
-								    && y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name)))
+								    && (y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name))))
 							{
 								return spriteSequenceImageDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
 							}
@@ -360,7 +360,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
 					// NOTE: This will improve if/when we add the attribute.
 					if (fieldInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
-					        && y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name)))
+					        && (y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name))))
 					{
 						return spriteSequenceImageDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));
 					}
