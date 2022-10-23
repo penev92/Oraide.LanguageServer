@@ -250,6 +250,14 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 								var spriteSequence = image.Sequences.First(x => x.Name == cursorTarget.TargetString);
 								return HoverFromHoverInfo(spriteSequence.ToMarkdownInfoString(), range);
 							}
+
+							// Try to check if this is an enum type field.
+							var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
+							if (enumInfo != null)
+							{
+								var content = $"```csharp\n{enumInfo.Key}.{cursorTarget.TargetString}\n```";
+								return HoverFromHoverInfo(content, range);
+							}
 						}
 
 						// Show explanation for world range value.
@@ -497,6 +505,14 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						return HoverFromHoverInfo(spriteSequence.ToMarkdownInfoString(), range);
 					}
 
+					// Try to check if this is an enum type field.
+					var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
+					if (enumInfo != null)
+					{
+						var content = $"```csharp\n{enumInfo.Key}.{cursorTarget.TargetString}\n```";
+						return HoverFromHoverInfo(content, range);
+					}
+
 					return null;
 				}
 
@@ -684,6 +700,27 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				return HoverFromHoverInfo(content, range);
 			}
 
+			Hover HandleSpriteSequenceProperty()
+			{
+				var spriteSequenceFormat = symbolCache[cursorTarget.ModId].ModManifest.SpriteSequenceFormat.Type;
+				var spriteSequenceType = symbolCache[cursorTarget.ModId].CodeSymbols.SpriteSequenceInfos[spriteSequenceFormat].First();
+
+				var fieldInfo = spriteSequenceType.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+				if (fieldInfo.Name != null)
+				{
+					// Try to check if this is an enum type field.
+					var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos
+						.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
+					if (enumInfo != null)
+					{
+						var content = $"```csharp\n{enumInfo.Key}.{cursorTarget.TargetString}\n```";
+						return HoverFromHoverInfo(content, range);
+					}
+				}
+
+				return null;
+			}
+
 			switch (cursorTarget.TargetNodeIndentation)
 			{
 				case 1:
@@ -711,10 +748,21 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					return null;
 				}
 
+				case 2:
+					return HandleSpriteSequenceProperty();
+
 				case 3:
 				{
 					if (cursorTarget.TargetNode.ParentNode.Key == "Combine")
 						return HandleSpriteSequenceFileName();
+
+					return null;
+				}
+
+				case 4:
+				{
+					if (cursorTarget.TargetNode.ParentNode.ParentNode.Key == "Combine")
+						return HandleSpriteSequenceProperty();
 
 					return null;
 				}

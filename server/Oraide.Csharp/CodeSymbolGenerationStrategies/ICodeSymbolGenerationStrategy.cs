@@ -12,5 +12,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		ILookup<string, TraitInfo> GetPaletteTraitInfos();
 
 		ILookup<string, SimpleClassInfo> GetSpriteSequenceInfos();
+		
+		ILookup<string, EnumInfo> GetEnums();
 	}
 }

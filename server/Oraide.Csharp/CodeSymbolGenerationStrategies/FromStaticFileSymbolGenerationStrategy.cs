@@ -22,6 +22,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		WeaponInfo weaponInfo;
 		ILookup<string, TraitInfo> paletteTraitInfos;
 		ILookup<string, SimpleClassInfo> spriteSequenceInfos;
+		ILookup<string, EnumInfo> enumInfos;
 
 		public FromStaticFileSymbolGenerationStrategy(string openRaFolder)
 		{
@@ -122,6 +123,32 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 			return typeInfos.ToLookup(x => x.Name, y => y);
 		}
 
+		public ILookup<string, EnumInfo> GetEnums()
+		{
+			if (enumInfos != null)
+				return enumInfos;
+
+			if (traitInfos == null)
+				GetTraitInfos();
+
+			if (weaponInfo.WeaponPropertyInfos == null)
+				GetWeaponInfo();
+
+			var traitEnums = traitsData["RelatedEnums"]!.Select(x =>
+			{
+				return new EnumInfo(x["Name"].ToString(), $"{x["Namespace"]}.{x["Name"]}", null,
+					x["Values"].Select(y => y["Value"].ToString()).ToArray(), false, NoLocation);
+			});
+
+			var weaponEnums = weaponsData["RelatedEnums"]!.Select(x =>
+			{
+				return new EnumInfo(x["Name"].ToString(), $"{x["Namespace"]}.{x["Name"]}", null,
+					x["Values"].Select(y => y["Value"].ToString()).ToArray(), false, NoLocation);
+			});
+
+			enumInfos = traitEnums.Union(weaponEnums).ToLookup(x => x.Name, y => y);
+			return enumInfos;
+		}
 
 		#region Private methods
 

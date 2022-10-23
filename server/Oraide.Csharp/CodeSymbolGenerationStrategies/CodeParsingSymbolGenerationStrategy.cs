@@ -12,6 +12,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		WeaponInfo weaponInfo;
 		ILookup<string, TraitInfo> paletteTraitInfos;
 		ILookup<string, SimpleClassInfo> spriteSequenceInfos;
+		ILookup<string, EnumInfo> enumInfos;
 
 		public CodeParsingSymbolGenerationStrategy(string openRaFolder)
 		{
@@ -49,14 +50,23 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 
 			return spriteSequenceInfos;
 		}
+		
+		public ILookup<string, EnumInfo> GetEnums()
+		{
+			if (enumInfos == null)
+				Parse();
+
+			return enumInfos;
+		}
 
 		void Parse()
 		{
-			var (traits, weapons, palettes, spriteSequences) = RoslynCodeParser.Parse(openRaFolder);
+			var (traits, weapons, palettes, spriteSequences, enums) = RoslynCodeParser.Parse(openRaFolder);
 			traitInfos = traits;
 			weaponInfo = weapons;
 			paletteTraitInfos = palettes;
 			spriteSequenceInfos = spriteSequences;
+			enumInfos = enums;
 		}
 	}
 }

@@ -66,6 +66,11 @@ namespace Oraide.Csharp
 		{
 			return symbolGenerator.GetSpriteSequenceInfos();
 		}
+		
+		public ILookup<string, EnumInfo> GetEnumInfos()
+		{
+			return symbolGenerator.GetEnums();
+		}
 
 		string GetOpenRaFolder(string workspaceFolderPath, string defaultOpenRaFolderPath)
 		{

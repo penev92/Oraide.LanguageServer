@@ -50,6 +50,20 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			CommitCharacters = new[] { ":" }
 		};
 
+		readonly CompletionItem trueCompletionItem = new ()
+		{
+			Label = "true",
+			Kind = CompletionItemKind.Value,
+			Detail = "A boolean value."
+		};
+
+		readonly CompletionItem falseCompletionItem = new ()
+		{
+			Label = "false",
+			Kind = CompletionItemKind.Value,
+			Detail = "A boolean value."
+		};
+
 		public TextDocumentCompletionHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
 			: base(symbolCache, openFileCache) { }
 
@@ -316,6 +330,24 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						return sequences.Select(x => x.ToCompletionItem());
 					}
 
+					// Try to check if this is an enum type field.
+					var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
+					if (enumInfo != null)
+					{
+						return enumInfo.FirstOrDefault().Values.Select(x => new CompletionItem
+						{
+							Label = x,
+							Kind = CompletionItemKind.EnumMember,
+							Detail = "Enum type value",
+							Documentation = $"{enumInfo.Key}.{x}"
+						});
+					}
+
+					if (fieldInfo.InternalType == "bool")
+					{
+						return new[] { trueCompletionItem, falseCompletionItem };
+					}
+
 					return Enumerable.Empty<CompletionItem>();
 				}
 
@@ -401,24 +433,24 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				case 2:
 				{
 					ClassFieldInfo fieldInfo = default;
-					var fieldInfos = Array.Empty<ClassFieldInfo>();
+					var classFieldInfos = Array.Empty<ClassFieldInfo>();
 					var parentNode = cursorTarget.TargetNode.ParentNode;
 					if (parentNode.Key == "Projectile")
 					{
-						var projectileInfo = symbolCache[modId].CodeSymbols.WeaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+						var projectileInfo = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == parentNode.Value);
 						if (projectileInfo.Name != null)
 						{
 							fieldInfo = projectileInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
-							fieldInfos = projectileInfo.PropertyInfos;
+							classFieldInfos = projectileInfo.PropertyInfos;
 						}
 					}
 					else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
 					{
-						var warheadInfo = symbolCache[modId].CodeSymbols.WeaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+						var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == parentNode.Value);
 						if (warheadInfo.Name != null)
 						{
 							fieldInfo = warheadInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
-							fieldInfos = warheadInfo.PropertyInfos;
+							classFieldInfos = warheadInfo.PropertyInfos;
 						}
 					}
 
@@ -441,7 +473,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
 					// NOTE: This will improve if/when we add the attribute.
-					if (fieldInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
+					if (classFieldInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
 					        && (y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name))))
 					{
 						return spriteSequenceImageNames;
@@ -453,6 +485,24 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						var imageName = ResolveSpriteSequenceImageNameForWeapons(cursorTarget, fieldInfo, mapManifest);
 						var sequences = GetSpriteSequencesForImage(cursorTarget.ModId, imageName, mapManifest);
 						return sequences.Select(x => x.ToCompletionItem());
+					}
+
+					// Try to check if this is an enum type field.
+					var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
+					if (enumInfo != null)
+					{
+						return enumInfo.FirstOrDefault().Values.Select(x => new CompletionItem
+						{
+							Label = x,
+							Kind = CompletionItemKind.EnumMember,
+							Detail = "Enum type value",
+							Documentation = $"{enumInfo.Key}.{x}"
+						});
+					}
+
+					if (fieldInfo.InternalType == "bool")
+					{
+						return new[] { trueCompletionItem, falseCompletionItem };
 					}
 
 					return Enumerable.Empty<CompletionItem>();
@@ -544,6 +594,37 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 		protected override IEnumerable<CompletionItem> HandleSpriteSequenceFileValue(CursorTarget cursorTarget)
 		{
+			IEnumerable<CompletionItem> HandleSpriteSequenceProperty()
+			{
+				var spriteSequenceFormat = symbolCache[cursorTarget.ModId].ModManifest.SpriteSequenceFormat.Type;
+				var spriteSequenceType = symbolCache[cursorTarget.ModId].CodeSymbols.SpriteSequenceInfos[spriteSequenceFormat].First();
+
+				var fieldInfo = spriteSequenceType.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+				if (fieldInfo.Name != null)
+				{
+					// Try to check if this is an enum type field.
+					var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos
+						.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
+					if (enumInfo != null)
+					{
+						return enumInfo.FirstOrDefault().Values.Select(x => new CompletionItem
+						{
+							Label = x,
+							Kind = CompletionItemKind.EnumMember,
+							Detail = "Enum type value",
+							Documentation = $"{enumInfo.Key}.{x}"
+						});
+					}
+				}
+
+				if (fieldInfo.InternalType == "bool")
+				{
+					return new[] { trueCompletionItem, falseCompletionItem };
+				}
+
+				return Enumerable.Empty<CompletionItem>();
+			}
+
 			switch (cursorTarget.TargetNodeIndentation)
 			{
 				case 1:
@@ -561,6 +642,17 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 						return spriteSequenceImageNames;
 					}
+
+					return Enumerable.Empty<CompletionItem>();
+				}
+
+				case 2:
+					return HandleSpriteSequenceProperty();
+
+				case 4:
+				{
+					if (cursorTarget.TargetNode.ParentNode.ParentNode.Key == "Combine")
+						return HandleSpriteSequenceProperty();
 
 					return Enumerable.Empty<CompletionItem>();
 				}
