@@ -81,7 +81,7 @@ namespace Oraide.Csharp.CodeParsers
 										if (member is FieldDeclarationSyntax fieldMember
 										    && fieldMember.Modifiers.Any(x => x.ValueText == "static")
 										    && fieldMember.Modifiers.Any(x => x.ValueText == "readonly")
-										    && (fieldMember.Declaration.Type as GenericNameSyntax).Identifier.ValueText == "SpriteSequenceField")
+										    && (fieldMember.Declaration.Type as GenericNameSyntax)?.Identifier.ValueText == "SpriteSequenceField")
 										{
 											foreach (var fieldInfo in ParseClassField(filePath, fileText, fieldMember))
 											{
