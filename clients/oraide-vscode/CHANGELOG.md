@@ -2,6 +2,11 @@
 
 All notable changes to the "oraide" extension will be documented in this file.
 
+## 0.7.1 - 2022.10.24
+
+ - Language server:
+    - Fixed loading of sprite sequence code symbols throwing on older OpenRA codebase versions.
+
 ## 0.7.0 - 2022.10.24
 
  - Language server:
