@@ -2,6 +2,12 @@
 
 All notable changes to the "oraide" extension will be documented in this file.
 
+## 0.7.2 - 2022.10.31
+
+ - Language server:
+    - Fixed hover tooltip showing for WDist fields only in the `0c0` format.
+    - Updated trait/projectile/warhead hover tooltip links to the documentation website to reflect its recent changes.
+
 ## 0.7.1 - 2022.10.24
 
  - Language server:
