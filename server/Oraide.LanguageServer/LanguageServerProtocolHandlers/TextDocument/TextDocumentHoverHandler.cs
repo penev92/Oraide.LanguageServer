@@ -96,7 +96,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						// Using .First() is not great but we have no way to differentiate between traits of the same name
 						// until the server learns the concept of a mod and loaded assemblies.
 						var traitInfo = codeSymbols.TraitInfos[traitInfoName].First();
-						var content = traitInfo.ToMarkdownInfoString() + "\n\n" + "https://docs.openra.net/en/latest/release/traits/#" + $"{traitInfo.TraitName.ToLower()}";
+						var content = traitInfo.ToMarkdownInfoString() + "\n\n" + "https://docs.openra.net/en/release/traits/#" + $"{traitInfo.TraitName.ToLower()}";
 						return HoverFromHoverInfo(content, range);
 					}
 
@@ -258,14 +258,19 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 								var content = $"```csharp\n{enumInfo.Key}.{cursorTarget.TargetString}\n```";
 								return HoverFromHoverInfo(content, range);
 							}
-						}
 
-						// Show explanation for world range value.
-						if (Regex.IsMatch(cursorTarget.TargetString, "[0-9]+c[0-9]+", RegexOptions.Compiled))
-						{
-							var parts = cursorTarget.TargetString.Split('c');
-							var content = $"Range in world distance units equal to {parts[0]} cells and {parts[1]} distance units (where 1 cell has 1024 units)";
-							return HoverFromHoverInfo(content, range);
+							// Show explanation for world range value.
+							if (fieldInfo.InternalType == "WDist")
+							{
+								var whole = 0;
+								var parts = cursorTarget.TargetString.Split('c');
+								if ((parts.Length == 1 && int.TryParse(parts[0], out var fraction))
+								    || (parts.Length == 2 && int.TryParse(parts[0], out whole) && int.TryParse(parts[1], out fraction)))
+								{
+									var content = $"Range in world distance units equal to {whole} cells and {fraction} distance units (where 1 cell has 1024 units)";
+									return HoverFromHoverInfo(content, range);
+								}
+							}
 						}
 					}
 
@@ -398,7 +403,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						if (projectileInfo.Name != null)
 						{
 							var content = projectileInfo.ToMarkdownInfoString() +
-							              "\n\n" + "https://docs.openra.net/en/latest/release/weapons/#" + $"{projectileInfo.Name.ToLower()}";
+							              "\n\n" + "https://docs.openra.net/en/release/weapons/#" + $"{projectileInfo.Name.ToLower()}";
 
 							return HoverFromHoverInfo(content, range);
 						}
@@ -409,18 +414,25 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						if (warheadInfo.Name != null)
 						{
 							var content = warheadInfo.ToMarkdownInfoString() +
-							              "\n\n" + "https://docs.openra.net/en/latest/release/weapons/#" + $"{warheadInfo.Name.ToLower()}";
+							              "\n\n" + "https://docs.openra.net/en/release/weapons/#" + $"{warheadInfo.InfoName.ToLower()}";
 
 							return HoverFromHoverInfo(content, range);
 						}
 					}
 
+					var fieldInfo = codeSymbols.WeaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+
 					// Show explanation for world range value.
-					if (Regex.IsMatch(cursorTarget.TargetString, "[0-9]+c[0-9]+", RegexOptions.Compiled))
+					if (fieldInfo.InternalType == "WDist")
 					{
+						var whole = 0;
 						var parts = cursorTarget.TargetString.Split('c');
-						var content = $"Range in world distance units equal to {parts[0]} cells and {parts[1]} distance units (where 1 cell has 1024 units)";
-						return HoverFromHoverInfo(content, range);
+						if ((parts.Length == 1 && int.TryParse(parts[0], out var fraction))
+						    || (parts.Length == 2 && int.TryParse(parts[0], out whole) && int.TryParse(parts[1], out fraction)))
+						{
+							var content = $"Range in world distance units equal to {whole} cells and {fraction} distance units (where 1 cell has 1024 units)";
+							return HoverFromHoverInfo(content, range);
+						}
 					}
 
 					return null;
@@ -428,14 +440,6 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 				case 2:
 				{
-					// Show explanation for world range value.
-					if (Regex.IsMatch(cursorTarget.TargetString, "[0-9]+c[0-9]+", RegexOptions.Compiled))
-					{
-						var parts = cursorTarget.TargetString.Split('c');
-						var content = $"Range in world distance units equal to {parts[0]} cells and {parts[1]} distance units (where 1 cell has 1024 units)";
-						return HoverFromHoverInfo(content, range);
-					}
-
 					ClassFieldInfo fieldInfo = default;
 					var fieldInfos = Array.Empty<ClassFieldInfo>();
 					var parentNode = cursorTarget.TargetNode.ParentNode;
@@ -511,6 +515,19 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					{
 						var content = $"```csharp\n{enumInfo.Key}.{cursorTarget.TargetString}\n```";
 						return HoverFromHoverInfo(content, range);
+					}
+
+					// Show explanation for world range value.
+					if (fieldInfo.InternalType == "WDist")
+					{
+						var whole = 0;
+						var parts = cursorTarget.TargetString.Split('c');
+						if ((parts.Length == 1 && int.TryParse(parts[0], out var fraction))
+						    || (parts.Length == 2 && int.TryParse(parts[0], out whole) && int.TryParse(parts[1], out fraction)))
+						{
+							var content = $"Range in world distance units equal to {whole} cells and {fraction} distance units (where 1 cell has 1024 units)";
+							return HoverFromHoverInfo(content, range);
+						}
 					}
 
 					return null;
