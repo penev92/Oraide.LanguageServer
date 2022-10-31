@@ -96,7 +96,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						// Using .First() is not great but we have no way to differentiate between traits of the same name
 						// until the server learns the concept of a mod and loaded assemblies.
 						var traitInfo = codeSymbols.TraitInfos[traitInfoName].First();
-						var content = traitInfo.ToMarkdownInfoString() + "\n\n" + "https://docs.openra.net/en/latest/release/traits/#" + $"{traitInfo.TraitName.ToLower()}";
+						var content = traitInfo.ToMarkdownInfoString() + "\n\n" + "https://docs.openra.net/en/release/traits/#" + $"{traitInfo.TraitName.ToLower()}";
 						return HoverFromHoverInfo(content, range);
 					}
 
@@ -403,7 +403,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						if (projectileInfo.Name != null)
 						{
 							var content = projectileInfo.ToMarkdownInfoString() +
-							              "\n\n" + "https://docs.openra.net/en/latest/release/weapons/#" + $"{projectileInfo.Name.ToLower()}";
+							              "\n\n" + "https://docs.openra.net/en/release/weapons/#" + $"{projectileInfo.Name.ToLower()}";
 
 							return HoverFromHoverInfo(content, range);
 						}
@@ -414,7 +414,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						if (warheadInfo.Name != null)
 						{
 							var content = warheadInfo.ToMarkdownInfoString() +
-							              "\n\n" + "https://docs.openra.net/en/latest/release/weapons/#" + $"{warheadInfo.Name.ToLower()}";
+							              "\n\n" + "https://docs.openra.net/en/release/weapons/#" + $"{warheadInfo.InfoName.ToLower()}";
 
 							return HoverFromHoverInfo(content, range);
 						}
