@@ -129,7 +129,9 @@ namespace Oraide.Csharp.CodeParsers
 					continue;
 
 				var baseTypes = GetTraitBaseTypes(traitInfos, ti.TraitInfoName).ToArray();
-				if (baseTypes.Any(x => x.TypeName == "TraitInfo"))
+
+				// HACK: Checking for ITraitInfo and IRulesetLoaded here as a hack for Cameo because it's using a X-year-old engine!
+				if (baseTypes.Any(x => x.TypeName == "TraitInfo" || x.TypeName == "ITraitInfo" || x.TypeName == "IRulesetLoaded"))
 				{
 					var fieldInfos = new List<ClassFieldInfo>();
 					foreach (var (className, classFieldNames) in baseTypes)
@@ -630,6 +632,10 @@ namespace Oraide.Csharp.CodeParsers
 		{
 			// TODO: It would be useful to know what the `Requires` requires.
 			if (traitInfoName == "TraitInfo" || traitInfoName == "Requires" || (traitInfoName.StartsWith("I") && !traitInfoName.EndsWith("Info")))
+				return new[] { (traitInfoName, Enumerable.Empty<string>()) };
+
+			// HACK: These are only here as a hack for Cameo because it's using a X-year-old engine!
+			if (traitInfoName == "ITraitInfo" || traitInfoName == "IRulesetLoaded")
 				return new[] { (traitInfoName, Enumerable.Empty<string>()) };
 
 			var traitInfo = traitInfos.FirstOrDefault(x => x.TraitInfoName == traitInfoName);
