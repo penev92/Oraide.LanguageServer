@@ -531,6 +531,8 @@ namespace Oraide.Csharp.CodeParsers
 					if (defaultValue.Contains('<') && defaultValue.Contains('>'))
 						defaultValue = "(empty)";
 				}
+				else if (valueKind == SyntaxKind.DefaultLiteralExpression)
+					defaultValue = "(empty)";
 				else if (valueKind == SyntaxKind.ArrayCreationExpression)
 				{
 					var arrayCreationExpression = (ArrayCreationExpressionSyntax)declaratorSyntax.Initializer.Value;
