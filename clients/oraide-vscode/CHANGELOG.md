@@ -2,6 +2,12 @@
 
 All notable changes to the "oraide" extension will be documented in this file.
 
+## 0.7.3 - 2022.11.19
+
+ - Language server:
+    - Added a hack to trait parsing from code to enable support for old engine versions.
+    - Added support for a new VariableDeclarationSyntax to trait parsing to match recent OpenRA engine changes.
+
 ## 0.7.2 - 2022.10.31
 
  - Language server:
