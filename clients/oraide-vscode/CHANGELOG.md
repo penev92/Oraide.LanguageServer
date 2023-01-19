@@ -2,6 +2,12 @@
 
 All notable changes to the "oraide" extension will be documented in this file.
 
+## 0.7.4 - 2023.01.19
+
+ - Language server:
+    - Added a band-aid to enable working with installed OpenRA versions even if some symbols can't be loaded.
+    - Added support for OpenRA versions release-20210321 and playtest-20230110.
+
 ## 0.7.3 - 2022.11.19
 
  - Language server:
