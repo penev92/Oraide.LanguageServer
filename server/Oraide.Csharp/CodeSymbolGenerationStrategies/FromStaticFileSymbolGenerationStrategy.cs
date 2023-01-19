@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -12,6 +13,9 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 	{
 		public readonly string LoadedVersion;
 
+		readonly string traitsFile;
+		readonly string weaponsFile;
+		readonly string spriteSequencesFile;
 		readonly JObject traitsData;
 		readonly JObject weaponsData;
 		readonly JObject spriteSequencesData;
@@ -24,27 +28,32 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		ILookup<string, SimpleClassInfo> spriteSequenceInfos;
 		ILookup<string, EnumInfo> enumInfos;
 
+		// TODO: Maybe create one of these per OpenRA version? The types of files and the format of the content may vary per release.
 		public FromStaticFileSymbolGenerationStrategy(string openRaFolder)
 		{
 			LoadedVersion = GetVersion(openRaFolder);
 			var assemblyLocation = Assembly.GetEntryAssembly().Location;
 			var assemblyFolder = Path.GetDirectoryName(assemblyLocation);
 
-			var traitsFile = Path.Combine(assemblyFolder, "docs", $"{LoadedVersion}-traits.json");
-			var traitsText = File.ReadAllText(traitsFile);
+			traitsFile = Path.Combine(assemblyFolder, "docs", $"{LoadedVersion}-traits.json");
+			weaponsFile = Path.Combine(assemblyFolder, "docs", $"{LoadedVersion}-weapons.json");
+			spriteSequencesFile = Path.Combine(assemblyFolder, "docs", $"{LoadedVersion}-sprite-sequences.json");
+
+			var traitsText = File.Exists(traitsFile) ? File.ReadAllText(traitsFile) : "";
 			traitsData = JsonConvert.DeserializeObject<JObject>(traitsText);
 
-			var weaponsFile = Path.Combine(assemblyFolder, "docs", $"{LoadedVersion}-weapons.json");
-			var weaponsText = File.ReadAllText(weaponsFile);
+			var weaponsText = File.Exists(weaponsFile) ? File.ReadAllText(weaponsFile) : "";
 			weaponsData = JsonConvert.DeserializeObject<JObject>(weaponsText);
 
-			var spriteSequencesFile = Path.Combine(assemblyFolder, "docs", $"{LoadedVersion}-sprite-sequences.json");
-			var spriteSequencesText = File.ReadAllText(spriteSequencesFile);
+			var spriteSequencesText = File.Exists(spriteSequencesFile) ? File.ReadAllText(spriteSequencesFile) : "";
 			spriteSequencesData = JsonConvert.DeserializeObject<JObject>(spriteSequencesText);
 		}
 
 		public ILookup<string, TraitInfo> GetTraitInfos()
 		{
+			if (!File.Exists(traitsFile))
+				return Array.Empty<TraitInfo>().ToLookup(x => x.TraitInfoName, y => y);
+
 			if (traitInfos != null)
 				return traitInfos;
 
@@ -63,6 +72,9 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 
 		public WeaponInfo GetWeaponInfo()
 		{
+			if (!File.Exists(weaponsFile))
+				return new WeaponInfo(Array.Empty<ClassFieldInfo>(), Array.Empty<SimpleClassInfo>(), Array.Empty<SimpleClassInfo>());
+
 			if (weaponInfo.WeaponPropertyInfos != null)
 				return weaponInfo;
 
@@ -86,6 +98,9 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 
 		public ILookup<string, TraitInfo> GetPaletteTraitInfos()
 		{
+			if (!File.Exists(traitsFile))
+				return Array.Empty<TraitInfo>().ToLookup(x => x.TraitInfoName, y => y);
+
 			if (paletteTraitInfos != null)
 				return paletteTraitInfos;
 
@@ -106,9 +121,11 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 
 		public ILookup<string, SimpleClassInfo> GetSpriteSequenceInfos()
 		{
+			if (!File.Exists(spriteSequencesFile))
+				return Array.Empty<SimpleClassInfo>().ToLookup(x => x.Name, y => y);
+
 			if (spriteSequenceInfos != null)
 				return spriteSequenceInfos;
-
 
 			var typeInfos = spriteSequencesData["SpriteSequenceTypes"]!.Select(x =>
 			{
@@ -125,6 +142,9 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 
 		public ILookup<string, EnumInfo> GetEnums()
 		{
+			if (!File.Exists(traitsFile) || !File.Exists(weaponsFile))
+				return Array.Empty<EnumInfo>().ToLookup(x => x.Name, y => y);
+
 			if (enumInfos != null)
 				return enumInfos;
 
@@ -162,10 +182,12 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		{
 			return jToken["Properties"].Select(prop =>
 			{
-				var attributes = prop["OtherAttributes"]
-					.Select(attribute =>
-						(attribute["Name"].ToString(), ""))
-					.ToArray();
+				var attributes = prop["OtherAttributes"] == null
+					? Array.Empty<(string nameof, string Value)>()
+					: prop["OtherAttributes"]
+						.Select(attribute =>
+							(attribute["Name"].ToString(), ""))
+						.ToArray();
 
 				var p = new ClassFieldInfo(prop["PropertyName"].ToString(), prop["InternalType"].ToString(), prop["UserFriendlyType"].ToString(),
 					prop["DefaultValue"].ToString(), string.Empty, NoLocation, prop["Description"].ToString(), attributes);

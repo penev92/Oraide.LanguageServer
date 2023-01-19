@@ -66,7 +66,7 @@ namespace Oraide.Csharp
 		{
 			return symbolGenerator.GetSpriteSequenceInfos();
 		}
-		
+
 		public ILookup<string, EnumInfo> GetEnumInfos()
 		{
 			return symbolGenerator.GetEnums();
