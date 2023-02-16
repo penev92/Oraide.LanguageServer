@@ -56,7 +56,7 @@ namespace Oraide.LanguageServer.Caching
 			var spriteSequenceInfos = codeInformationProvider.GetSpriteSequenceInfos();
 			var enumInfos = codeInformationProvider.GetEnumInfos();
 
-			var codeSymbols = new CodeSymbols(traitInfos, weaponInfo, paletteTraitInfos, spriteSequenceInfos, enumInfos);
+			var codeSymbols = new CodeSymbols(traitInfos, paletteTraitInfos, weaponInfo, spriteSequenceInfos, enumInfos);
 
 			var elapsedTotal = stopwatchTotal.Elapsed;
 			Console.Error.WriteLine($"Took {elapsedTotal} to load code symbols:");
@@ -72,7 +72,7 @@ namespace Oraide.LanguageServer.Caching
 
 			var modDataPerMod = new Dictionary<string, ModData>();
 
-			knownPaletteTypes = paletteTraitInfos.Select(x => x.FirstOrDefault().TraitName).ToHashSet();
+			knownPaletteTypes = paletteTraitInfos.Select(x => x.FirstOrDefault().Name).ToHashSet();
 			foreach (var modId in mods.Keys)
 			{
 				var modFolder = mods[modId];

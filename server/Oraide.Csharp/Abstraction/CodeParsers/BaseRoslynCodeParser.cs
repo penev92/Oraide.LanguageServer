@@ -74,11 +74,10 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			}
 
 			var finalTraitInfos = FinalizeTraitInfos(traitInfos).ToArray();
-			var finalPaletteInfos = FinalizePaletteInfos(traitInfos);
-			var finalWarheadInfos = FinalizeWarheadInfos(warheadInfos);
+			var finalPaletteInfos = FinalizePaletteInfos(finalTraitInfos);
+			var weaponInfo = FinalizeWeaponInfo(weaponInfoFields, projectileInfos, warheadInfos);
 			var finalSpriteSequenceInfos = FinalizeSpriteSequenceInfos(spriteSequenceInfos);
 
-			var weaponInfo = new WeaponInfo(weaponInfoFields, projectileInfos.ToArray(), finalWarheadInfos.ToArray());
 			return new CodeInformation(finalTraitInfos, finalPaletteInfos, weaponInfo, finalSpriteSequenceInfos, enumInfos);
 		}
 
@@ -220,7 +219,8 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 		#region Finalizing methods
 
 		/// <summary>
-		/// Resolve trait inheritance - load base types and a full list in fields - inherited or not.
+		/// Resolves trait inheritance - load base types and a full list in fields - inherited or not.
+		/// Excludes abstract types from the result.
 		/// </summary>
 		/// <param name="traitInfos">A list of all loaded trait infos.</param>
 		/// <returns>A finalized list of trait infos, with loaded fields and resolved base types.</returns>
@@ -253,16 +253,19 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 						}
 					}
 
-					var traitInfo = new ClassInfo(
-						ti.Name,
-						ti.InfoName,
-						ti.Description,
-						ti.Location,
-						baseTypes.Where(x => x.TypeName != ti.InfoName).Select(x => x.TypeName).ToArray(),
-						fieldInfos.ToArray(),
-						ti.IsAbstract);
+					if (!ti.IsAbstract)
+					{
+						var traitInfo = new ClassInfo(
+							ti.Name,
+							ti.InfoName,
+							ti.Description,
+							ti.Location,
+							baseTypes.Where(x => x.TypeName != ti.InfoName).Select(x => x.TypeName).ToArray(),
+							fieldInfos.ToArray(),
+							ti.IsAbstract);
 
-					yield return traitInfo;
+						yield return traitInfo;
+					}
 				}
 			}
 		}
@@ -276,8 +279,16 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 						.Any(z => z.Name == "PaletteDefinition")));
 		}
 
+		protected virtual WeaponInfo FinalizeWeaponInfo(IList<ClassFieldInfo> fieldInfos, IList<ClassInfo> projectileInfos, IList<ClassInfo> warheadInfos)
+		{
+			var finalizedProjectileInfos = FinalizeProjectileInfos(projectileInfos);
+			var finalizedWarheadInfos = FinalizeWarheadInfos(warheadInfos);
+			return new WeaponInfo(fieldInfos.ToArray(), finalizedProjectileInfos.ToArray(), finalizedWarheadInfos.ToArray());
+		}
+
 		/// <summary>
-		/// Resolve warhead inheritance - load base types and a full list in fields - inherited or not.
+		/// Resolves warhead inheritance - load base types and a full list in fields - inherited or not.
+		/// Excludes abstract types from the result.
 		/// </summary>
 		/// <param name="warheadInfos">A list of all loaded warhead infos.</param>
 		/// <returns>A finalized list of warhead infos, with loaded fields and resolved base types.</returns>
@@ -309,21 +320,35 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 					}
 				}
 
-				var warheadInfo = new ClassInfo(
-					wi.Name,
-					wi.InfoName,
-					wi.Description,
-					wi.Location,
-					baseTypes.Where(x => x.TypeName != wi.InfoName).Select(x => x.TypeName).ToArray(),
-					fieldInfos.ToArray(),
-					wi.IsAbstract);
+				if (!wi.IsAbstract)
+				{
+					var warheadInfo = new ClassInfo(
+						wi.Name,
+						wi.InfoName,
+						wi.Description,
+						wi.Location,
+						baseTypes.Where(x => x.TypeName != wi.InfoName).Select(x => x.TypeName).ToArray(),
+						fieldInfos.ToArray(),
+						wi.IsAbstract);
 
-				yield return warheadInfo;
+					yield return warheadInfo;
+				}
 			}
 		}
 
 		/// <summary>
-		/// Resolve sprite sequence inheritance - load base types and a full list in fields - inherited or not.
+		/// Exclude abstract types from the result.
+		/// </summary>
+		/// <param name="projectileInfos">A list of all loaded projectile infos.</param>
+		/// <returns>A finalized list of projectile infos.</returns>
+		protected virtual IEnumerable<ClassInfo> FinalizeProjectileInfos(IList<ClassInfo> projectileInfos)
+		{
+			return projectileInfos.Where(x => !x.IsAbstract);
+		}
+
+		/// <summary>
+		/// Resolves sprite sequence inheritance - load base types and a full list in fields - inherited or not.
+		/// Excludes abstract types from the result.
 		/// </summary>
 		/// <param name="spriteSequenceInfos">A list of all loaded sprite sequence infos.</param>
 		/// <returns>A finalized list of sprite sequence infos, with loaded fields and resolved base types.</returns>
@@ -339,16 +364,19 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 					fieldInfos.AddRange(baseClassInfo.PropertyInfos);
 				}
 
-				var spriteSequenceInfo = new ClassInfo(
-					ssi.Name,
-					ssi.InfoName,
-					ssi.Description,
-					ssi.Location,
-					baseTypes.Where(x => x.TypeName != ssi.InfoName).Select(x => x.TypeName).ToArray(),
-					fieldInfos.ToArray(),
-					ssi.IsAbstract);
+				if (!ssi.IsAbstract)
+				{
+					var spriteSequenceInfo = new ClassInfo(
+						ssi.Name,
+						ssi.InfoName,
+						ssi.Description,
+						ssi.Location,
+						baseTypes.Where(x => x.TypeName != ssi.InfoName).Select(x => x.TypeName).ToArray(),
+						fieldInfos.ToArray(),
+						ssi.IsAbstract);
 
-				yield return spriteSequenceInfo;
+					yield return spriteSequenceInfo;
+				}
 			}
 		}
 

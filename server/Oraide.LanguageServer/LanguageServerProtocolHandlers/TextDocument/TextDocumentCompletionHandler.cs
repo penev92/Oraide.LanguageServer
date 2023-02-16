@@ -24,7 +24,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		IEnumerable<CompletionItem> cursorNames;
 		IEnumerable<CompletionItem> paletteNames;
 		IEnumerable<CompletionItem> spriteSequenceImageNames;
-		OldWeaponInfo weaponInfo;
+		WeaponInfo weaponInfo;
 
 		readonly CompletionItem inheritsCompletionItem = new ()
 		{
@@ -224,7 +224,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					// Getting all traits and then all their properties is not great but we have no way to differentiate between traits of the same name
 					// until the server learns the concept of a mod and loaded assemblies.
 					return symbolCache[modId].CodeSymbols.TraitInfos[traitInfoName]
-						.SelectMany(x => x.TraitPropertyInfos)
+						.SelectMany(x => x.PropertyInfos)
 						.DistinctBy(y => y.Name)
 						.Where(x => !presentProperties.Contains(x.Name))
 						.Select(z => z.ToCompletionItem());
@@ -270,7 +270,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					// Using .First() is not great but we have no way to differentiate between traits of the same name
 					// until the server learns the concept of a mod and loaded assemblies.
 					var traitInfo = symbolCache[modId].CodeSymbols.TraitInfos[traitInfoName].First();
-					var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+					var fieldInfo = traitInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
 
 					var tempActorNames = actorNames;
 					var tempWeaponNames = weaponNames;
@@ -315,7 +315,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 					// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
 					// NOTE: This will improve if/when we add the attribute.
-					if (traitInfo.TraitPropertyInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
+					if (traitInfo.PropertyInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
 						    && y.Value != null
 						    && (y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name))))
 					{

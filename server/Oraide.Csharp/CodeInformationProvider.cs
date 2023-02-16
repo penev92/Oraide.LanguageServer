@@ -11,9 +11,9 @@ namespace Oraide.Csharp
 	// The currently planned/supported use-cases for code information are:
 	//  - Generating symbols to navigate to.
 	//  - Referencing documentation from DescAttributes.
+	//  - Autocomplete for trait and trait property names.
 	// Future planned use-cases:
 	//  - Validating trait and trait property existence (using the same symbols used for navigation).
-	//  - Autocomplete for trait and trait property names.
 	//  - Any of the above for non-trait types.
 	public class CodeInformationProvider
 	{
@@ -47,29 +47,29 @@ namespace Oraide.Csharp
 			}
 		}
 
-		public ILookup<string, TraitInfo> GetTraitInfos()
+		public ILookup<string, ClassInfo> GetTraitInfos()
 		{
-			return null;// symbolGenerator.GetTraitInfos();
+			return symbolGenerator.GetTraitInfos();
 		}
 
-		public ILookup<string, TraitInfo> GetPaletteTraitInfos()
+		public ILookup<string, ClassInfo> GetPaletteTraitInfos()
 		{
-			return null;//symbolGenerator.GetPaletteTraitInfos();
+			return symbolGenerator.GetPaletteTraitInfos();
 		}
 
-		public OldWeaponInfo GetWeaponInfo()
+		public WeaponInfo GetWeaponInfo()
 		{
-			return default;//symbolGenerator.GetWeaponInfo();
+			return symbolGenerator.GetWeaponInfo();
 		}
 
-		public ILookup<string, SimpleClassInfo> GetSpriteSequenceInfos()
+		public ILookup<string, ClassInfo> GetSpriteSequenceInfos()
 		{
-			return null;//symbolGenerator.GetSpriteSequenceInfos();
+			return symbolGenerator.GetSpriteSequenceInfos();
 		}
 
 		public ILookup<string, EnumInfo> GetEnumInfos()
 		{
-			return null;//symbolGenerator.GetEnums();
+			return symbolGenerator.GetEnumInfos();
 		}
 
 		string GetOpenRaFolder(string workspaceFolderPath, string defaultOpenRaFolderPath)

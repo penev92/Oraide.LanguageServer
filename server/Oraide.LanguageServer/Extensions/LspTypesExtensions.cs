@@ -37,18 +37,6 @@ namespace Oraide.LanguageServer.Extensions
 			};
 		}
 
-		public static CompletionItem ToCompletionItem(this TraitInfo traitInfo)
-		{
-			return new CompletionItem
-			{
-				Label = traitInfo.TraitName,
-				Kind = CompletionItemKind.Class,
-				Detail = "Trait name. Expand for details >",
-				Documentation = traitInfo.TraitDescription,
-				CommitCharacters = new[] { ":" }
-			};
-		}
-
 		public static CompletionItem ToCompletionItem(this ClassFieldInfo classFieldInfo)
 		{
 			return new CompletionItem
@@ -61,7 +49,7 @@ namespace Oraide.LanguageServer.Extensions
 			};
 		}
 
-		public static CompletionItem ToCompletionItem(this SimpleClassInfo classInfo, string detail = null)
+		public static CompletionItem ToCompletionItem(this ClassInfo classInfo, string detail = null)
 		{
 			return new CompletionItem
 			{
