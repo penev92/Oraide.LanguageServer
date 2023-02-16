@@ -68,7 +68,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					// Using .First() is not great but we have no way to differentiate between traits of the same name
 					// until the server learns the concept of a mod and loaded assemblies.
 					var traitInfo = codeSymbols.TraitInfos[traitInfoName].FirstOrDefault();
-					if (traitInfo.TraitName != null)
+					if (traitInfo.Name != null)
 						return new[] { traitInfo.Location.ToLspLocation(cursorTarget.TargetString.Length) };
 
 					return Enumerable.Empty<Location>();
@@ -82,9 +82,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					// Using .First() is not great but we have no way to differentiate between traits of the same name
 					// until the server learns the concept of a mod and loaded assemblies.
 					var traitInfo = codeSymbols.TraitInfos[traitInfoName].FirstOrDefault();
-					if (traitInfo.TraitName != null)
+					if (traitInfo.Name != null)
 					{
-						var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+						var fieldInfo = traitInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
 						if (fieldInfo.Name != null)
 							return new[] { fieldInfo.Location.ToLspLocation(cursorTarget.TargetString.Length) };
 					}
@@ -134,9 +134,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					// Using .First() is not great but we have no way to differentiate between traits of the same name
 					// until the server learns the concept of a mod and loaded assemblies.
 					var traitInfo = codeSymbols.TraitInfos[traitInfoName].FirstOrDefault();
-					if (traitInfo.TraitName != null)
+					if (traitInfo.Name != null)
 					{
-						var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+						var fieldInfo = traitInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
 						if (fieldInfo.Name != null)
 						{
 							var actorDefinitions = modSymbols.ActorDefinitions[cursorTarget.TargetString];
@@ -186,7 +186,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 							// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
 							// NOTE: This will improve if/when we add the attribute.
-							if (traitInfo.TraitPropertyInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
+							if (traitInfo.PropertyInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
 								    && (y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name))))
 							{
 								return spriteSequenceImageDefinitions[cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.Name.Length));

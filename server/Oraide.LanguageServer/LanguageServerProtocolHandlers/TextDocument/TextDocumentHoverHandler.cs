@@ -96,7 +96,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						// Using .First() is not great but we have no way to differentiate between traits of the same name
 						// until the server learns the concept of a mod and loaded assemblies.
 						var traitInfo = codeSymbols.TraitInfos[traitInfoName].First();
-						var content = traitInfo.ToMarkdownInfoString() + "\n\n" + "https://docs.openra.net/en/release/traits/#" + $"{traitInfo.TraitName.ToLower()}";
+						var content = traitInfo.ToMarkdownInfoString() + "\n\n" + "https://docs.openra.net/en/release/traits/#" + $"{traitInfo.Name.ToLower()}";
 						return HoverFromHoverInfo(content, range);
 					}
 
@@ -125,7 +125,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						// Using .First() is not great but we have no way to differentiate between traits of the same name
 						// until the server learns the concept of a mod and loaded assemblies.
 						var traitInfo = codeSymbols.TraitInfos[traitInfoName].First();
-						var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+						var fieldInfo = traitInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
 						var content = fieldInfo.ToMarkdownInfoString();
 						return HoverFromHoverInfo(content, range);
 					}
@@ -174,7 +174,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 						// Using .First() is not great but we have no way to differentiate between traits of the same name
 						// until the server learns the concept of a mod and loaded assemblies.
 						var traitInfo = codeSymbols.TraitInfos[traitInfoName].First();
-						var fieldInfo = traitInfo.TraitPropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+						var fieldInfo = traitInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
 						if (fieldInfo.Name != null)
 						{
 							var actorDefinitions = modSymbols.ActorDefinitions.Select(x => x.Key);
@@ -235,7 +235,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 
 							// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
 							// NOTE: This will improve if/when we add the attribute.
-							if (traitInfo.TraitPropertyInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
+							if (traitInfo.PropertyInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
 								    && (y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name)))
 							    && spriteSequenceImageDefinitions.Contains(cursorTarget.TargetString))
 							{

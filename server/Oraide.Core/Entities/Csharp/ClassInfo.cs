@@ -1,9 +1,9 @@
 ﻿namespace Oraide.Core.Entities.Csharp
 {
 	/// <summary>
-	/// Represents information about an IProjectileInfo implementation.
+	/// Represents information about a TraitInfo (the OpenRA abstract class) or an IProjectileInfo/IWarhead/ISpriteSequence implementation.
 	/// </summary>
-	public readonly struct SimpleClassInfo
+	public readonly struct ClassInfo
 	{
 		public readonly string Name;
 
@@ -13,20 +13,20 @@
 
 		public readonly MemberLocation Location;
 
-		public readonly string[] InheritedTypes;
+		public readonly string[] BaseTypes;
 
 		public readonly ClassFieldInfo[] PropertyInfos;
 
 		public readonly bool IsAbstract;
 
-		public SimpleClassInfo(string name, string infoName, string description, MemberLocation location, string[] inheritedTypes,
+		public ClassInfo(string name, string infoName, string description, MemberLocation location, string[] baseTypes,
 			ClassFieldInfo[] propertyInfos, bool isAbstract)
 		{
 			Name = name;
 			InfoName = infoName;
 			Description = description;
 			Location = location;
-			InheritedTypes = inheritedTypes;
+			BaseTypes = baseTypes;
 			PropertyInfos = propertyInfos;
 			IsAbstract = isAbstract;
 		}
