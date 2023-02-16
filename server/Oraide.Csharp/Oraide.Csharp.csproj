@@ -14,13 +14,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="docs\playtest-20230110-sprite-sequences.json">
+    <None Update="docs\prep-2211-sprite-sequences.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="docs\playtest-20230110-traits.json">
+    <None Update="docs\prep-2211-traits.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="docs\playtest-20230110-weapons.json">
+    <None Update="docs\prep-2211-weapons.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="docs\release-20210321-traits.json">
