@@ -1,0 +1,22 @@
+﻿using System.Collections.Generic;
+using Oraide.Core.Entities.Csharp;
+
+namespace Oraide.Csharp.Abstraction.StaticFileParsers
+{
+	public interface IStaticFileParser
+	{
+		string EngineVersion { get; }
+
+		void Load();
+
+		IEnumerable<ClassInfo> ParseTraitInfos();
+
+		IEnumerable<ClassInfo> ParsePaletteInfos();
+
+		WeaponInfo ParseWeaponInfo();
+
+		IEnumerable<ClassInfo> ParseSpriteSequenceInfos();
+
+		IEnumerable<EnumInfo> ParseEnumInfos();
+	}
+}

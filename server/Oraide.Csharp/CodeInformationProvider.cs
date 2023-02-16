@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Oraide.Core;
 using Oraide.Core.Entities.Csharp;
+using Oraide.Csharp.Abstraction.CodeSymbolGenerationStrategies;
 using Oraide.Csharp.CodeSymbolGenerationStrategies;
 
 namespace Oraide.Csharp
@@ -33,7 +34,7 @@ namespace Oraide.Csharp
 				// Strategy 1 - C# code parsing.
 				symbolGenerator = new CodeParsingSymbolGenerationStrategy(openRaFolder);
 
-				Console.Error.WriteLine("Loading code symbols from source code files.");
+				Console.Error.WriteLine($"Loading code symbols from source code files using {symbolGenerator.LoadedVersion}.");
 				Console.Error.WriteLine("-------------");
 			}
 			else if (OpenRaFolderUtils.IsOpenRaInstallationFolder(openRaFolder))
@@ -41,34 +42,34 @@ namespace Oraide.Csharp
 				// Strategy 2 - load data from static file.
 				symbolGenerator = new FromStaticFileSymbolGenerationStrategy(openRaFolder);
 
-				Console.Error.WriteLine($"Loading code symbols from static docs files - version {((FromStaticFileSymbolGenerationStrategy)symbolGenerator).LoadedVersion}.");
+				Console.Error.WriteLine($"Loading code symbols from static docs files - version {symbolGenerator.LoadedVersion}.");
 				Console.Error.WriteLine("-------------");
 			}
 		}
 
 		public ILookup<string, TraitInfo> GetTraitInfos()
 		{
-			return symbolGenerator.GetTraitInfos();
-		}
-
-		public OldWeaponInfo GetWeaponInfo()
-		{
-			return symbolGenerator.GetWeaponInfo();
+			return null;// symbolGenerator.GetTraitInfos();
 		}
 
 		public ILookup<string, TraitInfo> GetPaletteTraitInfos()
 		{
-			return symbolGenerator.GetPaletteTraitInfos();
+			return null;//symbolGenerator.GetPaletteTraitInfos();
+		}
+
+		public OldWeaponInfo GetWeaponInfo()
+		{
+			return default;//symbolGenerator.GetWeaponInfo();
 		}
 
 		public ILookup<string, SimpleClassInfo> GetSpriteSequenceInfos()
 		{
-			return symbolGenerator.GetSpriteSequenceInfos();
+			return null;//symbolGenerator.GetSpriteSequenceInfos();
 		}
 
 		public ILookup<string, EnumInfo> GetEnumInfos()
 		{
-			return symbolGenerator.GetEnums();
+			return null;//symbolGenerator.GetEnums();
 		}
 
 		string GetOpenRaFolder(string workspaceFolderPath, string defaultOpenRaFolderPath)
