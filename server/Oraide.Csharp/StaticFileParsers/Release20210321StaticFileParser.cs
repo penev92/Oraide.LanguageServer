@@ -7,7 +7,9 @@ namespace Oraide.Csharp.StaticFileParsers
 {
 	public class Release20210321StaticFileParser : BaseStaticFileParser
 	{
-		public override string EngineVersion => "release-20210321";
+		public override string InternalVersionName => "release-20210321";
+
+		public override string[] EngineVersions { get; } = { "release-20210321" };
 
 		public override IEnumerable<ClassInfo> ParseTraitInfos()
 		{

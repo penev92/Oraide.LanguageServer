@@ -5,9 +5,7 @@ namespace Oraide.Csharp.Abstraction.StaticFileParsers
 {
 	public interface IStaticFileParser
 	{
-		string EngineVersion { get; }
-
-		void Load();
+		string[] EngineVersions { get; }
 
 		IEnumerable<ClassInfo> ParseTraitInfos();
 

@@ -5,9 +5,18 @@ using Oraide.Csharp.Abstraction.StaticFileParsers;
 
 namespace Oraide.Csharp.StaticFileParsers
 {
-	public class Playtest20230110StaticFileParser : BaseStaticFileParser
+	public class Prep2211StaticFileParser : BaseStaticFileParser
 	{
-		public override string EngineVersion => "playtest-20230110";
+		public override string InternalVersionName => "prep-2211";
+
+		public override string[] EngineVersions { get; } =
+		{
+			"playtest-20221119",
+			"playtest-20221203",
+			"playtest-20221223",
+			"playtest-20221224",
+			"playtest-20230110",
+		};
 
 		public override IEnumerable<ClassInfo> ParseTraitInfos()
 		{

@@ -18,7 +18,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		protected ILookup<string, ClassInfo> spriteSequenceInfos;
 		protected ILookup<string, EnumInfo> enumInfos;
 
-		public string LoadedVersion { get; private set; }
+		public string LoadedVersion { get; }
 
 		public FromStaticFileSymbolGenerationStrategy(in string openRaFolder)
 		{
@@ -27,8 +27,8 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 				.Where(x => x.GetInterfaces().Contains(typeof(IStaticFileParser)))
 				.Select(Activator.CreateInstance);
 
-			selectedParser = (IStaticFileParser)parsers.FirstOrDefault(x => (x as IStaticFileParser)?.EngineVersion == LoadedVersion);
-			selectedParser.Load();
+			selectedParser = (IStaticFileParser)parsers.FirstOrDefault(x => ((IStaticFileParser)x).EngineVersions.Contains(LoadedVersion));
+			((BaseStaticFileParser)selectedParser).Load();
 		}
 
 		public ILookup<string, ClassInfo> GetTraitInfos()
