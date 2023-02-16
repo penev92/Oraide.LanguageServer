@@ -515,6 +515,7 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 								 || attributeName == "NotificationReference"
 								 || attributeName == "GrantedConditionReference"
 								 || attributeName == "ConsumedConditionReference"
+								 || attributeName == "TranslationReference"
 								 || attributeName == "LocomotorReference")
 						{
 							// Try to resolve `nameof(...)`.
