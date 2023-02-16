@@ -16,7 +16,6 @@ namespace Oraide.Csharp
 	//  - Any of the above for non-trait types.
 	public class CodeInformationProvider
 	{
-		readonly string openRaFolder;
 		readonly ICodeSymbolGenerationStrategy symbolGenerator;
 
 		public CodeInformationProvider(string workspaceFolderPath, string defaultOpenRaFolderPath)
@@ -24,7 +23,7 @@ namespace Oraide.Csharp
 			Console.Error.WriteLine($"WORKSPACE FOLDER PATH:  {workspaceFolderPath}");
 			Console.Error.WriteLine($"OPENRA DEFAULT FOLDER PATH:  {defaultOpenRaFolderPath}");
 
-			openRaFolder = GetOpenRaFolder(workspaceFolderPath, defaultOpenRaFolderPath);
+			var openRaFolder = GetOpenRaFolder(workspaceFolderPath, defaultOpenRaFolderPath);
 
 			Console.Error.WriteLine($"OPENRA CHOSEN FOLDER PATH:  {openRaFolder}");
 			Console.Error.WriteLine("-------------");
@@ -52,7 +51,7 @@ namespace Oraide.Csharp
 			return symbolGenerator.GetTraitInfos();
 		}
 
-		public WeaponInfo GetWeaponInfo()
+		public OldWeaponInfo GetWeaponInfo()
 		{
 			return symbolGenerator.GetWeaponInfo();
 		}

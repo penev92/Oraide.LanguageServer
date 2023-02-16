@@ -23,7 +23,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		static readonly MemberLocation NoLocation = new MemberLocation(string.Empty, 0, 0);
 
 		ILookup<string, TraitInfo> traitInfos;
-		WeaponInfo weaponInfo;
+		OldWeaponInfo weaponInfo;
 		ILookup<string, TraitInfo> paletteTraitInfos;
 		ILookup<string, SimpleClassInfo> spriteSequenceInfos;
 		ILookup<string, EnumInfo> enumInfos;
@@ -70,10 +70,10 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 			return traitInfos;
 		}
 
-		public WeaponInfo GetWeaponInfo()
+		public OldWeaponInfo GetWeaponInfo()
 		{
 			if (!File.Exists(weaponsFile))
-				return new WeaponInfo(Array.Empty<ClassFieldInfo>(), Array.Empty<SimpleClassInfo>(), Array.Empty<SimpleClassInfo>());
+				return new OldWeaponInfo(Array.Empty<ClassFieldInfo>(), Array.Empty<SimpleClassInfo>(), Array.Empty<SimpleClassInfo>());
 
 			if (weaponInfo.WeaponPropertyInfos != null)
 				return weaponInfo;
@@ -89,7 +89,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 					NoLocation, baseTypes, properties, false);
 			}).ToArray();
 
-			weaponInfo = new WeaponInfo(typeInfos.FirstOrDefault(x => x.Name == "Weapon").PropertyInfos,
+			weaponInfo = new OldWeaponInfo(typeInfos.FirstOrDefault(x => x.Name == "Weapon").PropertyInfos,
 				typeInfos.Where(x => x.Name != "Weapon" && x.InheritedTypes.All(y => y != "Warhead")).ToArray(),  // Lame!
 				typeInfos.Where(x => x.InheritedTypes.Any(y => y == "Warhead")).ToArray());
 

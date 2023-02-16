@@ -24,7 +24,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		IEnumerable<CompletionItem> cursorNames;
 		IEnumerable<CompletionItem> paletteNames;
 		IEnumerable<CompletionItem> spriteSequenceImageNames;
-		WeaponInfo weaponInfo;
+		OldWeaponInfo weaponInfo;
 
 		readonly CompletionItem inheritsCompletionItem = new ()
 		{

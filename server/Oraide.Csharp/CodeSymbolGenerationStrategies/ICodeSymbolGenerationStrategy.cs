@@ -7,12 +7,12 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 	{
 		ILookup<string, TraitInfo> GetTraitInfos();
 
-		WeaponInfo GetWeaponInfo();
+		OldWeaponInfo GetWeaponInfo();
 
 		ILookup<string, TraitInfo> GetPaletteTraitInfos();
 
 		ILookup<string, SimpleClassInfo> GetSpriteSequenceInfos();
-		
+
 		ILookup<string, EnumInfo> GetEnums();
 	}
 }

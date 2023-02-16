@@ -27,7 +27,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 			return traitInfos;
 		}
 
-		public WeaponInfo GetWeaponInfo()
+		public OldWeaponInfo GetWeaponInfo()
 		{
 			if (weaponInfo.WeaponPropertyInfos == null)
 				Parse();
