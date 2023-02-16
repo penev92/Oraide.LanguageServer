@@ -18,6 +18,17 @@
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
     <Rule Id="SX1101" Action="Warning" /><!-- DoNotPrefixLocalMembersWithThis -->
 
+    <!-- Rules that are covered by IDE1006 -->
+    <Rule Id="SA1300" Action="None" /><!-- ElementMustBeginWithUpperCaseLetter -->
+    <Rule Id="SA1302" Action="None" /><!-- InterfaceNamesMustBeginWithI -->
+    <Rule Id="SA1303" Action="None" /><!-- ConstFieldNamesMustBeginWithUpperCaseLetter -->
+    <Rule Id="SA1304" Action="None" /><!-- NonPrivateReadonlyFieldsMustBeginWithUpperCaseLetter -->
+    <Rule Id="SA1306" Action="None" /><!-- FieldNamesMustBeginWithLowerCaseLetter -->
+    <Rule Id="SA1307" Action="None" /><!-- AccessibleFieldsMustBeginWithUpperCaseLetter -->
+    <Rule Id="SA1311" Action="None" /><!-- StaticReadonlyFieldsMustBeginWithUpperCaseLetter -->
+    <Rule Id="SA1312" Action="None" /><!-- VariableNamesMustBeginWithLowerCaseLetter -->
+    <Rule Id="SA1313" Action="None" /><!-- ParameterNamesMustBeginWithLowerCaseLetter -->
+
     <!-- Rules that conflict with OpenRA project style conventions -->
     <Rule Id="SA0001" Action="None" /><!-- XmlCommentAnalysisDisabled -->
     <Rule Id="SA1101" Action="None" /><!-- PrefixLocalCallsWithThis -->

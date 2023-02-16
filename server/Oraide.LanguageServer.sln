@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30804.86
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Oraide.LanguageServer", "Oraide.LanguageServer\Oraide.LanguageServer.csproj", "{D77DC251-C72F-4833-A843-DB57308F1D6A}"
 EndProject
@@ -15,9 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Oraide.Core", "Oraide.Core\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{610C3B7B-F73A-47F5-95E6-71FEE10104B7}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
 		Oraide.ruleset = Oraide.ruleset
-		stylecop.json = stylecop.json
 	EndProjectSection
 EndProject
 Global
