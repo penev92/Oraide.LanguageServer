@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Oraide.MiniYaml.YamlParsers
+namespace Oraide.MiniYaml
 {
 	public class Mod
 	{

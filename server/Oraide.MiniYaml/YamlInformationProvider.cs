@@ -2,7 +2,8 @@
 using System.IO;
 using System.Linq;
 using Oraide.Core.Entities.MiniYaml;
-using Oraide.MiniYaml.YamlParsers;
+using Oraide.MiniYaml.Abstraction.SymbolGenerationStrategies;
+using Oraide.MiniYaml.SymbolGenerationStrategies;
 
 namespace Oraide.MiniYaml
 {
@@ -11,10 +12,12 @@ namespace Oraide.MiniYaml
 	public class YamlInformationProvider
 	{
 		readonly string yamlFolder;
+		readonly IMiniYamlSymbolGenerationStrategy symbolGenerator;
 
-		public YamlInformationProvider(string yamlFolder)
+		public YamlInformationProvider(in string yamlFolder)
 		{
 			this.yamlFolder = yamlFolder;
+			symbolGenerator = new MiniYamlSymbolGenerationStrategy(yamlFolder);
 		}
 
 		public IEnumerable<string> GetModDirectories()
@@ -24,47 +27,47 @@ namespace Oraide.MiniYaml
 
 		public IEnumerable<YamlNode> ReadModFile(string modFolder)
 		{
-			return OpenRAMiniYamlParser.ReadModFile(modFolder);
+			return symbolGenerator.ParseModFile(modFolder);
 		}
 
 		public IEnumerable<YamlNode> ReadMapFile(string mapFolder)
 		{
-			return OpenRAMiniYamlParser.ReadMapFile(mapFolder);
+			return symbolGenerator.ParseMapFile(mapFolder);
 		}
 
 		public ILookup<string, ActorDefinition> GetActorDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
-			return OpenRAMiniYamlParser.GetActorDefinitions(referencedFiles, mods);
+			return symbolGenerator.GetActorDefinitions(referencedFiles, mods);
 		}
 
 		public ILookup<string, WeaponDefinition> GetWeaponDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
-			return OpenRAMiniYamlParser.GetWeaponDefinitions(referencedFiles, mods);
+			return symbolGenerator.GetWeaponDefinitions(referencedFiles, mods);
 		}
 
 		public ILookup<string, ConditionDefinition> GetConditionDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
-			return OpenRAMiniYamlParser.GetConditionDefinitions(referencedFiles, mods);
+			return symbolGenerator.GetConditionDefinitions(referencedFiles, mods);
 		}
 
 		public ILookup<string, CursorDefinition> GetCursorDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
-			return OpenRAMiniYamlParser.GetCursorDefinitions(referencedFiles, mods);
+			return symbolGenerator.GetCursorDefinitions(referencedFiles, mods);
 		}
 
 		public ILookup<string, PaletteDefinition> GetPaletteDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods, HashSet<string> knownPaletteTypes)
 		{
-			return OpenRAMiniYamlParser.GetPaletteDefinitions(referencedFiles, mods, knownPaletteTypes);
+			return symbolGenerator.GetPaletteDefinitions(referencedFiles, mods, knownPaletteTypes);
 		}
 
 		public ILookup<string, SpriteSequenceImageDefinition> GetSpriteSequenceDefinitions(IEnumerable<string> referencedFiles, IReadOnlyDictionary<string, string> mods)
 		{
-			return OpenRAMiniYamlParser.GetSpriteSequenceDefinitions(referencedFiles, mods);
+			return symbolGenerator.GetSpriteSequenceDefinitions(referencedFiles, mods);
 		}
 
 		public (IEnumerable<YamlNode> Original, IEnumerable<YamlNode> Flattened) ParseText(string text, string fileUriString = null)
 		{
-			return OpenRAMiniYamlParser.ParseText(text, fileUriString);
+			return symbolGenerator.ParseText(text, fileUriString);
 		}
 	}
 }
