@@ -10,10 +10,10 @@ using Oraide.Core.Entities.Csharp;
 
 namespace Oraide.Csharp.CodeParsers
 {
-	public static class RoslynCodeParser
+	public static class OldRoslynCodeParser
 	{
 		public static (ILookup<string, TraitInfo>,
-			WeaponInfo, ILookup<string, TraitInfo>,
+			OldWeaponInfo, ILookup<string, TraitInfo>,
 			ILookup<string, SimpleClassInfo>,
 			ILookup<string, EnumInfo>
 			) Parse(in string oraFolderPath)
@@ -204,7 +204,7 @@ namespace Oraide.Csharp.CodeParsers
 				finalWarheadInfos.Add(warheadInfo);
 			}
 
-			var weaponInfo = new WeaponInfo(weaponInfoFields, projectileInfos.ToArray(), finalWarheadInfos.ToArray());
+			var weaponInfo = new OldWeaponInfo(weaponInfoFields, projectileInfos.ToArray(), finalWarheadInfos.ToArray());
 
 			// Palettes are just TraitInfos that have a name field with a PaletteDefinitionAttribute.
 			var paletteTraitInfos = finalTraitInfos
@@ -213,7 +213,7 @@ namespace Oraide.Csharp.CodeParsers
 						.Any(z => z.Name == "PaletteDefinition")))
 				.ToLookup(x => x.TraitInfoName, y => y);
 
-			// Resolve warhead inheritance - load base types and a full list in fields - inherited or not.
+			// Resolve sprite sequence inheritance - load base types and a full list in fields - inherited or not.
 			var finalSpriteSequenceInfos = new List<SimpleClassInfo>(spriteSequences.Count);
 			foreach (var ssi in spriteSequences)
 			{

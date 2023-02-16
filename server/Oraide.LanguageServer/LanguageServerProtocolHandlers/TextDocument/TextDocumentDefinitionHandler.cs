@@ -16,7 +16,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 	public class TextDocumentDefinitionHandler : BaseRpcMessageHandler
 	{
 		ModSymbols modSymbols;
-		WeaponInfo weaponInfo;
+		OldWeaponInfo weaponInfo;
 		CodeSymbols codeSymbols;
 
 		public TextDocumentDefinitionHandler(SymbolCache symbolCache, OpenFileCache openFileCache)

@@ -14,7 +14,7 @@ namespace Oraide.LanguageServer.Caching.Entities
 		/// <summary>
 		/// Information about the WeaponInfo class, all IProjectileInfo implementations and all IWarhead implementations.
 		/// </summary>
-		public WeaponInfo WeaponInfo { get; }
+		public OldWeaponInfo WeaponInfo { get; }
 
 		/// <summary>
 		/// Palette TraitInfo information grouped by TraitInfoName.
@@ -32,7 +32,7 @@ namespace Oraide.LanguageServer.Caching.Entities
 		/// </summary>
 		public ILookup<string, EnumInfo> EnumInfos { get; }
 
-		public CodeSymbols(ILookup<string, TraitInfo> traitInfos, WeaponInfo weaponInfo, ILookup<string, TraitInfo> paletteTraitInfos,
+		public CodeSymbols(ILookup<string, TraitInfo> traitInfos, OldWeaponInfo weaponInfo, ILookup<string, TraitInfo> paletteTraitInfos,
 			ILookup<string, SimpleClassInfo> spriteSequenceInfos, ILookup<string, EnumInfo> enumInfos)
 		{
 			TraitInfos = traitInfos;
