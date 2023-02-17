@@ -16,6 +16,7 @@ namespace Oraide.MiniYaml.SymbolGenerationStrategies
 			var parsers = new IMiniYamlParser[]
 			{
 				new BleedMiniYamlParser(),
+				new Pre202301MiniYamlParser()
 			};
 
 			selectedParser = parsers.First(x => x.CanParse(openRaFolder));
