@@ -11,15 +11,14 @@ namespace Oraide.LanguageServer.Caching
 {
 	public class OpenFileCache
 	{
-		private readonly YamlInformationProvider yamlInformationProvider;
+		readonly YamlInformationProvider yamlInformationProvider;
 
-		private readonly IDictionary<string, (ReadOnlyCollection<YamlNode> YamlNodes, ReadOnlyCollection<YamlNode> FlattenedYamlNodes, ReadOnlyCollection<string> Lines)>
+		readonly IDictionary<string, (ReadOnlyCollection<YamlNode> YamlNodes, ReadOnlyCollection<YamlNode> FlattenedYamlNodes, ReadOnlyCollection<string> Lines)>
 			openFiles = new Dictionary<string, (ReadOnlyCollection<YamlNode> YamlNodes, ReadOnlyCollection<YamlNode> FlattenedYamlNodes, ReadOnlyCollection<string> Lines)>();
 
-		public OpenFileCache()
+		public OpenFileCache(YamlInformationProvider yamlInformationProvider)
 		{
-			// TODO: Get this via DI:
-			yamlInformationProvider = new YamlInformationProvider(null);
+			this.yamlInformationProvider = yamlInformationProvider;
 		}
 
 		public (ReadOnlyCollection<YamlNode> YamlNodes,

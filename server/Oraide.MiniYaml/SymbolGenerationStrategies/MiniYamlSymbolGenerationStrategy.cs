@@ -11,6 +11,8 @@ namespace Oraide.MiniYaml.SymbolGenerationStrategies
 	{
 		readonly IMiniYamlParser selectedParser;
 
+		public string LoadedVersion { get; }
+
 		public MiniYamlSymbolGenerationStrategy(string openRaFolder)
 		{
 			var parsers = new IMiniYamlParser[]
@@ -20,6 +22,7 @@ namespace Oraide.MiniYaml.SymbolGenerationStrategies
 			};
 
 			selectedParser = parsers.First(x => x.CanParse(openRaFolder));
+			LoadedVersion = selectedParser.GetType().Name;
 		}
 
 		public IEnumerable<YamlNode> ParseModFile(in string modFolder)

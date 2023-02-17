@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Oraide.Core.Entities.MiniYaml;
@@ -18,6 +19,9 @@ namespace Oraide.MiniYaml
 		{
 			this.yamlFolder = yamlFolder;
 			symbolGenerator = new MiniYamlSymbolGenerationStrategy(yamlFolder);
+
+			Console.Error.WriteLine($"Loading MiniYAML symbols using {symbolGenerator.LoadedVersion}.");
+			Console.Error.WriteLine("-------------");
 		}
 
 		public IEnumerable<string> GetModDirectories()

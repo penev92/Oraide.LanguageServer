@@ -6,6 +6,8 @@ namespace Oraide.MiniYaml.Abstraction.SymbolGenerationStrategies
 {
 	public interface IMiniYamlSymbolGenerationStrategy
 	{
+		string LoadedVersion { get; }
+
 		IEnumerable<YamlNode> ParseModFile(in string modFolder);
 
 		IEnumerable<YamlNode> ParseMapFile(in string mapFolder);
