@@ -236,6 +236,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 							// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
 							// NOTE: This will improve if/when we add the attribute.
 							if (traitInfo.PropertyInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
+									&& !string.IsNullOrWhiteSpace(y.Value)
 								    && (y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name)))
 							    && spriteSequenceImageDefinitions.Contains(cursorTarget.TargetString))
 							{
