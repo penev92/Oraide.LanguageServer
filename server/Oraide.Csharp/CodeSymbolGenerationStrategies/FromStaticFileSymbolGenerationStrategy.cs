@@ -5,6 +5,7 @@ using System.Reflection;
 using Oraide.Core.Entities.Csharp;
 using Oraide.Csharp.Abstraction.CodeSymbolGenerationStrategies;
 using Oraide.Csharp.Abstraction.StaticFileParsers;
+using Oraide.Csharp.StaticFileParsers;
 
 namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 {
@@ -24,10 +25,18 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		{
 			LoadedVersion = GetVersion(openRaFolder);
 			var parsers = Assembly.GetExecutingAssembly().GetTypes()
-				.Where(x => x.GetInterfaces().Contains(typeof(IStaticFileParser)))
+				.Where(x => !x.IsAbstract && x.GetInterfaces().Contains(typeof(IStaticFileParser)))
 				.Select(Activator.CreateInstance);
 
 			selectedParser = (IStaticFileParser)parsers.FirstOrDefault(x => ((IStaticFileParser)x).EngineVersions.Contains(LoadedVersion));
+			if (selectedParser == null)
+			{
+				LoadedVersion = $"Unsupported version ({LoadedVersion})";
+
+				// Using the newest one and hoping for the best.
+				selectedParser = new Release20230225StaticFileParser();
+			}
+
 			((BaseStaticFileParser)selectedParser).Load();
 		}
 
