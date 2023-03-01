@@ -17,15 +17,15 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		ILookup<string, ClassInfo> spriteSequenceInfos;
 		ILookup<string, EnumInfo> enumInfos;
 
-		public string LoadedVersion { get; private set; }
+		public string LoadedVersion { get; }
 
 		public CodeParsingSymbolGenerationStrategy(in string openRaFolder)
 		{
 			this.openRaFolder = openRaFolder;
 			var codeParsers = new ICodeParser[]
 			{
+				new BleedRoslynCodeParser(),
 				new Pre20210321RoslynCodeParser(),
-				new BleedRoslynCodeParser()
 			};
 
 			selectedParser = codeParsers.First(x => x.CanParse(this.openRaFolder));

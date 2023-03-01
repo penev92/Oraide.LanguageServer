@@ -21,7 +21,7 @@ namespace Oraide.LanguageServer
 				.BuildServiceProvider();
 
 			await serviceProvider
-				.GetService<ILanguageServer>()
+				.GetRequiredService<ILanguageServer>()
 				.RunAsync();
 		}
 	}
