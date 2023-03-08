@@ -19,7 +19,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		public WeaponsFileHandlingService(SymbolCache symbolCache, OpenFileCache openFileCache)
 			: base(symbolCache, openFileCache) { }
 
-		protected override void Initialize(CursorTarget cursorTarget)
+		public override void Initialize(CursorTarget cursorTarget)
 		{
 			base.Initialize(cursorTarget);
 

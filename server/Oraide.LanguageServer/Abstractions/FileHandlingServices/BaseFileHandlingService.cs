@@ -75,7 +75,7 @@ namespace Oraide.LanguageServer.Abstractions.FileHandlingServices
 
 		#region Virtual protected methods
 
-		protected virtual void Initialize(CursorTarget cursorTarget)
+		public virtual void Initialize(CursorTarget cursorTarget)
 		{
 			range = cursorTarget.ToRange();
 			modSymbols = symbolCache[cursorTarget.ModId].ModSymbols;

@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
-using OpenRA.MiniYamlParser;
 using Oraide.Core;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.MiniYaml;
+using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers.Configuration;
 using Oraide.LanguageServer.Caching;
 
 namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
@@ -19,11 +18,13 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 		protected readonly bool trace = true;
 		protected readonly SymbolCache symbolCache;
 		protected readonly OpenFileCache openFileCache;
+		protected readonly IFileTypeHandlerConfiguration fileHandlerConfiguration;
 
-		protected BaseRpcMessageHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
+		protected BaseRpcMessageHandler(SymbolCache symbolCache, OpenFileCache openFileCache, IFileTypeHandlerConfiguration fileHandlerConfiguration)
 		{
 			this.symbolCache = symbolCache;
 			this.openFileCache = openFileCache;
+			this.fileHandlerConfiguration = fileHandlerConfiguration;
 		}
 
 		protected virtual bool TryGetCursorTarget(TextDocumentPositionParams positionParams, out CursorTarget target)
@@ -132,100 +133,17 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			return true;
 		}
 
-		protected virtual void Initialize(CursorTarget cursorTarget) { }
-
 		#region CursorTarget handlers
 
 		protected virtual object HandlePositionalRequest(TextDocumentPositionParams positionParams)
 		{
 			if (!TryGetCursorTarget(positionParams, out var cursorTarget))
-				return null;
+				return default;
 
-			Initialize(cursorTarget);
-
-			return cursorTarget.FileType switch
-			{
-				FileType.Rules => HandleRulesFile(cursorTarget),
-				FileType.Weapons => HandleWeaponFile(cursorTarget),
-				FileType.Cursors => HandleCursorsFile(cursorTarget),
-				FileType.SpriteSequences => HandleSpriteSequenceFile(cursorTarget),
-				FileType.MapFile => HandleMapFile(cursorTarget),
-				FileType.MapRules => HandleRulesFile(cursorTarget),
-				FileType.MapWeapons => HandleWeaponFile(cursorTarget),
-				FileType.MapSpriteSequences => HandleSpriteSequenceFile(cursorTarget),
-				_ => null
-			};
+			return HandlePositionalRequestInner(cursorTarget);
 		}
 
-		protected virtual object HandleRulesFile(CursorTarget cursorTarget)
-		{
-			return cursorTarget.TargetType switch
-			{
-				"key" => HandleRulesKey(cursorTarget),
-				"value" => HandleRulesValue(cursorTarget),
-				_ => null
-			};
-		}
-
-		protected virtual object HandleWeaponFile(CursorTarget cursorTarget)
-		{
-			return cursorTarget.TargetType switch
-			{
-				"key" => HandleWeaponKey(cursorTarget),
-				"value" => HandleWeaponValue(cursorTarget),
-				_ => null
-			};
-		}
-
-		protected virtual object HandleCursorsFile(CursorTarget cursorTarget)
-		{
-			return cursorTarget.TargetType switch
-			{
-				"key" => HandleCursorsKey(cursorTarget),
-				"value" => HandleCursorsValue(cursorTarget),
-				_ => null
-			};
-		}
-
-		protected virtual object HandleMapFile(CursorTarget cursorTarget)
-		{
-			return cursorTarget.TargetType switch
-			{
-				"key" => HandleMapFileKey(cursorTarget),
-				"value" => HandleMapFileValue(cursorTarget),
-				_ => null
-			};
-		}
-
-		protected virtual object HandleSpriteSequenceFile(CursorTarget cursorTarget)
-		{
-			return cursorTarget.TargetType switch
-			{
-				"key" => HandleSpriteSequenceFileKey(cursorTarget),
-				"value" => HandleSpriteSequenceFileValue(cursorTarget),
-				_ => null
-			};
-		}
-
-		protected virtual object HandleRulesKey(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleRulesValue(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleWeaponKey(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleWeaponValue(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleCursorsKey(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleCursorsValue(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleMapFileKey(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleMapFileValue(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleSpriteSequenceFileKey(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleSpriteSequenceFileValue(CursorTarget cursorTarget) { return null; }
+		protected virtual object HandlePositionalRequestInner(CursorTarget cursorTarget) { return null; }
 
 		#endregion
 
@@ -252,28 +170,6 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			}
 
 			return true;
-		}
-
-		protected bool TryMergeYamlFiles(IEnumerable<string> filePaths, out List<MiniYamlNode> nodes)
-		{
-			// As long as the merging passes there's a good chance we really do have a node like the target one to be removed.
-			// If the target node removal doesn't have a corresponding node addition (is invalid), MiniYaml loading will throw.
-			try
-			{
-				nodes = OpenRA.MiniYamlParser.MiniYaml.Load(filePaths);
-				return true;
-			}
-			catch (Exception)
-			{
-				nodes = null;
-				return false;
-			}
-		}
-
-		protected string NormalizeFilePath(string filePath)
-		{
-			// Because VSCode sends us weird partially-url-encoded file paths.
-			return System.Web.HttpUtility.UrlDecode(filePath);
 		}
 
 		bool TryGetTargetString(string targetLine, int targetCharacterIndex, string sourceString, out string targetString, out int startIndex, out int endIndex)

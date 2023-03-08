@@ -7,15 +7,17 @@ using LspTypes;
 using Oraide.Core;
 using Oraide.Core.Entities;
 using Oraide.Core.Entities.MiniYaml;
+using Oraide.LanguageServer.Abstractions.FileHandlingServices;
 using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers;
+using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers.Configuration;
 using Oraide.LanguageServer.Caching;
 
 namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 {
 	public class TextDocumentCompletionHandler : BaseRpcMessageHandler
 	{
-		public TextDocumentCompletionHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
-			: base(symbolCache, openFileCache) { }
+		public TextDocumentCompletionHandler(SymbolCache symbolCache, OpenFileCache openFileCache, IFileTypeHandlerConfiguration fileHandlerConfiguration)
+			: base(symbolCache, openFileCache, fileHandlerConfiguration) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentCompletionName)]
 		public CompletionList CompletionTextDocument(CompletionParams completionParams)
@@ -130,6 +132,13 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				new MemberLocation(fileUri, targetLineIndex, targetCharacterIndex), indentation);
 
 			return true;
+		}
+
+		protected override IEnumerable<CompletionItem> HandlePositionalRequestInner(CursorTarget cursorTarget)
+		{
+			var service = fileHandlerConfiguration.GetService<ICompletionService>(cursorTarget);
+			(service as BaseFileHandlingService)?.Initialize(cursorTarget);
+			return service?.HandleCompletion(cursorTarget);
 		}
 	}
 }

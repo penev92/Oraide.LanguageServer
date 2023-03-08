@@ -15,7 +15,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		const string RegexMatchPattern = "(?:\t|[a-zA-Z0-9])(Color[s]*)(?:[:A-Z])";
 
 		public TextDocumentColorHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
-			: base(symbolCache, openFileCache) { }
+			: base(symbolCache, openFileCache, null) { }
 
 		[OraideCustomJsonRpcMethodTag("textDocument/documentColor")]
 		public IEnumerable<ColorInformation> DocumentColor(DocumentColorParams request)

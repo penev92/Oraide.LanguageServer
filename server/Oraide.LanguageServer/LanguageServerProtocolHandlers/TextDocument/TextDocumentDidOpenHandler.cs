@@ -13,7 +13,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 	public class TextDocumentDidOpenHandler : BaseRpcMessageHandler
 	{
 		public TextDocumentDidOpenHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
-			: base(symbolCache, openFileCache) { }
+			: base(symbolCache, openFileCache, null) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentDidOpenName)]
 		public void DidOpenTextDocument(DidOpenTextDocumentParams request)

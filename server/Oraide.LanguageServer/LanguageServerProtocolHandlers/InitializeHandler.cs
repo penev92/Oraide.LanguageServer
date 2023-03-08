@@ -7,7 +7,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 	public class InitializeHandler : BaseRpcMessageHandler
 	{
 		public InitializeHandler()
-			: base(null, null) { }
+			: base(null, null, null) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.InitializeName)]
 		public InitializeResult Initialize(InitializeParams initializeParams)

@@ -8,7 +8,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 	public class ShutdownHandler : BaseRpcMessageHandler
 	{
 		public ShutdownHandler()
-			: base(null, null) { }
+			: base(null, null, null) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.ShutdownName)]
 		public JToken ShutdownName()

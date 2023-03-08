@@ -11,7 +11,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 	public class WorkspaceSymbolRequestHandler : BaseRpcMessageHandler
 	{
 		public WorkspaceSymbolRequestHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
-			: base(symbolCache, openFileCache) { }
+			: base(symbolCache, openFileCache, null) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.WorkspaceSymbolName)]
 		public IEnumerable<SymbolInformation> Symbols(WorkspaceSymbolParams request)
