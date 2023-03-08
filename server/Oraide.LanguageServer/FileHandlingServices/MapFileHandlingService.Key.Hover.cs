@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-using LspTypes;
-using Oraide.Core.Entities.Csharp;
+﻿using LspTypes;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.FileHandlingServices;
-using Oraide.LanguageServer.Caching;
 
 namespace Oraide.LanguageServer.FileHandlingServices
 {

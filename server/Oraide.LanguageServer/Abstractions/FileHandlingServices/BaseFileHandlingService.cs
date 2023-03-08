@@ -4,6 +4,7 @@ using System.Linq;
 using LspTypes;
 using OpenRA.MiniYamlParser;
 using Oraide.Core;
+using Oraide.Core.Entities;
 using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Caching;
@@ -13,7 +14,7 @@ using Range = LspTypes.Range;
 
 namespace Oraide.LanguageServer.Abstractions.FileHandlingServices
 {
-	public abstract class BaseFileHandlingService : IHoverService, IDefinitionService
+	public abstract class BaseFileHandlingService : IHoverService, IDefinitionService, ICompletionService
 	{
 		protected readonly SymbolCache symbolCache;
 		protected readonly OpenFileCache openFileCache;
@@ -50,6 +51,16 @@ namespace Oraide.LanguageServer.Abstractions.FileHandlingServices
 			};
 		}
 
+		public IEnumerable<CompletionItem> HandleCompletion(CursorTarget cursorTarget)
+		{
+			return cursorTarget.TargetType switch
+			{
+				"key" => KeyCompletion(cursorTarget),
+				"value" => ValueCompletion(cursorTarget),
+				_ => null
+			};
+		}
+
 		#endregion
 
 		#region Virtual protected methods
@@ -66,6 +77,9 @@ namespace Oraide.LanguageServer.Abstractions.FileHandlingServices
 
 		protected abstract IEnumerable<Location> KeyDefinition(CursorTarget cursorTarget);
 		protected abstract IEnumerable<Location> ValueDefinition(CursorTarget cursorTarget);
+
+		protected abstract IEnumerable<CompletionItem> KeyCompletion(CursorTarget cursorTarget);
+		protected abstract IEnumerable<CompletionItem> ValueCompletion(CursorTarget cursorTarget);
 
 		#endregion
 
@@ -111,6 +125,28 @@ namespace Oraide.LanguageServer.Abstractions.FileHandlingServices
 			}
 
 			return imageName;
+		}
+
+		protected IEnumerable<SpriteSequenceDefinition> GetSpriteSequencesForImage(string modId, string imageName, MapManifest? mapManifest)
+		{
+			var files = new List<string>(symbolCache[modId].ModManifest.SpriteSequences);
+			if (mapManifest?.WeaponsFiles != null)
+				files.AddRange(mapManifest?.SpriteSequenceFiles);
+
+			var resolvedFileList = files.Select(x => OpenRaFolderUtils.ResolveFilePath(x, (modId, symbolCache[modId].ModFolder)));
+
+			if (TryMergeYamlFiles(resolvedFileList, out var imageNodes))
+			{
+				var sequenceNodes = imageNodes.FirstOrDefault(x => x.Key == imageName)?.Value.Nodes;
+				var sequences = sequenceNodes?
+					.Where(x => x.Key != "Defaults")
+					.Select(x => new SpriteSequenceDefinition(x.Key, x.ParentNode?.Key, x.Value.Value,
+						new MemberLocation("", 0, 0)));
+
+				return sequences ?? Enumerable.Empty<SpriteSequenceDefinition>();
+			}
+
+			return Enumerable.Empty<SpriteSequenceDefinition>();
 		}
 
 		#endregion
