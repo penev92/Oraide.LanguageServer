@@ -14,7 +14,7 @@ using Range = LspTypes.Range;
 
 namespace Oraide.LanguageServer.Abstractions.FileHandlingServices
 {
-	public abstract class BaseFileHandlingService : IHoverService, IDefinitionService, ICompletionService
+	public abstract class BaseFileHandlingService : IHoverService, IDefinitionService, ICompletionService, IReferencesService
 	{
 		protected readonly SymbolCache symbolCache;
 		protected readonly OpenFileCache openFileCache;
@@ -51,12 +51,22 @@ namespace Oraide.LanguageServer.Abstractions.FileHandlingServices
 			};
 		}
 
-		public IEnumerable<CompletionItem> HandleCompletion(CursorTarget cursorTarget)
+		IEnumerable<CompletionItem> ICompletionService.HandleCompletion(CursorTarget cursorTarget)
 		{
 			return cursorTarget.TargetType switch
 			{
 				"key" => KeyCompletion(cursorTarget),
 				"value" => ValueCompletion(cursorTarget),
+				_ => null
+			};
+		}
+
+		IEnumerable<Location> IReferencesService.HandleReferences(CursorTarget cursorTarget)
+		{
+			return cursorTarget.TargetType switch
+			{
+				"key" => KeyReferences(cursorTarget),
+				"value" => ValueReferences(cursorTarget),
 				_ => null
 			};
 		}
@@ -80,6 +90,9 @@ namespace Oraide.LanguageServer.Abstractions.FileHandlingServices
 
 		protected abstract IEnumerable<CompletionItem> KeyCompletion(CursorTarget cursorTarget);
 		protected abstract IEnumerable<CompletionItem> ValueCompletion(CursorTarget cursorTarget);
+
+		protected abstract IEnumerable<Location> KeyReferences(CursorTarget cursorTarget);
+		protected abstract IEnumerable<Location> ValueReferences(CursorTarget cursorTarget);
 
 		#endregion
 

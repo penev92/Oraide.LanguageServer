@@ -25,16 +25,20 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			actorNames = modSymbols.ActorDefinitions.Select(x => x.First().ToCompletionItem());
 		}
 
-		protected override IEnumerable<Location> KeyDefinition(CursorTarget cursorTarget)
-		{
-			// TODO: Not implemented yet.
-			return Enumerable.Empty<Location>();
-		}
+		#region Handler method implementations
 
-		protected override IEnumerable<CompletionItem> KeyCompletion(CursorTarget cursorTarget)
-		{
-			// TODO: Not implemented yet.
-			return Enumerable.Empty<CompletionItem>();
-		}
+		// TODO: Not implemented yet.
+		protected override IEnumerable<Location> KeyDefinition(CursorTarget cursorTarget) => Enumerable.Empty<Location>();
+
+		// TODO: Not implemented yet.
+		protected override IEnumerable<CompletionItem> KeyCompletion(CursorTarget cursorTarget) => Enumerable.Empty<CompletionItem>();
+
+		// TODO: Not implemented yet.
+		protected override IEnumerable<Location> KeyReferences(CursorTarget cursorTarget) => Enumerable.Empty<Location>();
+
+		// TODO: Not implemented yet.
+		protected override IEnumerable<Location> ValueReferences(CursorTarget cursorTarget) => Enumerable.Empty<Location>();
+
+		#endregion
 	}
 }

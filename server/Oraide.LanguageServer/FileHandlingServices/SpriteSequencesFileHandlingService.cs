@@ -21,5 +21,15 @@ namespace Oraide.LanguageServer.FileHandlingServices
 
 			spriteSequenceImageNames = modSymbols.SpriteSequenceImageDefinitions.Select(x => x.First().ToCompletionItem());
 		}
+
+		#region Handler method implementations
+
+		// TODO: Not implemented yet.
+		protected override IEnumerable<Location> KeyReferences(CursorTarget cursorTarget) => Enumerable.Empty<Location>();
+
+		// TODO: Not implemented yet.
+		protected override IEnumerable<Location> ValueReferences(CursorTarget cursorTarget) => Enumerable.Empty<Location>();
+
+		#endregion
 	}
 }

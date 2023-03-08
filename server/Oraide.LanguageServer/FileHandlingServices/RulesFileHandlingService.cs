@@ -38,6 +38,18 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			spriteSequenceImageNames = modSymbols.SpriteSequenceImageDefinitions.Select(x => x.First().ToCompletionItem());
 		}
 
+		#region Handler method implementations
+
+		protected override IEnumerable<Location> ValueReferences(CursorTarget cursorTarget)
+		{
+			// TODO: Not implemented yet.
+			return Enumerable.Empty<Location>();
+		}
+
+		#endregion
+
+		#region Helper methods
+
 		protected string ResolveSpriteSequenceImageNameForRules(CursorTarget cursorTarget, ClassFieldInfo fieldInfo, MapManifest? mapManifest)
 		{
 			var files = new List<string>(symbolCache[cursorTarget.ModId].ModManifest.RulesFiles);
@@ -46,5 +58,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 
 			return ResolveSpriteSequenceImageName(cursorTarget, fieldInfo, files);
 		}
+
+		#endregion
 	}
 }
