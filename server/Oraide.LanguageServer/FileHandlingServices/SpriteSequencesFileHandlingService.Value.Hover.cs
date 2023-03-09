@@ -39,7 +39,9 @@ namespace Oraide.LanguageServer.FileHandlingServices
 							return IHoverService.HoverFromHoverInfo($"```csharp\nImage \"{cursorTarget.TargetString}\"\n```", range);
 				}
 			}
-			else
+
+			// This was only valid before the sequence definitions rework that was merged in January 2023.
+			else if (symbolCache.YamlVersion == nameof(MiniYaml.Parsers.Pre202301MiniYamlParser))
 			{
 				return HandleSpriteSequenceFileName(cursorTarget);
 			}

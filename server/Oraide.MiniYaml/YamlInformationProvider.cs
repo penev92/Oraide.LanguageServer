@@ -12,6 +12,8 @@ namespace Oraide.MiniYaml
 	//  - Generating symbols to navigate to.
 	public class YamlInformationProvider
 	{
+		public string YamlVersion => symbolGenerator.LoadedVersion;
+
 		readonly string yamlFolder;
 		readonly IMiniYamlSymbolGenerationStrategy symbolGenerator;
 
