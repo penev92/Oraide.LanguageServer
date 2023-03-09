@@ -22,6 +22,10 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			var projectileInfos = new List<ClassInfo>();
 			var spriteSequenceInfos = new List<ClassInfo>();
 			var enumInfos = new List<EnumInfo>();
+			var packageLoaders = new List<ClassInfo>();
+			var soundLoaders = new List<ClassInfo>();
+			var spriteLoaders = new List<ClassInfo>();
+			var videoLoaders = new List<ClassInfo>();
 
 			var filePaths = Directory.EnumerateFiles(oraFolderPath, "*.cs", SearchOption.AllDirectories)
 				.Where(x => !x.Contains("OpenRA.Test"));
@@ -62,6 +66,18 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 									case ClassType.SpriteSequence:
 										spriteSequenceInfos.Add(classInfo);
 										break;
+									case ClassType.PackageLoader:
+										packageLoaders.Add(classInfo);
+										break;
+									case ClassType.SoundLoader:
+										soundLoaders.Add(classInfo);
+										break;
+									case ClassType.SpriteLoader:
+										spriteLoaders.Add(classInfo);
+										break;
+									case ClassType.VideoLoader:
+										videoLoaders.Add(classInfo);
+										break;
 									default:
 										throw new ArgumentOutOfRangeException();
 								}
@@ -78,7 +94,8 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			var weaponInfo = FinalizeWeaponInfo(weaponInfoFields, projectileInfos, warheadInfos);
 			var finalSpriteSequenceInfos = FinalizeSpriteSequenceInfos(spriteSequenceInfos);
 
-			return new CodeInformation(finalTraitInfos, finalPaletteInfos, weaponInfo, finalSpriteSequenceInfos, enumInfos);
+			return new CodeInformation(finalTraitInfos, finalPaletteInfos, weaponInfo, finalSpriteSequenceInfos, enumInfos,
+				packageLoaders, soundLoaders, spriteLoaders, videoLoaders);
 		}
 
 		protected virtual (ClassType Type, ClassInfo Info) ParseClass(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
@@ -119,6 +136,31 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			{
 				var classInfo = ParseSpriteSequenceInfo(filePath, fileText, classDeclaration);
 				return (ClassType.SpriteSequence, classInfo);
+			}
+
+			// Asset loaders:
+			if (baseTypes.Contains("IPackageLoader"))
+			{
+				var classInfo = ParseAssetLoader(filePath, fileText, classDeclaration);
+				return (ClassType.PackageLoader, classInfo);
+			}
+
+			if (baseTypes.Contains("ISoundLoader"))
+			{
+				var classInfo = ParseAssetLoader(filePath, fileText, classDeclaration);
+				return (ClassType.SoundLoader, classInfo);
+			}
+
+			if (baseTypes.Contains("ISpriteLoader"))
+			{
+				var classInfo = ParseAssetLoader(filePath, fileText, classDeclaration);
+				return (ClassType.SpriteLoader, classInfo);
+			}
+
+			if (baseTypes.Contains("IVideoLoader"))
+			{
+				var classInfo = ParseAssetLoader(filePath, fileText, classDeclaration);
+				return (ClassType.VideoLoader, classInfo);
 			}
 
 			return default;
@@ -212,6 +254,13 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 
 			return new ClassInfo(classInfo.Name, classInfo.InfoName, classInfo.Description, classInfo.Location,
 				classInfo.BaseTypes, fields.ToArray(), classInfo.IsAbstract);
+		}
+
+		protected virtual ClassInfo ParseAssetLoader(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
+		{
+			var classInfo = ParseSimpleClass(filePath, fileText, classDeclaration);
+			return new ClassInfo(classInfo.Name.Substring(0, classInfo.Name.IndexOf("Loader")),
+				classInfo.Name, classInfo.Description, classInfo.Location, classInfo.BaseTypes, classInfo.PropertyInfos, classInfo.IsAbstract);
 		}
 
 		#endregion

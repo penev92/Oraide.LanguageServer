@@ -16,5 +16,7 @@ namespace Oraide.Csharp.Abstraction.StaticFileParsers
 		IEnumerable<ClassInfo> ParseSpriteSequenceInfos();
 
 		IEnumerable<EnumInfo> ParseEnumInfos();
+
+		IEnumerable<ClassInfo> ParseAssetLoaders();
 	}
 }

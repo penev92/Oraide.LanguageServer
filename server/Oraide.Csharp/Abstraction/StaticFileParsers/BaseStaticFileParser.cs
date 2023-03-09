@@ -19,6 +19,7 @@ namespace Oraide.Csharp.Abstraction.StaticFileParsers
 		protected JObject traitsData;
 		protected JObject weaponsData;
 		protected JObject spriteSequencesData;
+		protected JObject assetLoadersData;
 
 		public void Load()
 		{
@@ -28,6 +29,7 @@ namespace Oraide.Csharp.Abstraction.StaticFileParsers
 			var traitsFile = Path.Combine(assemblyFolder, "docs", $"{InternalVersionName}-traits.json");
 			var weaponsFile = Path.Combine(assemblyFolder, "docs", $"{InternalVersionName}-weapons.json");
 			var spriteSequencesFile = Path.Combine(assemblyFolder, "docs", $"{InternalVersionName}-sprite-sequences.json");
+			var assetLoadersFile = Path.Combine(assemblyFolder, "docs", $"{InternalVersionName}-asset-loaders.json");
 
 			var traitsText = File.Exists(traitsFile) ? File.ReadAllText(traitsFile) : "";
 			traitsData = JsonConvert.DeserializeObject<JObject>(traitsText);
@@ -37,6 +39,9 @@ namespace Oraide.Csharp.Abstraction.StaticFileParsers
 
 			var spriteSequencesText = File.Exists(spriteSequencesFile) ? File.ReadAllText(spriteSequencesFile) : "";
 			spriteSequencesData = JsonConvert.DeserializeObject<JObject>(spriteSequencesText);
+
+			var assetLoadersText = File.Exists(assetLoadersFile) ? File.ReadAllText(assetLoadersFile) : "";
+			assetLoadersData = JsonConvert.DeserializeObject<JObject>(assetLoadersText);
 		}
 
 		#region IStaticFileParser implementation
@@ -52,6 +57,8 @@ namespace Oraide.Csharp.Abstraction.StaticFileParsers
 		public abstract IEnumerable<ClassInfo> ParseSpriteSequenceInfos();
 
 		public abstract IEnumerable<EnumInfo> ParseEnumInfos();
+
+		public abstract IEnumerable<ClassInfo> ParseAssetLoaders();
 
 		#endregion
 

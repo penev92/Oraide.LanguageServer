@@ -58,8 +58,9 @@ namespace Oraide.LanguageServer.Caching
 			var paletteTraitInfos = codeInformationProvider.GetPaletteTraitInfos();
 			var spriteSequenceInfos = codeInformationProvider.GetSpriteSequenceInfos();
 			var enumInfos = codeInformationProvider.GetEnumInfos();
+			var assetLoaders = codeInformationProvider.GetAssetLoaders();
 
-			var codeSymbols = new CodeSymbols(traitInfos, paletteTraitInfos, weaponInfo, spriteSequenceInfos, enumInfos);
+			var codeSymbols = new CodeSymbols(traitInfos, paletteTraitInfos, weaponInfo, spriteSequenceInfos, enumInfos, assetLoaders);
 
 			var elapsedTotal = stopwatchTotal.Elapsed;
 			Console.Error.WriteLine($"Took {elapsedTotal} to load code symbols:");
