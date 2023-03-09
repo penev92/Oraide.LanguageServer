@@ -15,7 +15,8 @@ namespace Oraide.Core.Entities.MiniYaml
 
 	public enum FileType
 	{
-		Unknown = 0,
+		Unknown = -1,
+		ModFile = 0,
 		Rules = 1,
 		Weapons = 2,
 		SpriteSequences = 3,
