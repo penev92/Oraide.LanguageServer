@@ -13,7 +13,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 	public class DidChangeWatchedFilesHandler : BaseRpcMessageHandler
 	{
 		public DidChangeWatchedFilesHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
-			: base(symbolCache, openFileCache) { }
+			: base(symbolCache, openFileCache, null) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.WorkspaceDidChangeWatchedFilesName)]
 		public void DidChangeWatchedFiles(DidChangeWatchedFilesParams request)

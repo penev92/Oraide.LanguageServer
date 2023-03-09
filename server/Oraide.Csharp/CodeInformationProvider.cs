@@ -17,6 +17,8 @@ namespace Oraide.Csharp
 	//  - Any of the above for non-trait types.
 	public class CodeInformationProvider
 	{
+		public string CodeVersion => symbolGenerator.LoadedVersion;
+
 		readonly ICodeSymbolGenerationStrategy symbolGenerator;
 
 		public CodeInformationProvider(string workspaceFolderPath, string defaultOpenRaFolderPath)

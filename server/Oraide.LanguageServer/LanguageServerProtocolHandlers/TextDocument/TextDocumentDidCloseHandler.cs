@@ -9,7 +9,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 	public class TextDocumentDidCloseHandler : BaseRpcMessageHandler
 	{
 		public TextDocumentDidCloseHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
-			: base(symbolCache, openFileCache) { }
+			: base(symbolCache, openFileCache, null) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentDidCloseName)]
 		public void DidCloseTextDocument(DidCloseTextDocumentParams request)

@@ -9,7 +9,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 	public class TextDocumentDidChangeHandler : BaseRpcMessageHandler
 	{
 		public TextDocumentDidChangeHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
-			: base(symbolCache, openFileCache) { }
+			: base(symbolCache, openFileCache, null) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentDidChangeName)]
 		public void DidChangeTextDocument(DidChangeTextDocumentParams request)

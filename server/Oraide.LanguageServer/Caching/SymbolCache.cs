@@ -17,6 +17,9 @@ namespace Oraide.LanguageServer.Caching
 
 		public IDictionary<string, MapSymbols> Maps { get; } = new Dictionary<string, MapSymbols>();
 
+		public string CodeVersion => codeInformationProvider.CodeVersion;
+		public string YamlVersion => yamlInformationProvider.YamlVersion;
+
 		readonly CodeInformationProvider codeInformationProvider;
 		readonly YamlInformationProvider yamlInformationProvider;
 
