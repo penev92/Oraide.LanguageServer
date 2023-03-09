@@ -53,7 +53,6 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			var presentProperties = cursorTarget.TargetNode.ParentNode.ChildNodes.Select(x => x.Key).ToHashSet();
 			var spriteSequenceFormat = symbolCache[cursorTarget.ModId].ModManifest.SpriteSequenceFormat.Type;
 
-			// NOTE: This is copied from HandleRulesKey()!
 			return codeSymbols.SpriteSequenceInfos[spriteSequenceFormat]
 				.SelectMany(x => x.PropertyInfos)
 				.DistinctBy(y => y.Name)

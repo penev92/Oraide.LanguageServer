@@ -50,6 +50,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		{
 			return HandleSpriteSequencePropertyValueDefinition(cursorTarget);
 		}
+
 		IEnumerable<Location> HandleValueDefinitionAt4(CursorTarget cursorTarget)
 		{
 			if (cursorTarget.TargetNode.ParentNode.ParentNode.Key == "Combine")

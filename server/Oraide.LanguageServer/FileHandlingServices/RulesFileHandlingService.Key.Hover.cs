@@ -80,6 +80,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			return null;
 		}
 
+		// TODO: This will likely not handle trait property removals properly!
 		Hover HandleKeyHoverAt2(CursorTarget cursorTarget)
 		{
 			var traitInfoName = $"{cursorTarget.TargetNode.ParentNode.Key.Split("@")[0]}Info";

@@ -21,36 +21,29 @@ namespace Oraide.LanguageServer.FileHandlingServices
 
 		#region Private methods
 
+		// TODO: If this is a trait removal, go to where the trait was defined on the actor? (Will require inheritance resolution).
 		IEnumerable<Location> HandleKeyDefinitionAt1(CursorTarget cursorTarget)
 		{
 			var traitName = cursorTarget.TargetNode.Key.Split('@')[0];
 			var traitInfoName = $"{traitName}Info";
 
-			// Using .First() is not great but we have no way to differentiate between traits of the same name
-			// until the server learns the concept of a mod and loaded assemblies.
-			var traitInfo = codeSymbols.TraitInfos[traitInfoName].FirstOrDefault();
-			if (traitInfo.Name != null)
-				return new[] { traitInfo.Location.ToLspLocation(cursorTarget.TargetString.Length) };
-
-			return Enumerable.Empty<Location>();
+			// Until the server learns the concept of a mod and its loaded assemblies (but even then namespaces will be a problem!),
+			// we must get all traits that match the target trait name.
+			return codeSymbols.TraitInfos[traitInfoName]?
+				.Select(x => x.Location.ToLspLocation(cursorTarget.TargetString.Length));
 		}
 
+		// TODO: This will likely not handle trait property removals properly!
 		IEnumerable<Location> HandleKeyDefinitionAt2(CursorTarget cursorTarget)
 		{
 			var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
 			var traitInfoName = $"{traitName}Info";
 
-			// Using .First() is not great but we have no way to differentiate between traits of the same name
-			// until the server learns the concept of a mod and loaded assemblies.
-			var traitInfo = codeSymbols.TraitInfos[traitInfoName].FirstOrDefault();
-			if (traitInfo.Name != null)
-			{
-				var fieldInfo = traitInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
-				if (fieldInfo.Name != null)
-					return new[] { fieldInfo.Location.ToLspLocation(cursorTarget.TargetString.Length) };
-			}
-
-			return Enumerable.Empty<Location>();
+			// Until the server learns the concept of a mod and its loaded assemblies (but even then namespaces will be a problem!),
+			// we must get all traits that match the target trait name and get all their fields that match the target trait info field name.
+			return codeSymbols.TraitInfos[traitInfoName]?
+				.SelectMany(x => x.PropertyInfos.Where(y => y.Name == cursorTarget.TargetNode.Key))
+				.Select(x => x.Location.ToLspLocation(cursorTarget.TargetString.Length));
 		}
 
 		#endregion

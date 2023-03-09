@@ -48,13 +48,20 @@ namespace Oraide.LanguageServer.FileHandlingServices
 
 			// Using .First() is not great but we have no way to differentiate between traits of the same name
 			// until the server learns the concept of a mod and loaded assemblies.
-			var traitInfo = codeSymbols.TraitInfos[traitInfoName].First();
+			var traitInfo = codeSymbols.TraitInfos[traitInfoName].FirstOrDefault();
+			if (traitInfo.Name == null)
+				return Enumerable.Empty<CompletionItem>();
+
 			var fieldInfo = traitInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
+			if (fieldInfo.Name == null)
+				return Enumerable.Empty<CompletionItem>();
 
 			var tempActorNames = actorNames;
 			var tempWeaponNames = weaponNames;
 			var tempConditionNames = conditionNames;
 			var tempCursorNames = cursorNames;
+			var tempPaletteNames = paletteNames;
+			var tempSpriteSequenceImageNames = spriteSequenceImageNames;
 
 			MapManifest mapManifest = default;
 			if (cursorTarget.FileType == FileType.MapRules)
@@ -68,8 +75,8 @@ namespace Oraide.LanguageServer.FileHandlingServices
 					tempActorNames = tempActorNames.Union(mapSymbols.ActorDefinitions.Select(x => x.First().ToCompletionItem()));
 					tempWeaponNames = tempWeaponNames.Union(mapSymbols.WeaponDefinitions.Select(x => x.First().ToCompletionItem()));
 					tempConditionNames = tempConditionNames.Union(mapSymbols.ConditionDefinitions.Select(x => x.First().ToCompletionItem()));
-					paletteNames = paletteNames.Union(mapSymbols.PaletteDefinitions.Select(x => x.First().ToCompletionItem()));
-					spriteSequenceImageNames = spriteSequenceImageNames.Union(
+					tempPaletteNames = tempPaletteNames.Union(mapSymbols.PaletteDefinitions.Select(x => x.First().ToCompletionItem()));
+					tempSpriteSequenceImageNames = tempSpriteSequenceImageNames.Union(
 						mapSymbols.SpriteSequenceImageDefinitions.Select(x => x.First().ToCompletionItem()));
 				}
 			}
@@ -90,16 +97,14 @@ namespace Oraide.LanguageServer.FileHandlingServices
 				return tempCursorNames;
 
 			if (fieldInfo.OtherAttributes.Any(x => x.Name == "PaletteReference"))
-				return paletteNames.Where(x => !string.IsNullOrEmpty(x.Label));
+				return tempPaletteNames.Where(x => !string.IsNullOrEmpty(x.Label));
 
 			// Pretend there is such a thing as a "SequenceImageReferenceAttribute" until we add it in OpenRA one day.
 			// NOTE: This will improve if/when we add the attribute.
 			if (traitInfo.PropertyInfos.Any(x => x.OtherAttributes.Any(y => y.Name == "SequenceReference"
 					&& !string.IsNullOrWhiteSpace(y.Value)
 					&& (y.Value.Contains(',') ? y.Value.Substring(0, y.Value.IndexOf(',')) == fieldInfo.Name : y.Value == fieldInfo.Name))))
-			{
-				return spriteSequenceImageNames;
-			}
+				return tempSpriteSequenceImageNames;
 
 			if (fieldInfo.OtherAttributes.Any(x => x.Name == "SequenceReference"))
 			{
@@ -110,7 +115,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			}
 
 			// Try to check if this is an enum type field.
-			var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
+			var enumInfo = codeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
 			if (enumInfo != null)
 			{
 				return enumInfo.FirstOrDefault().Values.Select(x => new CompletionItem
@@ -123,9 +128,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			}
 
 			if (fieldInfo.InternalType == "bool")
-			{
 				return new[] { CompletionItems.True, CompletionItems.False };
-			}
 
 			return Enumerable.Empty<CompletionItem>();
 		}

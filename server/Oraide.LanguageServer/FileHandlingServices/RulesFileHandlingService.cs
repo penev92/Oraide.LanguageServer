@@ -40,11 +40,8 @@ namespace Oraide.LanguageServer.FileHandlingServices
 
 		#region Handler method implementations
 
-		protected override IEnumerable<Location> ValueReferences(CursorTarget cursorTarget)
-		{
-			// TODO: Not implemented yet.
-			return Enumerable.Empty<Location>();
-		}
+		// TODO: Not implemented yet.
+		protected override IEnumerable<Location> ValueReferences(CursorTarget cursorTarget) => Enumerable.Empty<Location>();
 
 		#endregion
 

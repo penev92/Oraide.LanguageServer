@@ -27,12 +27,14 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			return actorNames;
 		}
 
+		// TODO: Get only trait names that the actor actually has! (Will require inheritance resolution).
 		IEnumerable<CompletionItem> HandleKeyCompletionAt1(CursorTarget cursorTarget)
 		{
 			// Get only traits (and "Inherits").
 			return traitNames.Append(CompletionItems.Inherits);
 		}
 
+		// TODO: This will likely not handle trait property removals properly!
 		IEnumerable<CompletionItem> HandleKeyCompletionAt2(CursorTarget cursorTarget)
 		{
 			// Get only trait properties.
