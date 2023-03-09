@@ -17,6 +17,8 @@ namespace Oraide.LanguageServer.Caching
 
 		public IDictionary<string, MapSymbols> Maps { get; } = new Dictionary<string, MapSymbols>();
 
+		public IReadOnlyDictionary<string, string> KnownMods { get; private set; }
+
 		public string CodeVersion => codeInformationProvider.CodeVersion;
 		public string YamlVersion => yamlInformationProvider.YamlVersion;
 
@@ -40,11 +42,18 @@ namespace Oraide.LanguageServer.Caching
 
 		IReadOnlyDictionary<string, ModData> CreateSymbolCachesPerMod()
 		{
-			var modFolders = yamlInformationProvider.GetModDirectories().Select(OpenRaFolderUtils.NormalizeFilePathString);
-			var mods = modFolders.ToDictionary(OpenRaFolderUtils.GetModId, y => y);
+			var modFolders = yamlInformationProvider.GetModDirectories().ToList();
+
+			var commonPath = Path.Combine(Path.GetDirectoryName(modFolders.First()), "common");
+			if (Directory.Exists(commonPath))
+				modFolders.Add(commonPath);
+
+			KnownMods = modFolders
+				.Select(OpenRaFolderUtils.NormalizeFilePathString)
+				.ToDictionary(OpenRaFolderUtils.GetModId, y => y);
 
 			// TODO: Remove this flex when the code is stable and we're sure it won't need optimizing.
-			Console.Error.WriteLine($"Found {mods.Count} mod(s): {string.Join(", ", mods.Keys)}.");
+			Console.Error.WriteLine($"Found {KnownMods.Count} mod(s): {string.Join(", ", KnownMods.Keys)}.");
 			Console.Error.WriteLine("Start loading symbol information...");
 			var stopwatchTotal = new Stopwatch();
 			stopwatchTotal.Start();
@@ -77,23 +86,26 @@ namespace Oraide.LanguageServer.Caching
 			var modDataPerMod = new Dictionary<string, ModData>();
 
 			knownPaletteTypes = paletteTraitInfos.Select(x => x.FirstOrDefault().Name).ToHashSet();
-			foreach (var modId in mods.Keys)
+			foreach (var modId in KnownMods.Keys)
 			{
-				var modFolder = mods[modId];
+				if (modId == "common")
+					continue;
+
+				var modFolder = KnownMods[modId];
 
 				var modFileNodes = yamlInformationProvider.ReadModFile(modFolder);
 				var modManifest = new ModManifest(modFileNodes);
 
-				var actorDefinitions = yamlInformationProvider.GetActorDefinitions(modManifest.RulesFiles, mods);
-				var weaponDefinitions = yamlInformationProvider.GetWeaponDefinitions(modManifest.WeaponsFiles, mods);
-				var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(modManifest.RulesFiles, mods);
-				var cursorDefinitions = yamlInformationProvider.GetCursorDefinitions(modManifest.CursorsFiles, mods);
-				var paletteDefinitions = yamlInformationProvider.GetPaletteDefinitions(modManifest.RulesFiles, mods, knownPaletteTypes);
-				var spriteSequenceDefinitions = yamlInformationProvider.GetSpriteSequenceDefinitions(modManifest.SpriteSequences, mods);
+				var actorDefinitions = yamlInformationProvider.GetActorDefinitions(modManifest.RulesFiles, KnownMods);
+				var weaponDefinitions = yamlInformationProvider.GetWeaponDefinitions(modManifest.WeaponsFiles, KnownMods);
+				var conditionDefinitions = yamlInformationProvider.GetConditionDefinitions(modManifest.RulesFiles, KnownMods);
+				var cursorDefinitions = yamlInformationProvider.GetCursorDefinitions(modManifest.CursorsFiles, KnownMods);
+				var paletteDefinitions = yamlInformationProvider.GetPaletteDefinitions(modManifest.RulesFiles, KnownMods, knownPaletteTypes);
+				var spriteSequenceDefinitions = yamlInformationProvider.GetSpriteSequenceDefinitions(modManifest.SpriteSequences, KnownMods);
 
 				var modSymbols = new ModSymbols(actorDefinitions, weaponDefinitions, conditionDefinitions, cursorDefinitions, paletteDefinitions, spriteSequenceDefinitions);
 
-				var mapsDir = OpenRaFolderUtils.ResolveFilePath(modManifest.MapsFolder, mods);
+				var mapsDir = OpenRaFolderUtils.ResolveFilePath(modManifest.MapsFolder, KnownMods);
 				var allMaps = mapsDir == null
 					? Enumerable.Empty<string>()
 					: Directory.EnumerateDirectories(OpenRaFolderUtils.NormalizeFilePathString(mapsDir.AbsolutePath))
