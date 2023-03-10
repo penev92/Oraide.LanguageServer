@@ -14,10 +14,6 @@ namespace Oraide.LanguageServer.FileHandlingServices
 
 		#region Handler method implementations
 
-		protected override IEnumerable<Location> KeyDefinition(CursorTarget cursorTarget) => Enumerable.Empty<Location>();
-
-		protected override IEnumerable<Location> ValueDefinition(CursorTarget cursorTarget) => Enumerable.Empty<Location>();
-
 		protected override IEnumerable<CompletionItem> KeyCompletion(CursorTarget cursorTarget) => Enumerable.Empty<CompletionItem>();
 
 		protected override IEnumerable<CompletionItem> ValueCompletion(CursorTarget cursorTarget) => Enumerable.Empty<CompletionItem>();
