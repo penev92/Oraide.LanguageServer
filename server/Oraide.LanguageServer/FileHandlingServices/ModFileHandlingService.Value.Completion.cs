@@ -44,12 +44,15 @@ namespace Oraide.LanguageServer.FileHandlingServices
 					.Where(x => !presentValues.Contains(x.Name))
 					.Select(x => x.ToCompletionItem("Video loader"));
 
-			// TODO: Not implemented yet:
+			// TODO: Other *Formats are not implemented yet:
 			//if (cursorTarget.TargetNode.Key == "TerrainFormat")
 			//	return IHoverService.HoverFromHoverInfo("The type of **terrain** loader to use.", range);
 
-			//if (cursorTarget.TargetNode.Key == "SpriteSequenceFormat")
-			//	return IHoverService.HoverFromHoverInfo("The type of **sprite sequence** loader to use.", range);
+			// TODO: This needs to be using the `ISpriteSequenceLoader` implementations (which we don't yet have), not `ISpriteSequence` implementations and needs to handle their properties.
+			if (cursorTarget.TargetNode.Key == "SpriteSequenceFormat")
+				return codeSymbols.SpriteSequenceInfos
+					.Where(x => !presentValues.Contains(x.Key))
+					.SelectMany(x => x.Select(y => y.ToCompletionItem("ASDFASDF")));
 
 			//if (cursorTarget.TargetNode.Key == "ModelSequenceFormat")
 			//	return IHoverService.HoverFromHoverInfo("The type of **model** loader to use.", range);

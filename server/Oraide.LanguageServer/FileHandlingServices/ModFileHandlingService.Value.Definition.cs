@@ -34,12 +34,13 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			if (cursorTarget.TargetNode.Key == "VideoFormats" && codeSymbols.AssetLoaders["Video"].TryGetValue(cursorTarget.TargetString, out var videoLoader))
 				return new [] { videoLoader.Location.ToLspLocation(videoLoader.InfoName.Length) };
 
-			// TODO: Not implemented yet:
+			// TODO: Other *Formats are not implemented yet:
 			//if (cursorTarget.TargetNode.Key == "TerrainFormat")
 			//	return IHoverService.HoverFromHoverInfo("The type of **terrain** loader to use.", range);
 
-			//if (cursorTarget.TargetNode.Key == "SpriteSequenceFormat")
-			//	return IHoverService.HoverFromHoverInfo("The type of **sprite sequence** loader to use.", range);
+			// TODO: This needs to be using the `ISpriteSequenceLoader` implementations (which we don't yet have), not `ISpriteSequence` implementations and needs to handle their properties.
+			if (cursorTarget.TargetNode.Key == "SpriteSequenceFormat" && codeSymbols.SpriteSequenceInfos.Contains(cursorTarget.TargetString))
+				return new [] { codeSymbols.SpriteSequenceInfos[cursorTarget.TargetString].First().Location.ToLspLocation(cursorTarget.TargetString.Length) };
 
 			//if (cursorTarget.TargetNode.Key == "ModelSequenceFormat")
 			//	return IHoverService.HoverFromHoverInfo("The type of **model** loader to use.", range);
