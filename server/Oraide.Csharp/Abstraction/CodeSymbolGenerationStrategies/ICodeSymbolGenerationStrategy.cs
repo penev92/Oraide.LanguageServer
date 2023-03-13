@@ -18,5 +18,7 @@ namespace Oraide.Csharp.Abstraction.CodeSymbolGenerationStrategies
 		ILookup<string, EnumInfo> GetEnumInfos();
 
 		ILookup<string, ClassInfo> GetAssetLoaders();
+
+		ILookup<string, ClassInfo> GetWidgets();
 	}
 }

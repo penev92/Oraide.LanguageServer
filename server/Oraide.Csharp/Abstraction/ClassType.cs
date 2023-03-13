@@ -12,5 +12,6 @@
 		SoundLoader,
 		SpriteLoader,
 		VideoLoader,
+		Widget,
 	}
 }

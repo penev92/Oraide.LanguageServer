@@ -88,5 +88,11 @@ namespace Oraide.Csharp.StaticFileParsers
 
 			return loaders;
 		}
+
+		public override IEnumerable<ClassInfo> ParseWidgets()
+		{
+			// Release 20210321 does not support widget documentation.
+			return Enumerable.Empty<ClassInfo>();
+		}
 	}
 }

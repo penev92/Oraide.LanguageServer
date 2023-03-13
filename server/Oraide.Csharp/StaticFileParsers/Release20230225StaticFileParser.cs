@@ -106,7 +106,13 @@ namespace Oraide.Csharp.StaticFileParsers
 					x["Values"].Select(y => y["Value"].ToString()).ToArray(), false, NoLocation);
 			});
 
-			return traitEnums.Union(weaponEnums).Union(spriteSequenceEnums);
+			var widgetEnums = widgetsData["RelatedEnums"]!.Select(x =>
+			{
+				return new EnumInfo(x["Name"].ToString(), $"{x["Namespace"]}.{x["Name"]}", null,
+					x["Values"].Select(y => y["Value"].ToString()).ToArray(), false, NoLocation);
+			});
+
+			return traitEnums.Union(weaponEnums).Union(spriteSequenceEnums).Union(widgetEnums);
 		}
 
 		public override IEnumerable<ClassInfo> ParseAssetLoaders()
@@ -123,6 +129,23 @@ namespace Oraide.Csharp.StaticFileParsers
 			});
 
 			return loaders;
+		}
+
+		public override IEnumerable<ClassInfo> ParseWidgets()
+		{
+			var widgets = widgetsData["WidgetTypes"]!.Select(x =>
+			{
+				var typeSuffix = "Widget";
+				var fullName = x["Name"].ToString();
+				var name = GetTypeNameWithoutSuffix(fullName, ref typeSuffix);
+				var baseTypes = GetBaseTypes(x);
+				var properties = ReadPropertiesWithoutValues(x);
+
+				return new ClassInfo(name, typeSuffix, x["Description"].ToString(),
+					NoLocation, baseTypes, properties, false);
+			});
+
+			return widgets;
 		}
 	}
 }
