@@ -13,5 +13,6 @@
 		SpriteLoader,
 		VideoLoader,
 		Widget,
+		WidgetLogic,
 	}
 }

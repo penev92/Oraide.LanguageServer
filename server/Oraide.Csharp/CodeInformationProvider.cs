@@ -84,6 +84,11 @@ namespace Oraide.Csharp
 			return symbolGenerator.GetWidgets();
 		}
 
+		public ILookup<string, ClassInfo> GetWidgetLogicTypes()
+		{
+			return symbolGenerator.GetWidgetLogicTypes();
+		}
+
 		string GetOpenRaFolder(string workspaceFolderPath, string defaultOpenRaFolderPath)
 		{
 			var oraFolderPath = "";

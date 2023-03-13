@@ -33,6 +33,13 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			if (fieldInfo.Name == null)
 				return null;
 
+			if (fieldInfo.Name == "Logic")
+			{
+				var logicType = cursorTarget.TargetString;
+				if (codeSymbols.WidgetLogicTypes.Contains(logicType))
+					return IHoverService.HoverFromHoverInfo($"```csharp\nclass {logicType}\n```", range);
+			}
+
 			// Try to check if this is an enum type field.
 			var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
 			if (enumInfo != null)

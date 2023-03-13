@@ -69,8 +69,9 @@ namespace Oraide.LanguageServer.Caching
 			var enumInfos = codeInformationProvider.GetEnumInfos();
 			var assetLoaders = codeInformationProvider.GetAssetLoaders();
 			var widgets = codeInformationProvider.GetWidgets();
+			var widgetLogicTypes = codeInformationProvider.GetWidgetLogicTypes();
 
-			var codeSymbols = new CodeSymbols(traitInfos, paletteTraitInfos, weaponInfo, spriteSequenceInfos, enumInfos, assetLoaders, widgets);
+			var codeSymbols = new CodeSymbols(traitInfos, paletteTraitInfos, weaponInfo, spriteSequenceInfos, enumInfos, assetLoaders, widgets, widgetLogicTypes);
 
 			var elapsedTotal = stopwatchTotal.Elapsed;
 			Console.Error.WriteLine($"Took {elapsedTotal} to load code symbols:");
@@ -81,6 +82,7 @@ namespace Oraide.LanguageServer.Caching
 			Console.Error.WriteLine($"    {spriteSequenceInfos.Count} spriteSequenceInfos");
 			Console.Error.WriteLine($"    {enumInfos.Count} enumInfos");
 			Console.Error.WriteLine($"    {widgets.Count} widgets");
+			Console.Error.WriteLine($"    {widgetLogicTypes.Count} widgetLogic types");
 
 			var stopwatchYaml = new Stopwatch();
 			stopwatchYaml.Start();

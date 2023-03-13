@@ -34,6 +34,10 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			if (fieldInfo.Name == null)
 				return Enumerable.Empty<Location>();
 
+			if (fieldInfo.Name == "Logic")
+				return codeSymbols.WidgetLogicTypes[cursorTarget.TargetString]?
+					.Select(x => x.Location.ToLspLocation(x.NameWithTypeSuffix.Length));
+
 			// Try to check if this is an enum type field.
 			var enumInfo = codeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
 			if (enumInfo != null)

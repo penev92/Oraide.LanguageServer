@@ -20,5 +20,7 @@ namespace Oraide.Csharp.Abstraction.StaticFileParsers
 		IEnumerable<ClassInfo> ParseAssetLoaders();
 
 		IEnumerable<ClassInfo> ParseWidgets();
+
+		IEnumerable<ClassInfo> ParseWidgetLogicTypes();
 	}
 }

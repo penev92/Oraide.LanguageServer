@@ -147,5 +147,21 @@ namespace Oraide.Csharp.StaticFileParsers
 
 			return widgets;
 		}
+
+		public override IEnumerable<ClassInfo> ParseWidgetLogicTypes()
+		{
+			var widgetLogicTypes = widgetLogicData["WidgetLogicTypes"]!.Select(x =>
+			{
+				var typeSuffix = "Logic";
+				var fullName = x["Name"].ToString();
+				var name = GetTypeNameWithoutSuffix(fullName, ref typeSuffix);
+				var baseTypes = GetBaseTypes(x);
+
+				return new ClassInfo(name, typeSuffix, x["Description"].ToString(),
+					NoLocation, baseTypes, Array.Empty<ClassFieldInfo>(), false);
+			});
+
+			return widgetLogicTypes;
+		}
 	}
 }

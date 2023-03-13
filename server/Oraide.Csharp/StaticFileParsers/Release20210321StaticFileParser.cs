@@ -94,5 +94,11 @@ namespace Oraide.Csharp.StaticFileParsers
 			// Release 20210321 does not support widget documentation.
 			return Enumerable.Empty<ClassInfo>();
 		}
+
+		public override IEnumerable<ClassInfo> ParseWidgetLogicTypes()
+		{
+			// Release 20210321 does not support widget logic documentation.
+			return Enumerable.Empty<ClassInfo>();
+		}
 	}
 }

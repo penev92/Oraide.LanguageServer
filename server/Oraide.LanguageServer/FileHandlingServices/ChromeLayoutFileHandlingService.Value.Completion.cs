@@ -34,6 +34,14 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			if (fieldInfo.Name == null)
 				return Enumerable.Empty<CompletionItem>();
 
+			if (fieldInfo.Name == "Logic")
+			{
+				var presentValues = cursorTarget.TargetNode.Value?.Split(',').Select(x => x.Trim()) ?? Enumerable.Empty<string>();
+				return codeSymbols.WidgetLogicTypes
+					.Where(x => !presentValues.Contains(x.Key))
+					.SelectMany(x => x.Select(y => y.ToCompletionItem("Chrome Logic type", true)));
+			}
+
 			// Try to check if this is an enum type field.
 			var enumInfo = codeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
 			if (enumInfo != null)
