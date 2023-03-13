@@ -30,6 +30,9 @@ namespace Oraide.LanguageServer.Extensions
 
 		public static Location ToLspLocation(this MemberLocation memberLocation, int length)
 		{
+			if (memberLocation.FileUri == null)
+				return null;
+
 			return new Location
 			{
 				Uri = memberLocation.FileUri.AbsoluteUri,
