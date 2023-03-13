@@ -186,11 +186,16 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 		protected virtual ClassInfo? ParseTraitInfo(string filePath, string fileText, ClassDeclarationSyntax classDeclaration, string[] baseTypes)
 		{
 			var traitProperties = new List<ClassFieldInfo>();
-			var traitInfoName = classDeclaration.Identifier.ValueText;
+
+			// Previously "traitInfoName", now "fullName" for consistency with other parsing methods.
+			var fullName = classDeclaration.Identifier.ValueText;
+			var typeSuffix = "Info";
+			var name = GetTypeNameWithoutSuffix(fullName, ref typeSuffix);
+
 			var isAbstract = classDeclaration.Modifiers.Any(x => x.ValueText == "abstract");
 
 			// Skip classes that are not TraitInfos. Make a special case exception for TooltipInfoBase.
-			if (!traitInfoName.EndsWith("Info") && !traitInfoName.EndsWith("InfoBase"))
+			if (!fullName.EndsWith("Info") && !fullName.EndsWith("InfoBase"))
 				return null;
 
 			// Get trait's DescAttribute.
@@ -206,10 +211,9 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 
 			// Some manual string nonsense to determine trait name location inside the file.
 			var classStart = classDeclaration.GetLocation().SourceSpan.Start;
-			var classLocation = FindTypeLocationInText(filePath, fileText, traitInfoName, classStart);
+			var classLocation = FindTypeLocationInText(filePath, fileText, fullName, classStart);
 
-			return new ClassInfo(traitInfoName.Substring(0, traitInfoName.Length - 4), traitInfoName,
-				traitDesc, classLocation, baseTypes, traitProperties.ToArray(), isAbstract);
+			return new ClassInfo(name, typeSuffix, traitDesc, classLocation, baseTypes, traitProperties.ToArray(), isAbstract);
 		}
 
 		protected virtual IEnumerable<ClassFieldInfo> ParseWeaponInfo(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
@@ -219,17 +223,20 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 
 		protected virtual ClassInfo ParseProjectileInfo(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
 		{
-			return ParseSimpleClass(filePath, fileText, classDeclaration);
+			var typeSuffix = "Info";
+			return ParseSimpleClass(filePath, fileText, classDeclaration, ref typeSuffix);
 		}
 
 		protected virtual ClassInfo ParseWarheadInfo(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
 		{
-			return ParseSimpleClass(filePath, fileText, classDeclaration);
+			var typeSuffix = "Warhead";
+			return ParseSimpleClass(filePath, fileText, classDeclaration, ref typeSuffix);
 		}
 
 		protected virtual ClassInfo ParseSpriteSequenceInfo(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
 		{
-			var classInfo = ParseSimpleClass(filePath, fileText, classDeclaration);
+			var typeSuffix = string.Empty;
+			var classInfo = ParseSimpleClass(filePath, fileText, classDeclaration, ref typeSuffix);
 
 			// Sequences need special member field parsing...
 			var fields = new List<ClassFieldInfo>();
@@ -252,15 +259,15 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 				}
 			}
 
-			return new ClassInfo(classInfo.Name, classInfo.InfoName, classInfo.Description, classInfo.Location,
+			return new ClassInfo(classInfo.Name, classInfo.TypeSuffix, classInfo.Description, classInfo.Location,
 				classInfo.BaseTypes, fields.ToArray(), classInfo.IsAbstract);
 		}
 
 		protected virtual ClassInfo ParseAssetLoader(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
 		{
-			var classInfo = ParseSimpleClass(filePath, fileText, classDeclaration);
-			return new ClassInfo(classInfo.Name.Substring(0, classInfo.Name.IndexOf("Loader")),
-				classInfo.Name, classInfo.Description, classInfo.Location, classInfo.BaseTypes, classInfo.PropertyInfos, classInfo.IsAbstract);
+			var typeSuffix = "Loader";
+			return ParseSimpleClass(filePath, fileText, classDeclaration, ref typeSuffix);
+		}
 		}
 
 		#endregion
@@ -278,26 +285,26 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			foreach (var ti in traitInfos)
 			{
 				// Skip the base TraitInfo class(es).
-				if (ti.InfoName == "TraitInfo")
+				if (ti.NameWithTypeSuffix == "TraitInfo")
 					continue;
 
-				var baseTypes = GetTraitBaseTypes(ti.InfoName, traitInfos).ToArray();
+				var baseTypes = GetTraitBaseTypes(ti.NameWithTypeSuffix, traitInfos).ToArray();
 				if (baseTypes.Any(x => x.TypeName == "TraitInfo"))
 				{
 					var fieldInfos = new List<ClassFieldInfo>();
-					foreach (var (className, classFieldNames) in baseTypes)
+					foreach (var (classFullName, classFieldNames) in baseTypes)
 					{
 						foreach (var typeFieldName in classFieldNames)
 						{
 							var fi = ti.PropertyInfos.FirstOrDefault(z => z.Name == typeFieldName);
 							if (fi.Name != null)
 								fieldInfos.Add(new ClassFieldInfo(fi.Name, fi.InternalType, fi.UserFriendlyType, fi.DefaultValue,
-									className, fi.Location, fi.Description, fi.OtherAttributes));
+									classFullName, fi.Location, fi.Description, fi.OtherAttributes));
 							else
 							{
-								var otherFieldInfo = traitInfos.First(x => x.InfoName == className).PropertyInfos.First(x => x.Name == typeFieldName);
+								var otherFieldInfo = traitInfos.First(x => x.NameWithTypeSuffix == classFullName).PropertyInfos.First(x => x.Name == typeFieldName);
 								fieldInfos.Add(new ClassFieldInfo(otherFieldInfo.Name, otherFieldInfo.InternalType, otherFieldInfo.UserFriendlyType,
-									otherFieldInfo.DefaultValue, className, otherFieldInfo.Location, otherFieldInfo.Description, otherFieldInfo.OtherAttributes));
+									otherFieldInfo.DefaultValue, classFullName, otherFieldInfo.Location, otherFieldInfo.Description, otherFieldInfo.OtherAttributes));
 							}
 						}
 					}
@@ -306,10 +313,10 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 					{
 						var traitInfo = new ClassInfo(
 							ti.Name,
-							ti.InfoName,
+							ti.TypeSuffix,
 							ti.Description,
 							ti.Location,
-							baseTypes.Where(x => x.TypeName != ti.InfoName).Select(x => x.TypeName).ToArray(),
+							baseTypes.Where(x => x.TypeName != ti.NameWithTypeSuffix).Select(x => x.TypeName).ToArray(),
 							fieldInfos.ToArray(),
 							ti.IsAbstract);
 
@@ -349,7 +356,7 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 				if (wi.Name == string.Empty)
 					continue;
 
-				var baseTypes = GetClassBaseTypes(wi.InfoName, warheadInfos).ToArray();
+				var baseTypes = GetClassBaseTypes(wi.NameWithTypeSuffix, warheadInfos).ToArray();
 				var fieldInfos = new List<ClassFieldInfo>();
 				foreach (var (className, classFieldNames) in baseTypes)
 				{
@@ -362,7 +369,7 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 								className, fi.Location, fi.Description, fi.OtherAttributes));
 						else
 						{
-							var otherFieldInfo = warheadInfos.First(x => x.InfoName == className).PropertyInfos.First(x => x.Name == typeFieldName);
+							var otherFieldInfo = warheadInfos.First(x => x.NameWithTypeSuffix == className).PropertyInfos.First(x => x.Name == typeFieldName);
 							fieldInfos.Add(new ClassFieldInfo(otherFieldInfo.Name, otherFieldInfo.InternalType, otherFieldInfo.UserFriendlyType,
 								otherFieldInfo.DefaultValue, className, otherFieldInfo.Location, otherFieldInfo.Description, otherFieldInfo.OtherAttributes));
 						}
@@ -373,10 +380,10 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 				{
 					var warheadInfo = new ClassInfo(
 						wi.Name,
-						wi.InfoName,
+						wi.TypeSuffix,
 						wi.Description,
 						wi.Location,
-						baseTypes.Where(x => x.TypeName != wi.InfoName).Select(x => x.TypeName).ToArray(),
+						baseTypes.Where(x => x.TypeName != wi.NameWithTypeSuffix).Select(x => x.TypeName).ToArray(),
 						fieldInfos.ToArray(),
 						wi.IsAbstract);
 
@@ -417,10 +424,10 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 				{
 					var spriteSequenceInfo = new ClassInfo(
 						ssi.Name,
-						ssi.InfoName,
+						ssi.TypeSuffix,
 						ssi.Description,
 						ssi.Location,
-						baseTypes.Where(x => x.TypeName != ssi.InfoName).Select(x => x.TypeName).ToArray(),
+						baseTypes.Where(x => x.TypeName != ssi.NameWithTypeSuffix).Select(x => x.TypeName).ToArray(),
 						fieldInfos.ToArray(),
 						ssi.IsAbstract);
 
@@ -433,10 +440,10 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 
 		#region Helper methods
 
-		static MemberLocation FindTypeLocationInText(string filePath, string text, string traitInfoName, int definitionStartIndex, string memberType = "class")
+		static MemberLocation FindTypeLocationInText(string filePath, string text, string typeName, int definitionStartIndex, string memberType = "class")
 		{
 			var subtext = text.Substring(0, definitionStartIndex);
-			subtext += text.Substring(definitionStartIndex, text.IndexOf($"{memberType} {traitInfoName}", definitionStartIndex, StringComparison.InvariantCulture) - definitionStartIndex);
+			subtext += text.Substring(definitionStartIndex, text.IndexOf($"{memberType} {typeName}", definitionStartIndex, StringComparison.InvariantCulture) - definitionStartIndex);
 			var lines = subtext.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
 			var lineNumber = lines.Length;
 			var characterNumber = lines.Last().Length + memberType.Length + 1; // Add 1 for the space because reasons.
@@ -499,21 +506,21 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			return description;
 		}
 
-		static ClassInfo ParseSimpleClass(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
+		// TODO: Add suffix parameter and replace the hardcoded "Info" and "Warhead" strings.
+		static ClassInfo ParseSimpleClass(string filePath, string fileText, ClassDeclarationSyntax classDeclaration, ref string typeSuffix)
 		{
-			var projectileInfoName = classDeclaration.Identifier.ValueText;
-			var projectileName = projectileInfoName.EndsWith("Info") ? projectileInfoName.Substring(0, projectileInfoName.Length - 4) : projectileInfoName;
-			projectileName = projectileName.EndsWith("Warhead") ? projectileName.Substring(0, projectileName.Length - 7) : projectileName;
+			var fullName = classDeclaration.Identifier.ValueText;
+			var name = GetTypeNameWithoutSuffix(fullName, ref typeSuffix);
 			var description = ParseDescAttribute(classDeclaration);
 			var isAbstract = classDeclaration.Modifiers.Any(x => x.ValueText == "abstract");
 
 			// Some manual string nonsense to determine the class name location inside the file.
 			var classStart = classDeclaration.GetLocation().SourceSpan.Start;
-			var classLocation = FindTypeLocationInText(filePath, fileText, projectileName, classStart);
+			var classLocation = FindTypeLocationInText(filePath, fileText, fullName, classStart);
 			var baseTypes = ParseBaseTypeNames(classDeclaration).ToArray();
 			var fields = ParseClassFields(filePath, fileText, classDeclaration).ToArray();
 
-			return new ClassInfo(projectileName, projectileInfoName, description, classLocation, baseTypes, fields, isAbstract);
+			return new ClassInfo(name, typeSuffix, description, classLocation, baseTypes, fields, isAbstract);
 		}
 
 		static IEnumerable<ClassFieldInfo> ParseClassFields(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
@@ -775,19 +782,19 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			return defaultValue;
 		}
 
-		protected virtual IEnumerable<(string TypeName, IEnumerable<string> ClassFields)> GetTraitBaseTypes(string traitInfoName, IList<ClassInfo> knownTraitInfos)
+		protected virtual IEnumerable<(string TypeName, IEnumerable<string> ClassFields)> GetTraitBaseTypes(string fullClassName, IList<ClassInfo> knownTraitInfos)
 		{
 			// TODO: It would be useful to know what the `Requires` requires.
-			if (traitInfoName == "TraitInfo" || traitInfoName == "Requires" || (traitInfoName.StartsWith("I") && !traitInfoName.EndsWith("Info")))
-				return new[] { (traitInfoName, Enumerable.Empty<string>()) };
+			if (fullClassName == "TraitInfo" || fullClassName == "Requires" || (fullClassName.StartsWith("I") && !fullClassName.EndsWith("Info")))
+				return new[] { (fullClassName, Enumerable.Empty<string>()) };
 
-			var traitInfo = knownTraitInfos.FirstOrDefault(x => x.InfoName == traitInfoName);
-			if (traitInfo.InfoName == null)
+			var traitInfo = knownTraitInfos.FirstOrDefault(x => x.NameWithTypeSuffix == fullClassName);
+			if (traitInfo.NameWithTypeSuffix == null)
 				return Enumerable.Empty<(string, IEnumerable<string>)>();
 
 			var result = new List<(string TypeName, IEnumerable<string> ClassFieldInfos)>
 			{
-				(traitInfoName, traitInfo.PropertyInfos.Select(x => x.Name))
+				(fullClassName, traitInfo.PropertyInfos.Select(x => x.Name))
 			};
 
 			foreach (var baseType in traitInfo.BaseTypes)
@@ -796,15 +803,15 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			return result;
 		}
 
-		protected virtual IEnumerable<(string TypeName, IEnumerable<string> ClassFields)> GetClassBaseTypes(string classInfoName, IList<ClassInfo> knownClassInfos)
+		protected virtual IEnumerable<(string TypeName, IEnumerable<string> ClassFields)> GetClassBaseTypes(string fullClassName, IList<ClassInfo> knownClassInfos)
 		{
-			var classInfo = knownClassInfos.FirstOrDefault(x => x.InfoName == classInfoName);
-			if (classInfo.InfoName == null)
+			var classInfo = knownClassInfos.FirstOrDefault(x => x.NameWithTypeSuffix == fullClassName);
+			if (classInfo.NameWithTypeSuffix == null)
 				return Enumerable.Empty<(string, IEnumerable<string>)>();
 
 			var result = new List<(string TypeName, IEnumerable<string> ClassFieldInfos)>
 			{
-				(classInfoName, classInfo.PropertyInfos.Select(x => x.Name))
+				(fullClassName, classInfo.PropertyInfos.Select(x => x.Name))
 			};
 
 			foreach (var inheritedType in classInfo.BaseTypes)
@@ -813,6 +820,15 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			return result;
 		}
 
+		protected static string GetTypeNameWithoutSuffix(string fullName, ref string suffix)
+		{
+			// Ignore the case of "Warhead", "Warhead".
+			if (fullName.Length > suffix.Length && fullName.EndsWith(suffix))
+				return fullName.Substring(0, fullName.Length - suffix.Length);
+
+			suffix = string.Empty;
+			return fullName;
+		}
 		#endregion
 	}
 }
