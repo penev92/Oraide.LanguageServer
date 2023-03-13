@@ -18,6 +18,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		protected WeaponInfo weaponInfo;
 		protected ILookup<string, ClassInfo> spriteSequenceInfos;
 		protected ILookup<string, EnumInfo> enumInfos;
+		protected ILookup<string, ClassInfo> assetLoaders;
 
 		public string LoadedVersion { get; }
 
@@ -78,6 +79,29 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 				enumInfos = selectedParser.ParseEnumInfos().ToLookup(x => x.Name, y => y);
 
 			return enumInfos;
+		}
+
+		public ILookup<string, ClassInfo> GetAssetLoaders()
+		{
+			if (assetLoaders == null)
+				assetLoaders = selectedParser.ParseAssetLoaders().ToLookup(x =>
+				{
+					if (x.BaseTypes.Contains("IPackageLoader"))
+						return "Package";
+
+					if (x.BaseTypes.Contains("ISoundLoader"))
+						return "Sound";
+
+					if (x.BaseTypes.Contains("ISpriteLoader"))
+						return "Sprite";
+
+					if (x.BaseTypes.Contains("IVideoLoader"))
+						return "Video";
+
+					return string.Empty;
+				}, y => y);
+
+			return assetLoaders;
 		}
 
 		#region Private methods

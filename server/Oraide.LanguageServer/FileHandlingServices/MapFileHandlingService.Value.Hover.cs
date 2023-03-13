@@ -24,6 +24,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 
 		Hover HandleValueHoverAt0(CursorTarget cursorTarget)
 		{
+			// Copy of ModFileHandlingService's file reference handling.
 			if (cursorTarget.TargetNode.Key is "Rules" or "Sequences" or "ModelSequences" or "Weapons" or "Voices" or "Music" or "Notifications")
 			{
 				if (cursorTarget.TargetString.Contains('|'))

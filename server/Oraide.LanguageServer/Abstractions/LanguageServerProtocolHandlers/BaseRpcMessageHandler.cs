@@ -46,7 +46,9 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			var fileReference = $"{modId}|{fileName}";
 
 			var fileType = FileType.Unknown;
-			if (modManifest.RulesFiles.Contains(fileReference))
+			if (fileName == "mod.yaml")
+				fileType = FileType.ModFile;
+			else if (modManifest.RulesFiles.Contains(fileReference))
 				fileType = FileType.Rules;
 			else if (modManifest.WeaponsFiles.Contains(fileReference))
 				fileType = FileType.Weapons;

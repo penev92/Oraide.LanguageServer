@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Oraide.Core.Entities.Csharp;
 
 namespace Oraide.LanguageServer.Caching.Entities
@@ -32,14 +33,20 @@ namespace Oraide.LanguageServer.Caching.Entities
 		/// </summary>
 		public ILookup<string, EnumInfo> EnumInfos { get; }
 
+		/// <summary>
+		/// Asset loader types grouped by asset type (Package, Sound, Sprite, Video).
+		/// </summary>
+		public IReadOnlyDictionary<string, Dictionary<string, ClassInfo>> AssetLoaders { get; }
+
 		public CodeSymbols(ILookup<string, ClassInfo> traitInfos, ILookup<string, ClassInfo> paletteTraitInfos, WeaponInfo weaponInfo,
-			ILookup<string, ClassInfo> spriteSequenceInfos, ILookup<string, EnumInfo> enumInfos)
+			ILookup<string, ClassInfo> spriteSequenceInfos, ILookup<string, EnumInfo> enumInfos, ILookup<string, ClassInfo> assetLoaders)
 		{
 			TraitInfos = traitInfos;
 			PaletteTraitInfos = paletteTraitInfos;
 			WeaponInfo = weaponInfo;
 			SpriteSequenceInfos = spriteSequenceInfos;
 			EnumInfos = enumInfos;
+			AssetLoaders = assetLoaders.ToDictionary(x => x.Key, y => y.ToDictionary(m => m.Name, n => n));
 		}
 	}
 }

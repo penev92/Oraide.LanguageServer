@@ -16,6 +16,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		WeaponInfo weaponInfo;
 		ILookup<string, ClassInfo> spriteSequenceInfos;
 		ILookup<string, EnumInfo> enumInfos;
+		ILookup<string, ClassInfo> assetLoaders;
 
 		public string LoadedVersion { get; }
 
@@ -72,6 +73,14 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 			return enumInfos;
 		}
 
+		public ILookup<string, ClassInfo> GetAssetLoaders()
+		{
+			if (assetLoaders == null)
+				Parse();
+
+			return assetLoaders;
+		}
+
 		void Parse()
 		{
 			var codeInformation = selectedParser.Parse(openRaFolder);
@@ -81,6 +90,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 			weaponInfo = codeInformation.Weapons;
 			spriteSequenceInfos = codeInformation.SpriteSequenceInfos;
 			enumInfos = codeInformation.EnumInfos;
+			assetLoaders = codeInformation.AssetLoaders;
 		}
 	}
 }

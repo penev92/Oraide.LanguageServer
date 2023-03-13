@@ -32,6 +32,7 @@ namespace Oraide.LanguageServer.Extensions
 		public static IServiceCollection AddFileHandlingServices(this IServiceCollection serviceCollection)
 		{
 			return serviceCollection
+				.AddSingleton<ModFileHandlingService>()
 				.AddSingleton<MapFileHandlingService>()
 				.AddSingleton<RulesFileHandlingService>()
 				.AddSingleton<SpriteSequencesFileHandlingService>()
@@ -43,6 +44,7 @@ namespace Oraide.LanguageServer.Extensions
 			return serviceCollection
 				.AddSingleton(provider =>
 					FileTypeHandlerConfiguration.CreateBuilder()
+						.For(FileType.ModFile).Use<ModFileHandlingService>()
 						.For(FileType.Rules).Use<RulesFileHandlingService>()
 						.For(FileType.Weapons).Use<WeaponsFileHandlingService>()
 						.For(FileType.SpriteSequences).Use<SpriteSequencesFileHandlingService>()

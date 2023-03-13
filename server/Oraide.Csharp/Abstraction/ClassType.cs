@@ -7,6 +7,10 @@
 		WeaponInfo,
 		Warhead,
 		Projectile,
-		SpriteSequence
+		SpriteSequence,
+		PackageLoader,
+		SoundLoader,
+		SpriteLoader,
+		VideoLoader,
 	}
 }

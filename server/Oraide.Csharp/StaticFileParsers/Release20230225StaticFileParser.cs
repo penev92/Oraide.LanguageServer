@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Oraide.Core.Entities.Csharp;
 using Oraide.Csharp.Abstraction.StaticFileParsers;
@@ -100,6 +101,21 @@ namespace Oraide.Csharp.StaticFileParsers
 			});
 
 			return traitEnums.Union(weaponEnums).Union(spriteSequenceEnums);
+		}
+
+		public override IEnumerable<ClassInfo> ParseAssetLoaders()
+		{
+			var loaders = assetLoadersData["AssetLoaderTypes"]!.Select(x =>
+			{
+				var fullName = x["Name"].ToString();
+				var name = fullName.Substring(0, fullName.IndexOf("Loader"));
+				var baseTypes = GetBaseTypes(x);
+
+				return new ClassInfo(name, fullName, x["Description"].ToString(),
+					NoLocation, baseTypes, Array.Empty<ClassFieldInfo>(), false);
+			});
+
+			return loaders;
 		}
 	}
 }

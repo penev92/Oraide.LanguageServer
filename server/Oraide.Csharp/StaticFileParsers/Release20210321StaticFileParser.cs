@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Oraide.Core.Entities.Csharp;
 using Oraide.Csharp.Abstraction.StaticFileParsers;
@@ -66,6 +67,21 @@ namespace Oraide.Csharp.StaticFileParsers
 		{
 			// Release 20210321 does not support enum documentation.
 			return Enumerable.Empty<EnumInfo>();
+		}
+
+		public override IEnumerable<ClassInfo> ParseAssetLoaders()
+		{
+			var loaders = assetLoadersData["AssetLoaderTypes"]!.Select(x =>
+			{
+				var fullName = x["Name"].ToString();
+				var name = fullName.Substring(0, fullName.IndexOf("Loader"));
+				var baseTypes = GetBaseTypes(x);
+
+				return new ClassInfo(name, fullName, x["Description"].ToString(),
+					NoLocation, baseTypes, Array.Empty<ClassFieldInfo>(), false);
+			});
+
+			return loaders;
 		}
 	}
 }
