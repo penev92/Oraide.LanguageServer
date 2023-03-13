@@ -44,11 +44,10 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		IEnumerable<CompletionItem> HandleValueCompletionAt2(CursorTarget cursorTarget)
 		{
 			var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
-			var traitInfoName = $"{traitName}Info";
 
 			// Using .First() is not great but we have no way to differentiate between traits of the same name
 			// until the server learns the concept of a mod and loaded assemblies.
-			var traitInfo = codeSymbols.TraitInfos[traitInfoName].FirstOrDefault();
+			var traitInfo = codeSymbols.TraitInfos[traitName].FirstOrDefault();
 			if (traitInfo.Name == null)
 				return Enumerable.Empty<CompletionItem>();
 

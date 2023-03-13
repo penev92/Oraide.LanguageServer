@@ -44,7 +44,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		public ILookup<string, ClassInfo> GetTraitInfos()
 		{
 			if (traitInfos == null)
-				traitInfos = selectedParser.ParseTraitInfos().ToLookup(x => x.NameWithTypeSuffix, y => y);
+				traitInfos = selectedParser.ParseTraitInfos().ToLookup(x => x.Name, y => y);
 
 			return traitInfos;
 		}
@@ -52,7 +52,7 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		public ILookup<string, ClassInfo> GetPaletteTraitInfos()
 		{
 			if (paletteTraitInfos == null)
-				paletteTraitInfos = selectedParser.ParsePaletteInfos().ToLookup(x => x.NameWithTypeSuffix, y => y);
+				paletteTraitInfos = selectedParser.ParsePaletteInfos().ToLookup(x => x.Name, y => y);
 
 			return paletteTraitInfos;
 		}

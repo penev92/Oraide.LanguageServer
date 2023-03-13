@@ -8,12 +8,12 @@ namespace Oraide.LanguageServer.Caching.Entities
 	public class CodeSymbols
 	{
 		/// <summary>
-		/// TraitInfo information grouped by TraitInfoName.
+		/// TraitInfo information grouped by trait name.
 		/// </summary>
 		public ILookup<string, ClassInfo> TraitInfos { get; }
 
 		/// <summary>
-		/// Palette TraitInfo information grouped by TraitInfoName.
+		/// Palette TraitInfo information grouped by trait name.
 		/// Palettes are just TraitInfos that have a name field with a PaletteDefinitionAttribute.
 		/// </summary>
 		public ILookup<string, ClassInfo> PaletteTraitInfos { get; }

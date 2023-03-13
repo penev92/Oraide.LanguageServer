@@ -53,27 +53,27 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			if (cursorTarget.TargetString == "Inherits")
 				return IHoverService.HoverFromHoverInfo($"Inherits (and possibly overwrites) rules from actor {cursorTarget.TargetNode.Value}", range);
 
-			var traitInfoName = $"{cursorTarget.TargetString}Info";
-			if (codeSymbols.TraitInfos.Contains(traitInfoName))
+			var traitName = cursorTarget.TargetString;
+			if (codeSymbols.TraitInfos.Contains(traitName))
 			{
 				// Using .First() is not great but we have no way to differentiate between traits of the same name
 				// until the server learns the concept of a mod and loaded assemblies.
-				var traitInfo = codeSymbols.TraitInfos[traitInfoName].First();
+				var traitInfo = codeSymbols.TraitInfos[traitName].First();
 				var content = traitInfo.ToMarkdownInfoString() + "\n\n" + "https://docs.openra.net/en/release/traits/#" + $"{traitInfo.Name.ToLower()}";
 				return IHoverService.HoverFromHoverInfo(content, range);
 			}
 
-			if (cursorTarget.TargetString[0] == '-')
+			if (traitName[0] == '-')
 			{
-				traitInfoName = traitInfoName.Substring(1);
-				if (codeSymbols.TraitInfos.Contains(traitInfoName))
+				traitName = traitName.Substring(1);
+				if (codeSymbols.TraitInfos.Contains(traitName))
 				{
 					var modData = symbolCache[cursorTarget.ModId];
 					var fileList = modData.ModManifest.RulesFiles;
 					var resolvedFileList = fileList.Select(x => OpenRaFolderUtils.ResolveFilePath(x, (modData.ModId, modData.ModFolder)));
 
 					if (TryMergeYamlFiles(resolvedFileList, out _))
-						return IHoverService.HoverFromHoverInfo($"Removes trait `{cursorTarget.TargetString.Substring(1)}` from the actor.", range);
+						return IHoverService.HoverFromHoverInfo($"Removes trait `{traitName.Substring(1)}` from the actor.", range);
 				}
 			}
 
@@ -83,12 +83,12 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		// TODO: This will likely not handle trait property removals properly!
 		Hover HandleKeyHoverAt2(CursorTarget cursorTarget)
 		{
-			var traitInfoName = $"{cursorTarget.TargetNode.ParentNode.Key.Split("@")[0]}Info";
-			if (codeSymbols.TraitInfos.Contains(traitInfoName))
+			var traitName = cursorTarget.TargetNode.ParentNode.Key.Split("@")[0];
+			if (codeSymbols.TraitInfos.Contains(traitName))
 			{
 				// Using .First() is not great but we have no way to differentiate between traits of the same name
 				// until the server learns the concept of a mod and loaded assemblies.
-				var traitInfo = codeSymbols.TraitInfos[traitInfoName].First();
+				var traitInfo = codeSymbols.TraitInfos[traitName].First();
 				var fieldInfo = traitInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
 				var content = fieldInfo.ToMarkdownInfoString();
 				return IHoverService.HoverFromHoverInfo(content, range);
