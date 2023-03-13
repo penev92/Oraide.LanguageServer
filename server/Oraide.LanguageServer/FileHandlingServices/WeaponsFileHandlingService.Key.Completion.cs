@@ -30,7 +30,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		IEnumerable<CompletionItem> HandleKeyCompletionAt1(CursorTarget cursorTarget)
 		{
 			// Get only WeaponInfo fields (and "Warhead" and "Inherits").
-			return weaponInfo.WeaponPropertyInfos
+			return codeSymbols.WeaponInfo.WeaponPropertyInfos
 				.Select(x => x.ToCompletionItem())
 				.Append(CompletionItems.Warhead)
 				.Append(CompletionItems.Inherits);
@@ -41,13 +41,13 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			var parentNode = cursorTarget.TargetNode.ParentNode;
 			if (parentNode.Key == "Projectile")
 			{
-				var projectile = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == parentNode.Value);
+				var projectile = codeSymbols.WeaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == parentNode.Value);
 				if (projectile.Name != null)
 					return projectile.PropertyInfos.Select(x => x.ToCompletionItem());
 			}
 			else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
 			{
-				var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == parentNode.Value);
+				var warhead = codeSymbols.WeaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == parentNode.Value);
 				if (warhead.Name != null)
 					return warhead.PropertyInfos.Select(x => x.ToCompletionItem());
 			}

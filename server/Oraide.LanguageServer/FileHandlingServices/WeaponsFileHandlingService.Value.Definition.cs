@@ -44,13 +44,13 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			}
 			else if (targetNodeKey == "Projectile")
 			{
-				var projectile = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+				var projectile = codeSymbols.WeaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
 				if (projectile.Name != null)
 					return new[] { projectile.Location.ToLspLocation(projectile.Name.Length) };
 			}
 			else if (targetNodeKey == "Warhead" || targetNodeKey.StartsWith("Warhead@"))
 			{
-				var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
+				var warhead = codeSymbols.WeaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
 				if (warhead.Name != null)
 					return new[] { warhead.Location.ToLspLocation(warhead.Name.Length) };
 			}
@@ -122,8 +122,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			}
 
 			// Try to check if this is an enum type field.
-			var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos
-				.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
+			var enumInfo = codeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
 			if (enumInfo != null)
 			{
 				return new[] { enumInfo.First().Location.ToLspLocation(enumInfo.Key.Length) };

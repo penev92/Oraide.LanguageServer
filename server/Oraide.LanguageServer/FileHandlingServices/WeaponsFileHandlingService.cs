@@ -11,7 +11,6 @@ namespace Oraide.LanguageServer.FileHandlingServices
 {
 	public partial class WeaponsFileHandlingService : BaseFileHandlingService
 	{
-		WeaponInfo weaponInfo;
 		IEnumerable<CompletionItem> weaponNames;
 		IEnumerable<CompletionItem> paletteNames;
 		IEnumerable<CompletionItem> spriteSequenceImageNames;
@@ -22,8 +21,6 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		public override void Initialize(CursorTarget cursorTarget)
 		{
 			base.Initialize(cursorTarget);
-
-			weaponInfo = symbolCache[cursorTarget.ModId].CodeSymbols.WeaponInfo;
 
 			// TODO: Don't map everything to CompletionItems here! Defer that until we know what we need, then only map that (like in DefinitionHandler).
 			// Using .First() is not great but we have no way to differentiate between traits of the same name

@@ -79,15 +79,13 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		Hover HandleSpriteSequencePropertyValueHover(CursorTarget cursorTarget)
 		{
 			var spriteSequenceFormat = symbolCache[cursorTarget.ModId].ModManifest.SpriteSequenceFormat.Type;
-			var spriteSequenceType = symbolCache[cursorTarget.ModId].CodeSymbols.SpriteSequenceInfos[spriteSequenceFormat].First();
+			var spriteSequenceType = codeSymbols.SpriteSequenceInfos[spriteSequenceFormat].First();
 
 			var fieldInfo = spriteSequenceType.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
 			if (fieldInfo.Name != null)
 			{
 				// Try to check if this is an enum type field.
-				var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos
-					.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
-
+				var enumInfo = codeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
 				if (enumInfo != null)
 				{
 					var content = $"```csharp\n{enumInfo.Key}.{cursorTarget.TargetString}\n```";

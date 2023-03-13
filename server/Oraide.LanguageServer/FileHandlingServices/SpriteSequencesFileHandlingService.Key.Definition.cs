@@ -49,7 +49,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		IEnumerable<Location> HandleSpriteSequencePropertyKeyDefinition(CursorTarget cursorTarget)
 		{
 			var spriteSequenceFormat = symbolCache[cursorTarget.ModId].ModManifest.SpriteSequenceFormat.Type;
-			var spriteSequenceType = symbolCache[cursorTarget.ModId].CodeSymbols.SpriteSequenceInfos[spriteSequenceFormat].First();
+			var spriteSequenceType = codeSymbols.SpriteSequenceInfos[spriteSequenceFormat].First();
 
 			var fieldInfo = spriteSequenceType.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
 			if (fieldInfo.Name != null)
