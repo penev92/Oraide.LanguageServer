@@ -36,6 +36,7 @@ namespace Oraide.LanguageServer.Extensions
 				.AddSingleton<MapFileHandlingService>()
 				.AddSingleton<RulesFileHandlingService>()
 				.AddSingleton<SpriteSequencesFileHandlingService>()
+				.AddSingleton<ChromeLayoutFileHandlingService>()
 				.AddSingleton<WeaponsFileHandlingService>();
 		}
 
@@ -48,6 +49,7 @@ namespace Oraide.LanguageServer.Extensions
 						.For(FileType.Rules).Use<RulesFileHandlingService>()
 						.For(FileType.Weapons).Use<WeaponsFileHandlingService>()
 						.For(FileType.SpriteSequences).Use<SpriteSequencesFileHandlingService>()
+						.For(FileType.ChromeLayout).Use<ChromeLayoutFileHandlingService>()
 						.For(FileType.MapFile).Use<MapFileHandlingService>()
 						.For(FileType.MapRules).Use<RulesFileHandlingService>()
 						.For(FileType.MapWeapons).Use<WeaponsFileHandlingService>()

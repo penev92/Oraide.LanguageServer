@@ -59,12 +59,36 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 			var targetLineIndex = (int)positionParams.Position.Line;
 			var targetCharacterIndex = (int)positionParams.Position.Character;
 
-			// Determine file type.
-			var modManifest = symbolCache[modId].ModManifest;
 			var filePath = fileUri.AbsolutePath;
 			var fileName = filePath.Split($"mods/{modId}/")[1];
 			var fileReference = $"{modId}|{fileName}";
 
+			ModManifest modManifest;
+			if (symbolCache.ModSymbols.ContainsKey(modId))
+			{
+				modManifest = symbolCache[modId].ModManifest;
+			}
+			else
+			{
+				if (!symbolCache.KnownMods.ContainsKey(modId))
+				{
+					target = default;
+					return false;
+				}
+
+				// Hope **someone** references this file...
+				var modData = symbolCache.ModSymbols.Values.FirstOrDefault(x => x.ModManifest.AllFileReferences.Contains(fileReference));
+				modManifest = modData?.ModManifest;
+				modId = modData?.ModId;
+			}
+
+			if (modManifest == null)
+			{
+				target = default;
+				return false;
+			}
+
+			// Determine file type.
 			var fileType = FileType.Unknown;
 			if (fileName == "mod.yaml")
 				fileType = FileType.ModFile;
@@ -76,6 +100,8 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				fileType = FileType.Cursors;
 			else if (modManifest.SpriteSequences.Contains(fileReference))
 				fileType = FileType.SpriteSequences;
+			else if (modManifest.ChromeLayout.Contains(fileReference))
+				fileType = FileType.ChromeLayout;
 			else if (Path.GetFileName(filePath) == "map.yaml" && symbolCache[modId].Maps.Any(x => x.MapFolder == Path.GetDirectoryName(filePath)))
 				fileType = FileType.MapFile;
 			else if (symbolCache[modId].Maps.Any(x => x.RulesFiles.Contains(fileReference)))
