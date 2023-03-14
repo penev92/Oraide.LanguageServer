@@ -19,7 +19,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-						Console.Error.WriteLine("<-- TextDocument-DidChange");
+						Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] TextDocument-DidChange");
 
 					openFileCache.AddOrUpdateOpenFile(request.TextDocument.Uri, request.ContentChanges.Last().Text);
 				}

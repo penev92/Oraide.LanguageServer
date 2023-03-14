@@ -23,7 +23,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-						Console.Error.WriteLine("<-- TextDocument-References");
+						Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] TextDocument-References");
 
 					return HandlePositionalRequest(positionParams) as IEnumerable<Location>;
 				}

@@ -15,7 +15,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 			lock (LockObject)
 			{
 				if (trace)
-					Console.Error.WriteLine("<-- Initialize");
+					Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Initialize");
 
 				var capabilities = new ServerCapabilities
 				{
@@ -87,7 +87,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 				try
 				{
 					if (trace)
-						Console.Error.WriteLine("<-- Initialized");
+						Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Initialized");
 				}
 				catch (Exception e)
 				{

@@ -23,7 +23,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-						Console.Error.WriteLine("<-- TextDocument-DocumentSymbol");
+						Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] TextDocument-DocumentSymbol");
 
 					var incomingFileUriString = OpenRaFolderUtils.NormalizeFileUriString(request.TextDocument.Uri);
 					return openFileCache[incomingFileUriString].YamlNodes.Where(x => x.Key != null).Select(ConvertNodeToDocumentSymbol);

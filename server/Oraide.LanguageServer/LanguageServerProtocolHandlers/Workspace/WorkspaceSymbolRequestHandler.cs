@@ -21,7 +21,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 				try
 				{
 					if (trace)
-						Console.Error.WriteLine("<-- Workspace-Symbols");
+						Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Workspace-Symbols");
 
 					var actors = symbolCache.ModSymbols.SelectMany(x => x.Value.ModSymbols.ActorDefinitions
 						.SelectMany(actorDefinition => actorDefinition.First().ToSymbolInformation()));
