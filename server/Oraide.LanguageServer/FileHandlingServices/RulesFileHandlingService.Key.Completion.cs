@@ -39,12 +39,11 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		{
 			// Get only trait properties.
 			var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
-			var traitInfoName = $"{traitName}Info";
 			var presentProperties = cursorTarget.TargetNode.ParentNode.ChildNodes.Select(x => x.Key).ToHashSet();
 
 			// Getting all traits and then all their properties is not great but we have no way to differentiate between traits of the same name
 			// until the server learns the concept of a mod and loaded assemblies.
-			return codeSymbols.TraitInfos[traitInfoName]
+			return codeSymbols.TraitInfos[traitName]
 				.SelectMany(x => x.PropertyInfos)
 				.DistinctBy(y => y.Name)
 				.Where(x => !presentProperties.Contains(x.Name))

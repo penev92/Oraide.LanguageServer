@@ -58,7 +58,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 				if (warheadInfo.Name != null)
 				{
 					var content = warheadInfo.ToMarkdownInfoString() +
-								  "\n\n" + "https://docs.openra.net/en/release/weapons/#" + $"{warheadInfo.InfoName.ToLower()}";
+								  "\n\n" + "https://docs.openra.net/en/release/weapons/#" + $"{warheadInfo.NameWithTypeSuffix.ToLower()}";
 
 					return IHoverService.HoverFromHoverInfo(content, range);
 				}

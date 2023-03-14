@@ -23,16 +23,16 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		{
 			// Asset loaders:
 			if (cursorTarget.TargetNode.Key == "PackageFormats" && codeSymbols.AssetLoaders["Package"].TryGetValue(cursorTarget.TargetString, out var packageLoader))
-				return new [] { packageLoader.Location.ToLspLocation(packageLoader.InfoName.Length) };
+				return new [] { packageLoader.Location.ToLspLocation(packageLoader.NameWithTypeSuffix.Length) };
 
 			if (cursorTarget.TargetNode.Key == "SoundFormats" && codeSymbols.AssetLoaders["Sound"].TryGetValue(cursorTarget.TargetString, out var soundLoader))
-				return new [] { soundLoader.Location.ToLspLocation(soundLoader.InfoName.Length) };
+				return new [] { soundLoader.Location.ToLspLocation(soundLoader.NameWithTypeSuffix.Length) };
 
 			if (cursorTarget.TargetNode.Key == "SpriteFormats" && codeSymbols.AssetLoaders["Sprite"].TryGetValue(cursorTarget.TargetString, out var spriteLoader))
-				return new [] { spriteLoader.Location.ToLspLocation(spriteLoader.InfoName.Length) };
+				return new [] { spriteLoader.Location.ToLspLocation(spriteLoader.NameWithTypeSuffix.Length) };
 
 			if (cursorTarget.TargetNode.Key == "VideoFormats" && codeSymbols.AssetLoaders["Video"].TryGetValue(cursorTarget.TargetString, out var videoLoader))
-				return new [] { videoLoader.Location.ToLspLocation(videoLoader.InfoName.Length) };
+				return new [] { videoLoader.Location.ToLspLocation(videoLoader.NameWithTypeSuffix.Length) };
 
 			// TODO: Other *Formats are not implemented yet:
 			//if (cursorTarget.TargetNode.Key == "TerrainFormat")

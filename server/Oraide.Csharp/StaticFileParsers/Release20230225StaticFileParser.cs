@@ -24,10 +24,12 @@ namespace Oraide.Csharp.StaticFileParsers
 		{
 			var traits = traitsData["TraitInfos"]!.Select(x =>
 			{
+				var typeSuffix = "Info";
+				var name = x["Name"].ToString();
 				var baseTypes = GetBaseTypes(x);
 				var properties = ReadProperties(x);
 
-				return new ClassInfo(x["Name"].ToString(), $"{x["Name"]}Info", x["Description"].ToString(),
+				return new ClassInfo(name, typeSuffix, x["Description"].ToString(),
 					NoLocation, baseTypes, properties, false);
 			});
 
@@ -49,12 +51,14 @@ namespace Oraide.Csharp.StaticFileParsers
 		{
 			var typeInfos = weaponsData["WeaponTypes"]!.Select(x =>
 			{
+				// This also handles Weapon and IProjectiles, but luckily none of those come with a suffix...
+				var typeSuffix = "Warhead";
+				var fullName = x["Name"].ToString();
+				var name = GetTypeNameWithoutSuffix(fullName, ref typeSuffix);
 				var baseTypes = GetBaseTypes(x);
 				var properties = ReadProperties(x);
 
-				var infoName = x["Name"].ToString();
-				var name = infoName.EndsWith("Warhead") ? infoName.Substring(0, infoName.Length - 7) : infoName;
-				return new ClassInfo(name, infoName, x["Description"].ToString(),
+				return new ClassInfo(name, typeSuffix, x["Description"].ToString(),
 					NoLocation, baseTypes, properties, false);
 			}).ToArray();
 
@@ -69,11 +73,13 @@ namespace Oraide.Csharp.StaticFileParsers
 		{
 			var typeInfos = spriteSequencesData["SpriteSequenceTypes"]!.Select(x =>
 			{
+				// SpriteSequence types come without a suffix.
+				var typeSuffix = string.Empty;
+				var name = x["Name"].ToString();
 				var baseTypes = GetBaseTypes(x);
 				var properties = ReadProperties(x);
 
-				var name = x["Name"].ToString();
-				return new ClassInfo(name, name, x["Description"].ToString(),
+				return new ClassInfo(name, typeSuffix, x["Description"].ToString(),
 					NoLocation, baseTypes, properties, false);
 			});
 
@@ -107,11 +113,12 @@ namespace Oraide.Csharp.StaticFileParsers
 		{
 			var loaders = assetLoadersData["AssetLoaderTypes"]!.Select(x =>
 			{
+				var typeSuffix = "Loader";
 				var fullName = x["Name"].ToString();
-				var name = fullName.Substring(0, fullName.IndexOf("Loader"));
+				var name = GetTypeNameWithoutSuffix(fullName, ref typeSuffix);
 				var baseTypes = GetBaseTypes(x);
 
-				return new ClassInfo(name, fullName, x["Description"].ToString(),
+				return new ClassInfo(name, typeSuffix, x["Description"].ToString(),
 					NoLocation, baseTypes, Array.Empty<ClassFieldInfo>(), false);
 			});
 

@@ -22,8 +22,8 @@ namespace Oraide.Csharp.Abstraction
 			IEnumerable<ClassInfo> spriteSequenceInfos, IEnumerable<EnumInfo> enumInfos, IEnumerable<ClassInfo> packageLoaders,
 			IEnumerable<ClassInfo> soundLoaders, IEnumerable<ClassInfo> spriteLoaders, IEnumerable<ClassInfo> videoLoaders)
 		{
-			TraitInfos = traitInfos.ToLookup(x => x.InfoName, y => y);
-			PaletteTraitInfos = paletteTraitInfos.ToLookup(x => x.InfoName, y => y);
+			TraitInfos = traitInfos.ToLookup(x => x.Name, y => y);
+			PaletteTraitInfos = paletteTraitInfos.ToLookup(x => x.Name, y => y);
 			Weapons = weapons;
 			SpriteSequenceInfos = spriteSequenceInfos.ToLookup(x => x.Name, y => y);
 			EnumInfos = enumInfos.ToLookup(x => x.Name, y => y);

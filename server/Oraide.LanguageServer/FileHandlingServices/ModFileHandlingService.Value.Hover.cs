@@ -21,16 +21,16 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		{
 			// Asset loaders:
 			if (cursorTarget.TargetNode.Key == "PackageFormats" && codeSymbols.AssetLoaders["Package"].TryGetValue(cursorTarget.TargetString, out var packageLoader))
-				return IHoverService.HoverFromHoverInfo($"Package loader **{packageLoader.InfoName}**.", range);
+				return IHoverService.HoverFromHoverInfo($"Package loader **{packageLoader.NameWithTypeSuffix}**.", range);
 
 			if (cursorTarget.TargetNode.Key == "SoundFormats" && codeSymbols.AssetLoaders["Sound"].TryGetValue(cursorTarget.TargetString, out var soundLoader))
-				return IHoverService.HoverFromHoverInfo($"Sound loader **{soundLoader.InfoName}**.", range);
+				return IHoverService.HoverFromHoverInfo($"Sound loader **{soundLoader.NameWithTypeSuffix}**.", range);
 
 			if (cursorTarget.TargetNode.Key == "SpriteFormats" && codeSymbols.AssetLoaders["Sprite"].TryGetValue(cursorTarget.TargetString, out var spriteLoader))
-				return IHoverService.HoverFromHoverInfo($"Sprite loader **{spriteLoader.InfoName}**.", range);
+				return IHoverService.HoverFromHoverInfo($"Sprite loader **{spriteLoader.NameWithTypeSuffix}**.", range);
 
 			if (cursorTarget.TargetNode.Key == "VideoFormats" && codeSymbols.AssetLoaders["Video"].TryGetValue(cursorTarget.TargetString, out var videoLoader))
-				return IHoverService.HoverFromHoverInfo($"Video loader **{videoLoader.InfoName}**.", range);
+				return IHoverService.HoverFromHoverInfo($"Video loader **{videoLoader.NameWithTypeSuffix}**.", range);
 
 			// TODO: Other *Formats are not implemented yet:
 			//if (cursorTarget.TargetNode.Key == "TerrainFormat")

@@ -31,10 +31,10 @@ namespace Oraide.Csharp.CodeParsers
 			foreach (var ti in traitInfos)
 			{
 				// Skip the base TraitInfo class(es).
-				if (ti.InfoName == "TraitInfo")
+				if (ti.NameWithTypeSuffix == "TraitInfo")
 					continue;
 
-				var baseTypes = GetTraitBaseTypes(ti.InfoName, traitInfos).ToArray();
+				var baseTypes = GetTraitBaseTypes(ti.NameWithTypeSuffix, traitInfos).ToArray();
 
 				// HACK: Checking for ITraitInfo and IRulesetLoaded here as a hack for Cameo because it's using a X-year-old engine!
 				if (baseTypes.Any(x => x.TypeName == "TraitInfo" || x.TypeName == "ITraitInfo" || x.TypeName == "IRulesetLoaded"))
@@ -50,7 +50,7 @@ namespace Oraide.Csharp.CodeParsers
 									className, fi.Location, fi.Description, fi.OtherAttributes));
 							else
 							{
-								var otherFieldInfo = traitInfos.First(x => x.InfoName == className).PropertyInfos.First(x => x.Name == typeFieldName);
+								var otherFieldInfo = traitInfos.First(x => x.NameWithTypeSuffix == className).PropertyInfos.First(x => x.Name == typeFieldName);
 								fieldInfos.Add(new ClassFieldInfo(otherFieldInfo.Name, otherFieldInfo.InternalType, otherFieldInfo.UserFriendlyType,
 									otherFieldInfo.DefaultValue, className, otherFieldInfo.Location, otherFieldInfo.Description, otherFieldInfo.OtherAttributes));
 							}
@@ -59,10 +59,10 @@ namespace Oraide.Csharp.CodeParsers
 
 					var traitInfo = new ClassInfo(
 						ti.Name,
-						ti.InfoName,
+						"Info",
 						ti.Description,
 						ti.Location,
-						baseTypes.Where(x => x.TypeName != ti.InfoName).Select(x => x.TypeName).ToArray(),
+						baseTypes.Where(x => x.TypeName != ti.NameWithTypeSuffix).Select(x => x.TypeName).ToArray(),
 						fieldInfos.ToArray(),
 						ti.IsAbstract);
 
@@ -81,8 +81,8 @@ namespace Oraide.Csharp.CodeParsers
 			if (traitInfoName == "ITraitInfo" || traitInfoName == "IRulesetLoaded")
 				return new[] { (traitInfoName, Enumerable.Empty<string>()) };
 
-			var traitInfo = knownTraitInfos.FirstOrDefault(x => x.InfoName == traitInfoName);
-			if (traitInfo.InfoName == null)
+			var traitInfo = knownTraitInfos.FirstOrDefault(x => x.NameWithTypeSuffix == traitInfoName);
+			if (traitInfo.NameWithTypeSuffix == null)
 				return Enumerable.Empty<(string, IEnumerable<string>)>();
 
 			var result = new List<(string TypeName, IEnumerable<string> ClassFieldInfos)>

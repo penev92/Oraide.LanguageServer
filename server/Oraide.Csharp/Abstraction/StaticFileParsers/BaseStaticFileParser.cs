@@ -89,6 +89,15 @@ namespace Oraide.Csharp.Abstraction.StaticFileParsers
 				.ToArray();
 		}
 
+		protected string GetTypeNameWithoutSuffix(string fullName, ref string suffix)
+		{
+			if (fullName.EndsWith(suffix))
+				return fullName.Substring(0, fullName.Length - suffix.Length);
+
+			suffix = string.Empty;
+			return fullName;
+		}
+
 		#endregion
 	}
 }

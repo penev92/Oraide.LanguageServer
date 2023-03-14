@@ -25,11 +25,10 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		IEnumerable<Location> HandleKeyDefinitionAt1(CursorTarget cursorTarget)
 		{
 			var traitName = cursorTarget.TargetNode.Key.Split('@')[0];
-			var traitInfoName = $"{traitName}Info";
 
 			// Until the server learns the concept of a mod and its loaded assemblies (but even then namespaces will be a problem!),
 			// we must get all traits that match the target trait name.
-			return codeSymbols.TraitInfos[traitInfoName]?
+			return codeSymbols.TraitInfos[traitName]?
 				.Select(x => x.Location.ToLspLocation(cursorTarget.TargetString.Length));
 		}
 
@@ -37,11 +36,10 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		IEnumerable<Location> HandleKeyDefinitionAt2(CursorTarget cursorTarget)
 		{
 			var traitName = cursorTarget.TargetNode.ParentNode.Key.Split('@')[0];
-			var traitInfoName = $"{traitName}Info";
 
 			// Until the server learns the concept of a mod and its loaded assemblies (but even then namespaces will be a problem!),
 			// we must get all traits that match the target trait name and get all their fields that match the target trait info field name.
-			return codeSymbols.TraitInfos[traitInfoName]?
+			return codeSymbols.TraitInfos[traitName]?
 				.SelectMany(x => x.PropertyInfos.Where(y => y.Name == cursorTarget.TargetNode.Key))
 				.Select(x => x.Location.ToLspLocation(cursorTarget.TargetString.Length));
 		}
