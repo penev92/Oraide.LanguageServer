@@ -52,7 +52,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			if (cursorTarget.TargetNode.Key == "SpriteSequenceFormat")
 				return codeSymbols.SpriteSequenceInfos
 					.Where(x => !presentValues.Contains(x.Key))
-					.SelectMany(x => x.Select(y => y.ToCompletionItem("ASDFASDF")));
+					.SelectMany(x => x.Select(y => y.ToCompletionItem("Sprite Sequence Loader")));
 
 			//if (cursorTarget.TargetNode.Key == "ModelSequenceFormat")
 			//	return IHoverService.HoverFromHoverInfo("The type of **model** loader to use.", range);

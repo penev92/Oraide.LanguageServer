@@ -19,7 +19,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-						Console.Error.WriteLine("<-- TextDocument-DidClose");
+						Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] TextDocument-DidClose");
 
 					openFileCache.RemoveOpenFile(request.TextDocument.Uri);
 				}

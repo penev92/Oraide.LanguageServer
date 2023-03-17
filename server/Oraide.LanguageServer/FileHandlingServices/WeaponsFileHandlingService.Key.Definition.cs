@@ -36,7 +36,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			if (cursorTarget.TargetString == "Warhead")
 				targetString = "Warheads"; // Hacks!
 
-			var fieldInfo = weaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.Name == targetString);
+			var fieldInfo = codeSymbols.WeaponInfo.WeaponPropertyInfos.FirstOrDefault(x => x.Name == targetString);
 			if (fieldInfo.Name != null)
 				return new[] { fieldInfo.Location.ToLspLocation(fieldInfo.Name.Length) };
 
@@ -48,7 +48,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			var parentNodeKey = cursorTarget.TargetNode.ParentNode.Key;
 			if (parentNodeKey == "Projectile")
 			{
-				var projectile = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+				var projectile = codeSymbols.WeaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
 				if (projectile.Name != null)
 				{
 					var fieldInfo = projectile.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);
@@ -58,7 +58,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			}
 			else if (parentNodeKey == "Warhead" || parentNodeKey.StartsWith("Warhead@"))
 			{
-				var warhead = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
+				var warhead = codeSymbols.WeaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.ParentNode.Value);
 				if (warhead.Name != null)
 				{
 					var fieldInfo = warhead.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetString);

@@ -27,7 +27,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-						Console.Error.WriteLine("<-- TextDocument-Completion");
+						Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] TextDocument-Completion");
 
 					var completionItems = HandlePositionalRequest(completionParams) as IEnumerable<CompletionItem>;
 					return new CompletionList

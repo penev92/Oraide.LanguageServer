@@ -43,10 +43,12 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			}
 
 			if (nodeKey == "Projectile")
-				return weaponInfo.ProjectileInfos.Where(x => !x.IsAbstract).Select(x => x.ToCompletionItem("Type implementing IProjectileInfo"));
+				return codeSymbols.WeaponInfo.ProjectileInfos.Where(x => !x.IsAbstract)
+					.Select(x => x.ToCompletionItem("Type implementing IProjectileInfo"));
 
 			if (nodeKey == "Warhead" || nodeKey.StartsWith("Warhead@"))
-				return weaponInfo.WarheadInfos.Where(x => !x.IsAbstract).Select(x => x.ToCompletionItem("Type implementing IWarhead"));
+				return codeSymbols.WeaponInfo.WarheadInfos.Where(x => !x.IsAbstract)
+					.Select(x => x.ToCompletionItem("Type implementing IWarhead"));
 
 			return Enumerable.Empty<CompletionItem>();
 		}
@@ -58,7 +60,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			var parentNode = cursorTarget.TargetNode.ParentNode;
 			if (parentNode.Key == "Projectile")
 			{
-				var projectileInfo = weaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == parentNode.Value);
+				var projectileInfo = codeSymbols.WeaponInfo.ProjectileInfos.FirstOrDefault(x => x.Name == parentNode.Value);
 				if (projectileInfo.Name != null)
 				{
 					fieldInfo = projectileInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
@@ -67,7 +69,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			}
 			else if (parentNode.Key == "Warhead" || parentNode.Key.StartsWith("Warhead@"))
 			{
-				var warheadInfo = weaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == parentNode.Value);
+				var warheadInfo = codeSymbols.WeaponInfo.WarheadInfos.FirstOrDefault(x => x.Name == parentNode.Value);
 				if (warheadInfo.Name != null)
 				{
 					fieldInfo = warheadInfo.PropertyInfos.FirstOrDefault(x => x.Name == cursorTarget.TargetNode.Key);
@@ -109,7 +111,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			}
 
 			// Try to check if this is an enum type field.
-			var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
+			var enumInfo = codeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
 			if (enumInfo != null)
 			{
 				return enumInfo.FirstOrDefault().Values.Select(x => new CompletionItem

@@ -131,7 +131,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			}
 
 			// Try to check if this is an enum type field.
-			var enumInfo = symbolCache[cursorTarget.ModId].CodeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
+			var enumInfo = codeSymbols.EnumInfos.FirstOrDefault(x => x.Key == fieldInfo.InternalType);
 			if (enumInfo != null)
 			{
 				var content = $"```csharp\n{enumInfo.Key}.{cursorTarget.TargetString}\n```";
