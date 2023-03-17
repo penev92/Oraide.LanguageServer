@@ -44,9 +44,15 @@ namespace Oraide.LanguageServer.Caching
 		{
 			var modFolders = yamlInformationProvider.GetModDirectories().ToList();
 
-			var commonPath = Path.Combine(Path.GetDirectoryName(modFolders.First()), "common");
-			if (Directory.Exists(commonPath))
-				modFolders.Add(commonPath);
+			foreach (var modFolder in modFolders)
+			{
+				var commonPath = Path.Combine(Path.GetDirectoryName(modFolder), "common");
+				if (Directory.Exists(commonPath) && !modFolders.Contains(commonPath))
+				{
+					modFolders.Add(commonPath);
+					break;
+				}
+			}
 
 			KnownMods = modFolders
 				.Select(OpenRaFolderUtils.NormalizeFilePathString)

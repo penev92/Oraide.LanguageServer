@@ -11,7 +11,7 @@ namespace Oraide.MiniYaml.Parsers
 	{
 		public override bool CanParse(in string folderPath)
 		{
-			return Directory.EnumerateFiles(folderPath, "*.yaml", SearchOption.AllDirectories).Any(x => File.ReadAllText(x).Contains("\n\t\tAddExtension: False"));
+			return Directory.EnumerateFiles(folderPath, "*.yaml", SearchOption.AllDirectories).Any(x => File.ReadAllText(x).Contains("\n\t\tAddExtension: "));
 		}
 	}
 }
