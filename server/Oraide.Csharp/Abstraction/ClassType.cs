@@ -12,5 +12,7 @@
 		SoundLoader,
 		SpriteLoader,
 		VideoLoader,
+		Widget,
+		WidgetLogic,
 	}
 }

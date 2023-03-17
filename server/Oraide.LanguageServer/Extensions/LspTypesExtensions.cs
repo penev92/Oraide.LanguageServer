@@ -30,6 +30,9 @@ namespace Oraide.LanguageServer.Extensions
 
 		public static Location ToLspLocation(this MemberLocation memberLocation, int length)
 		{
+			if (memberLocation.FileUri == null)
+				return null;
+
 			return new Location
 			{
 				Uri = memberLocation.FileUri.AbsoluteUri,
@@ -49,11 +52,11 @@ namespace Oraide.LanguageServer.Extensions
 			};
 		}
 
-		public static CompletionItem ToCompletionItem(this ClassInfo classInfo, string detail = null)
+		public static CompletionItem ToCompletionItem(this ClassInfo classInfo, string detail = null, bool useNameWithSuffix = false)
 		{
 			return new CompletionItem
 			{
-				Label = classInfo.Name,
+				Label = useNameWithSuffix ? classInfo.NameWithTypeSuffix : classInfo.Name,
 				Kind = CompletionItemKind.Class,
 				Detail = detail ?? "Unknown C# class",
 				Documentation = classInfo.Description,

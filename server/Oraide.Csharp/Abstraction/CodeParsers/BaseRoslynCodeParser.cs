@@ -26,6 +26,8 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			var soundLoaders = new List<ClassInfo>();
 			var spriteLoaders = new List<ClassInfo>();
 			var videoLoaders = new List<ClassInfo>();
+			var widgets = new List<ClassInfo>();
+			var widgetLogicTypes = new List<ClassInfo>();
 
 			var filePaths = Directory.EnumerateFiles(oraFolderPath, "*.cs", SearchOption.AllDirectories)
 				.Where(x => !x.Contains("OpenRA.Test"));
@@ -78,6 +80,12 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 									case ClassType.VideoLoader:
 										videoLoaders.Add(classInfo);
 										break;
+									case ClassType.Widget:
+										widgets.Add(classInfo);
+										break;
+									case ClassType.WidgetLogic:
+										widgetLogicTypes.Add(classInfo);
+										break;
 									default:
 										throw new ArgumentOutOfRangeException();
 								}
@@ -93,9 +101,11 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			var finalPaletteInfos = FinalizePaletteInfos(finalTraitInfos);
 			var weaponInfo = FinalizeWeaponInfo(weaponInfoFields, projectileInfos, warheadInfos);
 			var finalSpriteSequenceInfos = FinalizeSpriteSequenceInfos(spriteSequenceInfos);
+			var finalWidgets = FinalizeWidgets(widgets);
+			var finalWidgetLogicTypes = FinalizeWidgetLogicTypes(widgetLogicTypes);
 
 			return new CodeInformation(finalTraitInfos, finalPaletteInfos, weaponInfo, finalSpriteSequenceInfos, enumInfos,
-				packageLoaders, soundLoaders, spriteLoaders, videoLoaders);
+				packageLoaders, soundLoaders, spriteLoaders, videoLoaders, finalWidgets, finalWidgetLogicTypes);
 		}
 
 		protected virtual (ClassType Type, ClassInfo Info) ParseClass(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
@@ -161,6 +171,19 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			{
 				var classInfo = ParseAssetLoader(filePath, fileText, classDeclaration);
 				return (ClassType.VideoLoader, classInfo);
+			}
+
+			// Widget-related types:
+			if (classDeclaration.Identifier.ValueText == "Widget" || baseTypes.Any(x => (!x.StartsWith("I") || char.IsLower(x[1])) && x.EndsWith("Widget")))
+			{
+				var classInfo = ParseWidget(filePath, fileText, classDeclaration);
+				return (ClassType.Widget, classInfo);
+			}
+
+			if (classDeclaration.Identifier.ValueText.EndsWith("Logic") && !baseTypes.Contains("ILintPass"))
+			{
+				var classInfo = ParseWidgetLogic(filePath, fileText, classDeclaration);
+				return (ClassType.WidgetLogic, classInfo);
 			}
 
 			return default;
@@ -268,6 +291,29 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			var typeSuffix = "Loader";
 			return ParseSimpleClass(filePath, fileText, classDeclaration, ref typeSuffix);
 		}
+
+		protected virtual ClassInfo ParseWidget(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
+		{
+			// Can't just use ParseSimpleClass() because Widget fields aren't readonly and need different parsing.
+			var typeSuffix = "Widget";
+			var fullName = classDeclaration.Identifier.ValueText;
+			var name = GetTypeNameWithoutSuffix(fullName, ref typeSuffix);
+			var description = ParseDescAttribute(classDeclaration);
+			var isAbstract = classDeclaration.Modifiers.Any(x => x.ValueText == "abstract");
+
+			// Some manual string nonsense to determine the class name location inside the file.
+			var classStart = classDeclaration.GetLocation().SourceSpan.Start;
+			var classLocation = FindTypeLocationInText(filePath, fileText, fullName, classStart);
+			var baseTypes = ParseBaseTypeNames(classDeclaration).ToArray();
+			var fields = ParseWidgetClassFields(filePath, fileText, classDeclaration).ToArray();
+
+			return new ClassInfo(name, typeSuffix, description, classLocation, baseTypes, fields, isAbstract);
+		}
+
+		protected virtual ClassInfo ParseWidgetLogic(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
+		{
+			var typeSuffix = "Logic";
+			return ParseSimpleClass(filePath, fileText, classDeclaration, ref typeSuffix);
 		}
 
 		#endregion
@@ -393,7 +439,7 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 		}
 
 		/// <summary>
-		/// Exclude abstract types from the result.
+		/// Excludes abstract types from the result.
 		/// </summary>
 		/// <param name="projectileInfos">A list of all loaded projectile infos.</param>
 		/// <returns>A finalized list of projectile infos.</returns>
@@ -434,6 +480,50 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 					yield return spriteSequenceInfo;
 				}
 			}
+		}
+
+		/// <summary>
+		/// Resolves widget inheritance - load base types and a full list in fields - inherited or not.
+		/// Excludes abstract types from the result.
+		/// </summary>
+		/// <param name="widgets">A list of all loaded widget types.</param>
+		/// <returns>A finalized list of widget types, with loaded fields and resolved base types.</returns>
+		protected virtual IEnumerable<ClassInfo> FinalizeWidgets(IList<ClassInfo> widgets)
+		{
+			foreach (var w in widgets)
+			{
+				var baseTypes = GetClassBaseTypes(w.NameWithTypeSuffix, widgets).ToArray();
+				var fieldInfos = new List<ClassFieldInfo>();
+				foreach (var (baseClassName, _) in baseTypes)
+				{
+					var baseClassInfo = widgets.FirstOrDefault(x => x.NameWithTypeSuffix == baseClassName);
+					fieldInfos.AddRange(baseClassInfo.PropertyInfos);
+				}
+
+				if (w.IsAbstract)
+					continue;
+
+				var widget = new ClassInfo(
+					w.Name,
+					w.TypeSuffix,
+					w.Description,
+					w.Location,
+					baseTypes.Where(x => x.TypeName != w.NameWithTypeSuffix).Select(x => x.TypeName).ToArray(),
+					fieldInfos.ToArray(),
+					w.IsAbstract);
+
+				yield return widget;
+			}
+		}
+
+		/// <summary>
+		/// Excludes abstract types from the result.
+		/// </summary>
+		/// <param name="widgetLogicTypes">A list of all loaded widget logic types.</param>
+		/// <returns>A finalized list of widget logic types.</returns>
+		protected virtual IEnumerable<ClassInfo> FinalizeWidgetLogicTypes(IList<ClassInfo> widgetLogicTypes)
+		{
+			return widgetLogicTypes.Where(x => !x.IsAbstract);
 		}
 
 		#endregion
@@ -506,7 +596,6 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 			return description;
 		}
 
-		// TODO: Add suffix parameter and replace the hardcoded "Info" and "Warhead" strings.
 		static ClassInfo ParseSimpleClass(string filePath, string fileText, ClassDeclarationSyntax classDeclaration, ref string typeSuffix)
 		{
 			var fullName = classDeclaration.Identifier.ValueText;
@@ -533,6 +622,30 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 				    && fieldMember.Modifiers.Any(x => x.ValueText == "readonly"))
 					foreach (var fieldInfo in ParseClassField(filePath, fileText, fieldMember))
 						yield return fieldInfo;
+		}
+
+		static IEnumerable<ClassFieldInfo> ParseWidgetClassFields(string filePath, string fileText, ClassDeclarationSyntax classDeclaration)
+		{
+			// Get property (actually field) list.
+			foreach (var member in classDeclaration.Members)
+			{
+				if (member is FieldDeclarationSyntax fieldMember
+				    && fieldMember.Modifiers.Any(x => x.ValueText == "public")
+				    && fieldMember.Modifiers.All(x => x.ValueText != "static"))
+				{
+					// Ignore any fields that are of type Func<> or Action<>.
+					if (fieldMember.Declaration.Type is GenericNameSyntax genericSyntax
+					    && (genericSyntax.Identifier.ValueText == "Func" || genericSyntax.Identifier.ValueText == "Action"))
+						continue;
+
+					// Ignore any fields that are of type Action.
+					if (fieldMember.Declaration.Type is IdentifierNameSyntax { Identifier: { ValueText: "Action" } })
+						continue;
+
+					foreach (var fieldInfo in ParseClassField(filePath, fileText, fieldMember))
+						yield return fieldInfo;
+				}
+			}
 		}
 
 		static IEnumerable<ClassFieldInfo> ParseClassField(string filePath, string fileText, FieldDeclarationSyntax fieldDeclarationSyntax)

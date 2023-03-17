@@ -38,8 +38,19 @@ namespace Oraide.LanguageServer.Caching.Entities
 		/// </summary>
 		public IReadOnlyDictionary<string, Dictionary<string, ClassInfo>> AssetLoaders { get; }
 
+		/// <summary>
+		/// Widget type information grouped by type name.
+		/// </summary>
+		public ILookup<string, ClassInfo> Widgets { get; }
+
+		/// <summary>
+		/// Widget logic type information grouped by type name with suffix.
+		/// </summary>
+		public ILookup<string, ClassInfo> WidgetLogicTypes { get; }
+
 		public CodeSymbols(ILookup<string, ClassInfo> traitInfos, ILookup<string, ClassInfo> paletteTraitInfos, WeaponInfo weaponInfo,
-			ILookup<string, ClassInfo> spriteSequenceInfos, ILookup<string, EnumInfo> enumInfos, ILookup<string, ClassInfo> assetLoaders)
+			ILookup<string, ClassInfo> spriteSequenceInfos, ILookup<string, EnumInfo> enumInfos, ILookup<string, ClassInfo> assetLoaders,
+			ILookup<string, ClassInfo> widgets, ILookup<string, ClassInfo> widgetLogicTypes)
 		{
 			TraitInfos = traitInfos;
 			PaletteTraitInfos = paletteTraitInfos;
@@ -47,6 +58,8 @@ namespace Oraide.LanguageServer.Caching.Entities
 			SpriteSequenceInfos = spriteSequenceInfos;
 			EnumInfos = enumInfos;
 			AssetLoaders = assetLoaders.ToDictionary(x => x.Key, y => y.ToDictionary(m => m.Name, n => n));
+			Widgets = widgets;
+			WidgetLogicTypes = widgetLogicTypes;
 		}
 	}
 }

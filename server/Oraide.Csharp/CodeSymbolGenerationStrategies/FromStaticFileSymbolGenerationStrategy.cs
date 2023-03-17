@@ -19,6 +19,8 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 		protected ILookup<string, ClassInfo> spriteSequenceInfos;
 		protected ILookup<string, EnumInfo> enumInfos;
 		protected ILookup<string, ClassInfo> assetLoaders;
+		protected ILookup<string, ClassInfo> widgets;
+		protected ILookup<string, ClassInfo> widgetLogicTypes;
 
 		public string LoadedVersion { get; }
 
@@ -102,6 +104,22 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 				}, y => y);
 
 			return assetLoaders;
+		}
+
+		public ILookup<string, ClassInfo> GetWidgets()
+		{
+			if (widgets == null)
+				widgets = selectedParser.ParseWidgets().ToLookup(x => x.Name, y => y);
+
+			return widgets;
+		}
+
+		public ILookup<string, ClassInfo> GetWidgetLogicTypes()
+		{
+			if (widgetLogicTypes == null)
+				widgetLogicTypes = selectedParser.ParseWidgetLogicTypes().ToLookup(x => x.NameWithTypeSuffix, y => y);
+
+			return widgetLogicTypes;
 		}
 
 		#region Private methods

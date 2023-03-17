@@ -21,6 +21,7 @@ namespace Oraide.Core.Entities.MiniYaml
 		Weapons = 2,
 		SpriteSequences = 3,
 		Cursors = 4,
+		ChromeLayout = 5,
 		MapFile = 10,
 		MapRules = 11,
 		MapWeapons = 12,

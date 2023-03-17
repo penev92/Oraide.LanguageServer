@@ -29,7 +29,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			// Until the server learns the concept of a mod and its loaded assemblies (but even then namespaces will be a problem!),
 			// we must get all traits that match the target trait name.
 			return codeSymbols.TraitInfos[traitName]?
-				.Select(x => x.Location.ToLspLocation(cursorTarget.TargetString.Length));
+				.Select(x => x.Location.ToLspLocation(traitName.Length));
 		}
 
 		// TODO: This will likely not handle trait property removals properly!
@@ -41,7 +41,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			// we must get all traits that match the target trait name and get all their fields that match the target trait info field name.
 			return codeSymbols.TraitInfos[traitName]?
 				.SelectMany(x => x.PropertyInfos.Where(y => y.Name == cursorTarget.TargetNode.Key))
-				.Select(x => x.Location.ToLspLocation(cursorTarget.TargetString.Length));
+				.Select(x => x.Location.ToLspLocation(x.Name.Length));
 		}
 
 		#endregion
