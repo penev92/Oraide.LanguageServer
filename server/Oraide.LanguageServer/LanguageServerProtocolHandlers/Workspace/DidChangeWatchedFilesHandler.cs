@@ -13,7 +13,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 	public class DidChangeWatchedFilesHandler : BaseRpcMessageHandler
 	{
 		public DidChangeWatchedFilesHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
-			: base(symbolCache, openFileCache) { }
+			: base(symbolCache, openFileCache, null) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.WorkspaceDidChangeWatchedFilesName)]
 		public void DidChangeWatchedFiles(DidChangeWatchedFilesParams request)
@@ -23,7 +23,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 				try
 				{
 					if (trace)
-						Console.Error.WriteLine("<-- Workspace-DidChangeWatchedFiles");
+						Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Workspace-DidChangeWatchedFiles");
 
 					// TODO: Be smarter about which symbol collections we actually need to update so we don't do all.
 					symbolCache.Update();

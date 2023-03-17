@@ -13,7 +13,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 	public class TextDocumentSymbolRequestHandler : BaseRpcMessageHandler
 	{
 		public TextDocumentSymbolRequestHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
-			: base(symbolCache, openFileCache) { }
+			: base(symbolCache, openFileCache, null) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentDocumentSymbolName)]
 		public IEnumerable<DocumentSymbol> DocumentSymbols(DocumentSymbolParams request)
@@ -23,7 +23,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-						Console.Error.WriteLine("<-- TextDocument-DocumentSymbol");
+						Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] TextDocument-DocumentSymbol");
 
 					var incomingFileUriString = OpenRaFolderUtils.NormalizeFileUriString(request.TextDocument.Uri);
 					return openFileCache[incomingFileUriString].YamlNodes.Where(x => x.Key != null).Select(ConvertNodeToDocumentSymbol);

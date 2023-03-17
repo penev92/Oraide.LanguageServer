@@ -10,12 +10,12 @@
 		public readonly ClassFieldInfo[] WeaponPropertyInfos;
 
 		// List of all implementations of IProjectileInfo and their properties.
-		public readonly SimpleClassInfo[] ProjectileInfos;
+		public readonly ClassInfo[] ProjectileInfos;
 
 		// List of all implementations of IWarhead and their properties.
-		public readonly SimpleClassInfo[] WarheadInfos;
+		public readonly ClassInfo[] WarheadInfos;
 
-		public WeaponInfo(ClassFieldInfo[] weaponPropertyInfos, SimpleClassInfo[] projectileInfos, SimpleClassInfo[] warheadInfos)
+		public WeaponInfo(ClassFieldInfo[] weaponPropertyInfos, ClassInfo[] projectileInfos, ClassInfo[] warheadInfos)
 		{
 			WeaponPropertyInfos = weaponPropertyInfos;
 			ProjectileInfos = projectileInfos;

@@ -9,7 +9,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 	public class TextDocumentDidCloseHandler : BaseRpcMessageHandler
 	{
 		public TextDocumentDidCloseHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
-			: base(symbolCache, openFileCache) { }
+			: base(symbolCache, openFileCache, null) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.TextDocumentDidCloseName)]
 		public void DidCloseTextDocument(DidCloseTextDocumentParams request)
@@ -19,7 +19,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-						Console.Error.WriteLine("<-- TextDocument-DidClose");
+						Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] TextDocument-DidClose");
 
 					openFileCache.RemoveOpenFile(request.TextDocument.Uri);
 				}

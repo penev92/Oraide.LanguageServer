@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Oraide.Core;
 using Oraide.Core.Entities.Csharp;
+using Oraide.Csharp.Abstraction.CodeSymbolGenerationStrategies;
 using Oraide.Csharp.CodeSymbolGenerationStrategies;
 
 namespace Oraide.Csharp
@@ -10,13 +11,14 @@ namespace Oraide.Csharp
 	// The currently planned/supported use-cases for code information are:
 	//  - Generating symbols to navigate to.
 	//  - Referencing documentation from DescAttributes.
+	//  - Autocomplete for trait and trait property names.
 	// Future planned use-cases:
 	//  - Validating trait and trait property existence (using the same symbols used for navigation).
-	//  - Autocomplete for trait and trait property names.
 	//  - Any of the above for non-trait types.
 	public class CodeInformationProvider
 	{
-		readonly string openRaFolder;
+		public string CodeVersion => symbolGenerator.LoadedVersion;
+
 		readonly ICodeSymbolGenerationStrategy symbolGenerator;
 
 		public CodeInformationProvider(string workspaceFolderPath, string defaultOpenRaFolderPath)
@@ -24,7 +26,7 @@ namespace Oraide.Csharp
 			Console.Error.WriteLine($"WORKSPACE FOLDER PATH:  {workspaceFolderPath}");
 			Console.Error.WriteLine($"OPENRA DEFAULT FOLDER PATH:  {defaultOpenRaFolderPath}");
 
-			openRaFolder = GetOpenRaFolder(workspaceFolderPath, defaultOpenRaFolderPath);
+			var openRaFolder = GetOpenRaFolder(workspaceFolderPath, defaultOpenRaFolderPath);
 
 			Console.Error.WriteLine($"OPENRA CHOSEN FOLDER PATH:  {openRaFolder}");
 			Console.Error.WriteLine("-------------");
@@ -34,7 +36,7 @@ namespace Oraide.Csharp
 				// Strategy 1 - C# code parsing.
 				symbolGenerator = new CodeParsingSymbolGenerationStrategy(openRaFolder);
 
-				Console.Error.WriteLine("Loading code symbols from source code files.");
+				Console.Error.WriteLine($"Loading code symbols from source code files using {symbolGenerator.LoadedVersion}.");
 				Console.Error.WriteLine("-------------");
 			}
 			else if (OpenRaFolderUtils.IsOpenRaInstallationFolder(openRaFolder))
@@ -42,14 +44,19 @@ namespace Oraide.Csharp
 				// Strategy 2 - load data from static file.
 				symbolGenerator = new FromStaticFileSymbolGenerationStrategy(openRaFolder);
 
-				Console.Error.WriteLine($"Loading code symbols from static docs files - version {((FromStaticFileSymbolGenerationStrategy)symbolGenerator).LoadedVersion}.");
+				Console.Error.WriteLine($"Loading code symbols from static docs files - version {symbolGenerator.LoadedVersion}.");
 				Console.Error.WriteLine("-------------");
 			}
 		}
 
-		public ILookup<string, TraitInfo> GetTraitInfos()
+		public ILookup<string, ClassInfo> GetTraitInfos()
 		{
 			return symbolGenerator.GetTraitInfos();
+		}
+
+		public ILookup<string, ClassInfo> GetPaletteTraitInfos()
+		{
+			return symbolGenerator.GetPaletteTraitInfos();
 		}
 
 		public WeaponInfo GetWeaponInfo()
@@ -57,19 +64,29 @@ namespace Oraide.Csharp
 			return symbolGenerator.GetWeaponInfo();
 		}
 
-		public ILookup<string, TraitInfo> GetPaletteTraitInfos()
-		{
-			return symbolGenerator.GetPaletteTraitInfos();
-		}
-
-		public ILookup<string, SimpleClassInfo> GetSpriteSequenceInfos()
+		public ILookup<string, ClassInfo> GetSpriteSequenceInfos()
 		{
 			return symbolGenerator.GetSpriteSequenceInfos();
 		}
 
 		public ILookup<string, EnumInfo> GetEnumInfos()
 		{
-			return symbolGenerator.GetEnums();
+			return symbolGenerator.GetEnumInfos();
+		}
+
+		public ILookup<string, ClassInfo> GetAssetLoaders()
+		{
+			return symbolGenerator.GetAssetLoaders();
+		}
+
+		public ILookup<string, ClassInfo> GetWidgets()
+		{
+			return symbolGenerator.GetWidgets();
+		}
+
+		public ILookup<string, ClassInfo> GetWidgetLogicTypes()
+		{
+			return symbolGenerator.GetWidgetLogicTypes();
 		}
 
 		string GetOpenRaFolder(string workspaceFolderPath, string defaultOpenRaFolderPath)

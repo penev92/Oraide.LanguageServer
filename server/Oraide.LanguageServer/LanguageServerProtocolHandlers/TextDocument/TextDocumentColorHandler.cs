@@ -15,7 +15,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 		const string RegexMatchPattern = "(?:\t|[a-zA-Z0-9])(Color[s]*)(?:[:A-Z])";
 
 		public TextDocumentColorHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
-			: base(symbolCache, openFileCache) { }
+			: base(symbolCache, openFileCache, null) { }
 
 		[OraideCustomJsonRpcMethodTag("textDocument/documentColor")]
 		public IEnumerable<ColorInformation> DocumentColor(DocumentColorParams request)
@@ -25,7 +25,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 				try
 				{
 					if (trace)
-						Console.Error.WriteLine("<-- TextDocument-DocumentColor");
+						Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] TextDocument-DocumentColor");
 
 					// HACK HACK HACK!!!
 					// For whatever reason we receive the file URI borked - looks to be encoded for JSON, but the deserialization doesn't fix it.

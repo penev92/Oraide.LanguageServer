@@ -2,6 +2,22 @@
 
 All notable changes to the "oraide" extension will be documented in this file.
 
+## 1.0.0 - 2023.03.17
+
+ - OpenRA Mod support:
+    - Added partial support for mod.yaml files.
+       - Added LSP features support for referenced files lists.
+       - Added LSP features support for asset loaders (Sprite, Sound, Video).
+    - Added partial support for chrome layout (UI/widget) files.
+       - Added LSP features support for Widgets and their fields.
+       - Added LSP features support for ChromeLogic types.
+ - Language server:
+    - Added proper support for different OpenRA versions.
+    - Reworked how code symbol and YAML symbol parsing/generation works.
+    - Reworked how LSP requests are handled.
+    - Fixed some preexisting bugs.
+    - Removed excessive logging to the editor's Output console.
+
 ## 0.7.4 - 2023.01.19
 
  - Language server:

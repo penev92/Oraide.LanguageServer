@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using LspTypes;
-using OpenRA.MiniYamlParser;
 using Oraide.Core;
 using Oraide.Core.Entities;
-using Oraide.Core.Entities.Csharp;
 using Oraide.Core.Entities.MiniYaml;
+using Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers.Configuration;
 using Oraide.LanguageServer.Caching;
 
 namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
@@ -20,11 +18,13 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 		protected readonly bool trace = true;
 		protected readonly SymbolCache symbolCache;
 		protected readonly OpenFileCache openFileCache;
+		protected readonly IFileTypeHandlerConfiguration fileHandlerConfiguration;
 
-		protected BaseRpcMessageHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
+		protected BaseRpcMessageHandler(SymbolCache symbolCache, OpenFileCache openFileCache, IFileTypeHandlerConfiguration fileHandlerConfiguration)
 		{
 			this.symbolCache = symbolCache;
 			this.openFileCache = openFileCache;
+			this.fileHandlerConfiguration = fileHandlerConfiguration;
 		}
 
 		protected virtual bool TryGetCursorTarget(TextDocumentPositionParams positionParams, out CursorTarget target)
@@ -39,14 +39,40 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			var targetLineIndex = (int)positionParams.Position.Line;
 			var targetCharacterIndex = (int)positionParams.Position.Character;
 
-			// Determine file type.
-			var modManifest = symbolCache[modId].ModManifest;
 			var filePath = fileUri.AbsolutePath;
 			var fileName = filePath.Split($"mods/{modId}/")[1];
 			var fileReference = $"{modId}|{fileName}";
 
+			ModManifest modManifest;
+			if (symbolCache.ModSymbols.ContainsKey(modId))
+			{
+				modManifest = symbolCache[modId].ModManifest;
+			}
+			else
+			{
+				if (!symbolCache.KnownMods.ContainsKey(modId))
+				{
+					target = default;
+					return false;
+				}
+
+				// Hope **someone** references this file...
+				var modData = symbolCache.ModSymbols.Values.FirstOrDefault(x => x.ModManifest.AllFileReferences.Contains(fileReference));
+				modManifest = modData?.ModManifest;
+				modId = modData?.ModId;
+			}
+
+			if (modManifest == null)
+			{
+				target = default;
+				return false;
+			}
+
+			// Determine file type.
 			var fileType = FileType.Unknown;
-			if (modManifest.RulesFiles.Contains(fileReference))
+			if (fileName == "mod.yaml")
+				fileType = FileType.ModFile;
+			else if (modManifest.RulesFiles.Contains(fileReference))
 				fileType = FileType.Rules;
 			else if (modManifest.WeaponsFiles.Contains(fileReference))
 				fileType = FileType.Weapons;
@@ -54,6 +80,8 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				fileType = FileType.Cursors;
 			else if (modManifest.SpriteSequences.Contains(fileReference))
 				fileType = FileType.SpriteSequences;
+			else if (modManifest.ChromeLayout.Contains(fileReference))
+				fileType = FileType.ChromeLayout;
 			else if (Path.GetFileName(filePath) == "map.yaml"
 			         && symbolCache[modId].Maps.Any(x => x.MapFolder == OpenRaFolderUtils.NormalizeFilePathString(Path.GetDirectoryName(filePath))))
 				fileType = FileType.MapFile;
@@ -133,100 +161,17 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			return true;
 		}
 
-		protected virtual void Initialize(CursorTarget cursorTarget) { }
-
 		#region CursorTarget handlers
 
 		protected virtual object HandlePositionalRequest(TextDocumentPositionParams positionParams)
 		{
 			if (!TryGetCursorTarget(positionParams, out var cursorTarget))
-				return null;
+				return default;
 
-			Initialize(cursorTarget);
-
-			return cursorTarget.FileType switch
-			{
-				FileType.Rules => HandleRulesFile(cursorTarget),
-				FileType.Weapons => HandleWeaponFile(cursorTarget),
-				FileType.Cursors => HandleCursorsFile(cursorTarget),
-				FileType.SpriteSequences => HandleSpriteSequenceFile(cursorTarget),
-				FileType.MapFile => HandleMapFile(cursorTarget),
-				FileType.MapRules => HandleRulesFile(cursorTarget),
-				FileType.MapWeapons => HandleWeaponFile(cursorTarget),
-				FileType.MapSpriteSequences => HandleSpriteSequenceFile(cursorTarget),
-				_ => null
-			};
+			return HandlePositionalRequestInner(cursorTarget);
 		}
 
-		protected virtual object HandleRulesFile(CursorTarget cursorTarget)
-		{
-			return cursorTarget.TargetType switch
-			{
-				"key" => HandleRulesKey(cursorTarget),
-				"value" => HandleRulesValue(cursorTarget),
-				_ => null
-			};
-		}
-
-		protected virtual object HandleWeaponFile(CursorTarget cursorTarget)
-		{
-			return cursorTarget.TargetType switch
-			{
-				"key" => HandleWeaponKey(cursorTarget),
-				"value" => HandleWeaponValue(cursorTarget),
-				_ => null
-			};
-		}
-
-		protected virtual object HandleCursorsFile(CursorTarget cursorTarget)
-		{
-			return cursorTarget.TargetType switch
-			{
-				"key" => HandleCursorsKey(cursorTarget),
-				"value" => HandleCursorsValue(cursorTarget),
-				_ => null
-			};
-		}
-
-		protected virtual object HandleMapFile(CursorTarget cursorTarget)
-		{
-			return cursorTarget.TargetType switch
-			{
-				"key" => HandleMapFileKey(cursorTarget),
-				"value" => HandleMapFileValue(cursorTarget),
-				_ => null
-			};
-		}
-
-		protected virtual object HandleSpriteSequenceFile(CursorTarget cursorTarget)
-		{
-			return cursorTarget.TargetType switch
-			{
-				"key" => HandleSpriteSequenceFileKey(cursorTarget),
-				"value" => HandleSpriteSequenceFileValue(cursorTarget),
-				_ => null
-			};
-		}
-
-		protected virtual object HandleRulesKey(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleRulesValue(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleWeaponKey(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleWeaponValue(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleCursorsKey(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleCursorsValue(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleMapFileKey(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleMapFileValue(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleSpriteSequenceFileKey(CursorTarget cursorTarget) { return null; }
-
-		protected virtual object HandleSpriteSequenceFileValue(CursorTarget cursorTarget) { return null; }
+		protected virtual object HandlePositionalRequestInner(CursorTarget cursorTarget) { return null; }
 
 		#endregion
 
@@ -253,94 +198,6 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 			}
 
 			return true;
-		}
-
-		protected bool TryMergeYamlFiles(IEnumerable<string> filePaths, out List<MiniYamlNode> nodes)
-		{
-			// As long as the merging passes there's a good chance we really do have a node like the target one to be removed.
-			// If the target node removal doesn't have a corresponding node addition (is invalid), MiniYaml loading will throw.
-			try
-			{
-				nodes = OpenRA.MiniYamlParser.MiniYaml.Load(filePaths);
-				return true;
-			}
-			catch (Exception)
-			{
-				nodes = null;
-				return false;
-			}
-		}
-
-		protected string ResolveSpriteSequenceImageNameForRules(CursorTarget cursorTarget, ClassFieldInfo fieldInfo, MapManifest? mapManifest)
-		{
-			var files = new List<string>(symbolCache[cursorTarget.ModId].ModManifest.RulesFiles);
-			if (mapManifest?.RulesFiles != null)
-				files.AddRange(mapManifest?.RulesFiles);
-
-			return ResolveSpriteSequenceImageName(cursorTarget, fieldInfo, files);
-		}
-
-		protected string ResolveSpriteSequenceImageNameForWeapons(CursorTarget cursorTarget, ClassFieldInfo fieldInfo, MapManifest? mapManifest)
-		{
-			var files = new List<string>(symbolCache[cursorTarget.ModId].ModManifest.WeaponsFiles);
-			if (mapManifest?.WeaponsFiles != null)
-				files.AddRange(mapManifest?.WeaponsFiles);
-
-			return ResolveSpriteSequenceImageName(cursorTarget, fieldInfo, files);
-		}
-
-		private string ResolveSpriteSequenceImageName(CursorTarget cursorTarget, ClassFieldInfo fieldInfo, IEnumerable<string> files)
-		{
-			// Initializing the target image name as the obscure default OpenRA uses - the actor name.
-			var imageName = cursorTarget.TargetNode.ParentNode.ParentNode.Key;
-
-			// Resolve the actual name that we need to use.
-			var sequenceAttribute = fieldInfo.OtherAttributes.FirstOrDefault(x => x.Name == "SequenceReference");
-			var imageFieldName = sequenceAttribute.Value != null && sequenceAttribute.Value.Contains(',')
-				? sequenceAttribute.Value.Substring(0, sequenceAttribute.Value.IndexOf(','))
-				: sequenceAttribute.Value;
-
-			var modData = symbolCache[cursorTarget.ModId];
-			var resolvedFileList = files.Select(x => OpenRaFolderUtils.ResolveFilePath(x, (modData.ModId, modData.ModFolder)));
-			if (TryMergeYamlFiles(resolvedFileList, out var nodes))
-			{
-				// Check for overriding image names on the trait in question.
-				var actorNode = nodes.First(x => x.Key == cursorTarget.TargetNode.ParentNode.ParentNode.Key);
-				var traitNode = actorNode.Value.Nodes.FirstOrDefault(x => x.Key == cursorTarget.TargetNode.ParentNode.Key);
-				var imageNode = traitNode?.Value.Nodes.FirstOrDefault(x => x.Key == imageFieldName);
-				if (imageNode?.Value.Value != null)
-					imageName = imageNode.Value.Value;
-			}
-
-			return imageName;
-		}
-
-		protected IEnumerable<SpriteSequenceDefinition> GetSpriteSequencesForImage(string modId, string imageName, MapManifest? mapManifest)
-		{
-			var files = new List<string>(symbolCache[modId].ModManifest.SpriteSequences);
-			if (mapManifest?.WeaponsFiles != null)
-				files.AddRange(mapManifest?.SpriteSequenceFiles);
-
-			var resolvedFileList = files.Select(x => OpenRaFolderUtils.ResolveFilePath(x, (modId, symbolCache[modId].ModFolder)));
-
-			if (TryMergeYamlFiles(resolvedFileList, out var imageNodes))
-			{
-				var sequenceNodes = imageNodes.FirstOrDefault(x => x.Key == imageName)?.Value.Nodes;
-				var sequences = sequenceNodes?
-					.Where(x => x.Key != "Defaults")
-					.Select(x => new SpriteSequenceDefinition(x.Key, x.ParentNode?.Key, x.Value.Value,
-						new MemberLocation("", 0, 0)));
-
-				return sequences ?? Enumerable.Empty<SpriteSequenceDefinition>();
-			}
-
-			return Enumerable.Empty<SpriteSequenceDefinition>();
-		}
-
-		protected string NormalizeFilePath(string filePath)
-		{
-			// Because VSCode sends us weird partially-url-encoded file paths.
-			return System.Web.HttpUtility.UrlDecode(filePath);
 		}
 
 		bool TryGetTargetString(string targetLine, int targetCharacterIndex, string sourceString, out string targetString, out int startIndex, out int endIndex)

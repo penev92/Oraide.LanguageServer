@@ -15,15 +15,17 @@ namespace Oraide.Core.Entities.MiniYaml
 
 	public enum FileType
 	{
-		Unknown = 0,
+		Unknown = -1,
+		ModFile = 0,
 		Rules = 1,
 		Weapons = 2,
-		Cursors = 3,
-		SpriteSequences = 4,
+		SpriteSequences = 3,
+		Cursors = 4,
+		ChromeLayout = 5,
 		MapFile = 10,
 		MapRules = 11,
 		MapWeapons = 12,
-		MapSpriteSequences = 14,
+		MapSpriteSequences = 13,
 	}
 
 	public readonly struct CursorTarget

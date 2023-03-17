@@ -6,6 +6,7 @@
 
 		public readonly string ImageName;
 
+		// TODO: This is obsolete on bleed since 12.2022! Keeping here only for backward compatibility.
 		public readonly string FileName;
 
 		public readonly MemberLocation Location;

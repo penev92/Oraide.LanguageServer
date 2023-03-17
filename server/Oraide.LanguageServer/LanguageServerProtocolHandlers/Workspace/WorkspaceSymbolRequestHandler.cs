@@ -11,7 +11,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 	public class WorkspaceSymbolRequestHandler : BaseRpcMessageHandler
 	{
 		public WorkspaceSymbolRequestHandler(SymbolCache symbolCache, OpenFileCache openFileCache)
-			: base(symbolCache, openFileCache) { }
+			: base(symbolCache, openFileCache, null) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.WorkspaceSymbolName)]
 		public IEnumerable<SymbolInformation> Symbols(WorkspaceSymbolParams request)
@@ -21,7 +21,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 				try
 				{
 					if (trace)
-						Console.Error.WriteLine("<-- Workspace-Symbols");
+						Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Workspace-Symbols");
 
 					var actors = symbolCache.ModSymbols.SelectMany(x => x.Value.ModSymbols.ActorDefinitions
 						.SelectMany(actorDefinition => actorDefinition.First().ToSymbolInformation()));

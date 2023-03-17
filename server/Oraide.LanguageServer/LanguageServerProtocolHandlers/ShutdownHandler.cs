@@ -8,7 +8,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 	public class ShutdownHandler : BaseRpcMessageHandler
 	{
 		public ShutdownHandler()
-			: base(null, null) { }
+			: base(null, null, null) { }
 
 		[OraideCustomJsonRpcMethodTag(Methods.ShutdownName)]
 		public JToken ShutdownName()
@@ -18,7 +18,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 				try
 				{
 					if (trace)
-						System.Console.Error.WriteLine("<-- Shutdown");
+						System.Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Shutdown");
 				}
 				catch (Exception)
 				{
@@ -36,7 +36,7 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers
 				try
 				{
 					if (trace)
-						Console.Error.WriteLine("<-- Exit");
+						Console.Error.WriteLine($"[{DateTime.Now:hh:mm:ss.fff}] Exit");
 
 					// TODO:
 					// Exit();

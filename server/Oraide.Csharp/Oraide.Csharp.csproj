@@ -14,21 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="docs\playtest-20230110-sprite-sequences.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="docs\playtest-20230110-traits.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="docs\playtest-20230110-weapons.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="docs\release-20210321-traits.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="docs\release-20210321-weapons.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+	  <None Update="docs/*">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
   </ItemGroup>
 
 </Project>

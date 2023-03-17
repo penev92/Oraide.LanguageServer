@@ -30,10 +30,6 @@ namespace Oraide.LanguageServer
 			var sendingStream = Console.OpenStandardOutput();
 			var receivingStream = Console.OpenStandardInput();
 
-			// Comment out to disable verbose editor-server message logging.
-			receivingStream = new Tee(receivingStream, new Dup("EDITOR"), Tee.StreamOwnership.OwnNone);
-			sendingStream = new Tee(sendingStream, new Dup("SERVER"), Tee.StreamOwnership.OwnNone);
-
 			using var rpc = JsonRpc.Attach(sendingStream, receivingStream, this);
 			rpc.Disconnected += OnRpcDisconnected;
 			await Task.Delay(-1);

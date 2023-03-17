@@ -30,22 +30,13 @@ namespace Oraide.LanguageServer.Extensions
 
 		public static Location ToLspLocation(this MemberLocation memberLocation, int length)
 		{
+			if (memberLocation.FileUri == null)
+				return null;
+
 			return new Location
 			{
 				Uri = memberLocation.FileUri.AbsoluteUri,
 				Range = memberLocation.ToRange(length)
-			};
-		}
-
-		public static CompletionItem ToCompletionItem(this TraitInfo traitInfo)
-		{
-			return new CompletionItem
-			{
-				Label = traitInfo.TraitName,
-				Kind = CompletionItemKind.Class,
-				Detail = "Trait name. Expand for details >",
-				Documentation = traitInfo.TraitDescription,
-				CommitCharacters = new[] { ":" }
 			};
 		}
 
@@ -61,11 +52,11 @@ namespace Oraide.LanguageServer.Extensions
 			};
 		}
 
-		public static CompletionItem ToCompletionItem(this SimpleClassInfo classInfo, string detail = null)
+		public static CompletionItem ToCompletionItem(this ClassInfo classInfo, string detail = null, bool useNameWithSuffix = false)
 		{
 			return new CompletionItem
 			{
-				Label = classInfo.Name,
+				Label = useNameWithSuffix ? classInfo.NameWithTypeSuffix : classInfo.Name,
 				Kind = CompletionItemKind.Class,
 				Detail = detail ?? "Unknown C# class",
 				Documentation = classInfo.Description,
