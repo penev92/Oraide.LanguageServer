@@ -36,14 +36,31 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.TextDocument
 					TryGetModId(incomingFileUriString, out var modId);
 					var fileUri = new Uri(incomingFileUriString);
 
-					var modManifest = symbolCache[modId].ModManifest;
 					var filePath = fileUri.AbsolutePath;
 					var fileName = filePath.Split($"mods/{modId}/")[1];
 					var fileReference = $"{modId}|{fileName}";
 
-					if (!modManifest.RulesFiles.Contains(fileReference)
-						&& !modManifest.WeaponsFiles.Contains(fileReference)
-						&& !modManifest.CursorsFiles.Contains(fileReference))
+
+					ModManifest modManifest;
+					if (symbolCache.ModSymbols.ContainsKey(modId))
+					{
+						modManifest = symbolCache[modId].ModManifest;
+					}
+					else
+					{
+						if (!symbolCache.KnownMods.ContainsKey(modId))
+							return;
+
+						// Hope **someone** references this file...
+						var modData = symbolCache.ModSymbols.Values.FirstOrDefault(x => x.ModManifest.AllFileReferences.Contains(fileReference));
+						modManifest = modData?.ModManifest;
+						modId = modData?.ModId;
+					}
+
+					if (modManifest == null)
+						return;
+
+					if (!modManifest.AllFileReferences.Contains(fileReference))
 					{
 						var targetFileDir = OpenRaFolderUtils.NormalizeFilePathString(Path.GetDirectoryName(filePath));
 						MapManifest mapManifest = default;
