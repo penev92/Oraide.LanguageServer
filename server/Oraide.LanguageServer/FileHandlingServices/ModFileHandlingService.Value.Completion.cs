@@ -24,25 +24,28 @@ namespace Oraide.LanguageServer.FileHandlingServices
 			var presentValues = cursorTarget.TargetNode.Value?.Split(',').Select(x => x.Trim()) ?? Enumerable.Empty<string>();
 
 			// Asset loaders:
+
+			// Using .First() is not great but we have no way to differentiate between traits of the same name
+			// until the server learns the concept of a mod and loaded assemblies.
 			if (cursorTarget.TargetNode.Key == "PackageFormats")
-				return codeSymbols.AssetLoaders["Package"].Values
-					.Where(x => !presentValues.Contains(x.Name))
-					.Select(x => x.ToCompletionItem("Package loader"));
+				return codeSymbols.AssetLoaders["Package"]
+					.Where(x => !presentValues.Contains(x.Key))
+					.Select(x => x.First().ToCompletionItem("Package loader"));
 
 			if (cursorTarget.TargetNode.Key == "SoundFormats")
-				return codeSymbols.AssetLoaders["Sound"].Values
-					.Where(x => !presentValues.Contains(x.Name))
-					.Select(x => x.ToCompletionItem("Sound loader"));
+				return codeSymbols.AssetLoaders["Sound"]
+					.Where(x => !presentValues.Contains(x.Key))
+					.Select(x => x.First().ToCompletionItem("Sound loader"));
 
 			if (cursorTarget.TargetNode.Key == "SpriteFormats")
-				return codeSymbols.AssetLoaders["Sprite"].Values
-					.Where(x => !presentValues.Contains(x.Name))
-					.Select(x => x.ToCompletionItem("Sprite loader"));
+				return codeSymbols.AssetLoaders["Sprite"]
+					.Where(x => !presentValues.Contains(x.Key))
+					.Select(x => x.First().ToCompletionItem("Sprite loader"));
 
 			if (cursorTarget.TargetNode.Key == "VideoFormats")
-				return codeSymbols.AssetLoaders["Video"].Values
-					.Where(x => !presentValues.Contains(x.Name))
-					.Select(x => x.ToCompletionItem("Video loader"));
+				return codeSymbols.AssetLoaders["Video"]
+					.Where(x => !presentValues.Contains(x.Key))
+					.Select(x => x.First().ToCompletionItem("Video loader"));
 
 			// TODO: Other *Formats are not implemented yet:
 			//if (cursorTarget.TargetNode.Key == "TerrainFormat")

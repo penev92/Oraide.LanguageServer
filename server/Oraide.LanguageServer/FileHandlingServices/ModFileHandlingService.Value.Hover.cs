@@ -1,4 +1,5 @@
-﻿using LspTypes;
+﻿using System.Linq;
+using LspTypes;
 using Oraide.Core.Entities.MiniYaml;
 using Oraide.LanguageServer.Abstractions.FileHandlingServices;
 
@@ -20,17 +21,33 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		Hover HandleValueHoverAt0(CursorTarget cursorTarget)
 		{
 			// Asset loaders:
-			if (cursorTarget.TargetNode.Key == "PackageFormats" && codeSymbols.AssetLoaders["Package"].TryGetValue(cursorTarget.TargetString, out var packageLoader))
-				return IHoverService.HoverFromHoverInfo($"Package loader **{packageLoader.NameWithTypeSuffix}**.", range);
+			if (cursorTarget.TargetNode.Key == "PackageFormats")
+			{
+				var loaders = codeSymbols.AssetLoaders["Package"][cursorTarget.TargetString];
+				if (loaders.Any())
+					return IHoverService.HoverFromHoverInfo($"Package loader **{loaders.First().NameWithTypeSuffix}**.", range);
+			}
 
-			if (cursorTarget.TargetNode.Key == "SoundFormats" && codeSymbols.AssetLoaders["Sound"].TryGetValue(cursorTarget.TargetString, out var soundLoader))
-				return IHoverService.HoverFromHoverInfo($"Sound loader **{soundLoader.NameWithTypeSuffix}**.", range);
+			if (cursorTarget.TargetNode.Key == "SoundFormats")
+			{
+				var loaders = codeSymbols.AssetLoaders["Sound"][cursorTarget.TargetString];
+				if (loaders.Any())
+					return IHoverService.HoverFromHoverInfo($"Sound loader **{loaders.First().NameWithTypeSuffix}**.", range);
+			}
 
-			if (cursorTarget.TargetNode.Key == "SpriteFormats" && codeSymbols.AssetLoaders["Sprite"].TryGetValue(cursorTarget.TargetString, out var spriteLoader))
-				return IHoverService.HoverFromHoverInfo($"Sprite loader **{spriteLoader.NameWithTypeSuffix}**.", range);
+			if (cursorTarget.TargetNode.Key == "SpriteFormats")
+			{
+				var loaders = codeSymbols.AssetLoaders["Sprite"][cursorTarget.TargetString];
+				if (loaders.Any())
+					return IHoverService.HoverFromHoverInfo($"Sprite loader **{loaders.First().NameWithTypeSuffix}**.", range);
+			}
 
-			if (cursorTarget.TargetNode.Key == "VideoFormats" && codeSymbols.AssetLoaders["Video"].TryGetValue(cursorTarget.TargetString, out var videoLoader))
-				return IHoverService.HoverFromHoverInfo($"Video loader **{videoLoader.NameWithTypeSuffix}**.", range);
+			if (cursorTarget.TargetNode.Key == "VideoFormats")
+			{
+				var loaders = codeSymbols.AssetLoaders["Video"][cursorTarget.TargetString];
+				if (loaders.Any())
+					return IHoverService.HoverFromHoverInfo($"Video loader **{loaders.First().NameWithTypeSuffix}**.", range);
+			}
 
 			// TODO: Other *Formats are not implemented yet:
 			//if (cursorTarget.TargetNode.Key == "TerrainFormat")
