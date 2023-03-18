@@ -2,6 +2,11 @@
 
 All notable changes to the "oraide" extension will be documented in this file.
 
+## 1.0.1 - 2023.03.18
+
+ - Language server:
+    - Fixed a crash when there are multiple asset loader classes with the same name.
+
 ## 1.0.0 - 2023.03.17
 
  - OpenRA Mod support:
