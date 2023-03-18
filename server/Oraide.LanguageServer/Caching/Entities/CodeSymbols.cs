@@ -36,7 +36,7 @@ namespace Oraide.LanguageServer.Caching.Entities
 		/// <summary>
 		/// Asset loader types grouped by asset type (Package, Sound, Sprite, Video).
 		/// </summary>
-		public IReadOnlyDictionary<string, Dictionary<string, ClassInfo>> AssetLoaders { get; }
+		public IReadOnlyDictionary<string, ILookup<string, ClassInfo>> AssetLoaders { get; }
 
 		/// <summary>
 		/// Widget type information grouped by type name.
@@ -57,7 +57,7 @@ namespace Oraide.LanguageServer.Caching.Entities
 			WeaponInfo = weaponInfo;
 			SpriteSequenceInfos = spriteSequenceInfos;
 			EnumInfos = enumInfos;
-			AssetLoaders = assetLoaders.ToDictionary(x => x.Key, y => y.ToDictionary(m => m.Name, n => n));
+			AssetLoaders = assetLoaders.ToDictionary(x => x.Key, y => y.ToLookup(m => m.Name, n => n));
 			Widgets = widgets;
 			WidgetLogicTypes = widgetLogicTypes;
 		}

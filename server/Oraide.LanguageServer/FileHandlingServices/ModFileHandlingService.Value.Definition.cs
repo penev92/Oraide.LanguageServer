@@ -22,17 +22,17 @@ namespace Oraide.LanguageServer.FileHandlingServices
 		IEnumerable<Location> HandleValueDefinitionAt0(CursorTarget cursorTarget)
 		{
 			// Asset loaders:
-			if (cursorTarget.TargetNode.Key == "PackageFormats" && codeSymbols.AssetLoaders["Package"].TryGetValue(cursorTarget.TargetString, out var packageLoader))
-				return new [] { packageLoader.Location.ToLspLocation(packageLoader.NameWithTypeSuffix.Length) };
+			if (cursorTarget.TargetNode.Key == "PackageFormats")
+				return codeSymbols.AssetLoaders["Package"][cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.NameWithTypeSuffix.Length));
 
-			if (cursorTarget.TargetNode.Key == "SoundFormats" && codeSymbols.AssetLoaders["Sound"].TryGetValue(cursorTarget.TargetString, out var soundLoader))
-				return new [] { soundLoader.Location.ToLspLocation(soundLoader.NameWithTypeSuffix.Length) };
+			if (cursorTarget.TargetNode.Key == "SoundFormats")
+				return codeSymbols.AssetLoaders["Sound"][cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.NameWithTypeSuffix.Length));
 
-			if (cursorTarget.TargetNode.Key == "SpriteFormats" && codeSymbols.AssetLoaders["Sprite"].TryGetValue(cursorTarget.TargetString, out var spriteLoader))
-				return new [] { spriteLoader.Location.ToLspLocation(spriteLoader.NameWithTypeSuffix.Length) };
+			if (cursorTarget.TargetNode.Key == "SpriteFormats")
+				return codeSymbols.AssetLoaders["Sprite"][cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.NameWithTypeSuffix.Length));
 
-			if (cursorTarget.TargetNode.Key == "VideoFormats" && codeSymbols.AssetLoaders["Video"].TryGetValue(cursorTarget.TargetString, out var videoLoader))
-				return new [] { videoLoader.Location.ToLspLocation(videoLoader.NameWithTypeSuffix.Length) };
+			if (cursorTarget.TargetNode.Key == "VideoFormats")
+				return codeSymbols.AssetLoaders["Video"][cursorTarget.TargetString].Select(x => x.Location.ToLspLocation(x.NameWithTypeSuffix.Length));
 
 			// TODO: Other *Formats are not implemented yet:
 			//if (cursorTarget.TargetNode.Key == "TerrainFormat")
