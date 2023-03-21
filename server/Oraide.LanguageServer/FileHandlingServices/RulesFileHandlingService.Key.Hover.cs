@@ -73,7 +73,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 					var resolvedFileList = fileList.Select(x => OpenRaFolderUtils.ResolveFilePath(x, (modData.ModId, modData.ModFolder)));
 
 					if (TryMergeYamlFiles(resolvedFileList, out _))
-						return IHoverService.HoverFromHoverInfo($"Removes trait `{traitName.Substring(1)}` from the actor.", range);
+						return IHoverService.HoverFromHoverInfo($"Removes trait `{traitName}` from the actor.", range);
 				}
 			}
 
