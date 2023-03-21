@@ -2,6 +2,12 @@
 
 All notable changes to the "oraide" extension will be documented in this file.
 
+## 1.0.3 - 2023.03.21
+
+ - Language server:
+    - Fixed trait removal hover text.
+    - Fixed parsing of boolean class fields always showing default value "false".
+
 ## 1.0.2 - 2023.03.21
 
  - Language server:
