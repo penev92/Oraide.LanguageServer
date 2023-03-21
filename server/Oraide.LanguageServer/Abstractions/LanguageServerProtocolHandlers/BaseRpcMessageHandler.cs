@@ -143,7 +143,7 @@ namespace Oraide.LanguageServer.Abstractions.LanguageServerProtocolHandlers
 				}
 			}
 
-			if (!TryGetTargetString(targetLine, targetCharacterIndex, sourceString, out var targetString, out var startIndex, out var endIndex))
+			if (sourceString == null || !TryGetTargetString(targetLine, targetCharacterIndex, sourceString, out var targetString, out var startIndex, out var endIndex))
 			{
 				target = default;
 				return false;
