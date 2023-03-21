@@ -687,9 +687,11 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 								 || attributeName == "TranslationReference"
 								 || attributeName == "LocomotorReference")
 						{
-							// Try to resolve `nameof(...)`.
+							// Try to resolve `nameof(...)` and handle "\"" for cases like `[SequenceReference("Image")]`.
 							if (attributeValue != null)
-								attributeValue = Regex.Replace(attributeValue, "(nameof\\(([A-Za-z0-9.\\S]*)\\))", "$2");
+								attributeValue = Regex
+									.Replace(attributeValue, "(nameof\\(([A-Za-z0-9.\\S]*)\\))", "$2")
+									.Replace("\"", string.Empty);
 
 							otherAttributes.Add((attributeName, attributeValue));
 						}
