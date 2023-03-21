@@ -2,6 +2,12 @@
 
 All notable changes to the "oraide" extension will be documented in this file.
 
+## 1.0.2 - 2023.03.21
+
+ - Language server:
+    - Fixed exceptions that would sometimes happen when hovering over comments.
+    - Fixed parsing of custom attributes' values when they don't use nameof().
+
 ## 1.0.1 - 2023.03.18
 
  - Language server:
