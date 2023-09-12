@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Oraide.Core.Entities.Csharp;
 using Oraide.Csharp.Abstraction.CodeParsers;
 using Oraide.Csharp.Abstraction.CodeSymbolGenerationStrategies;
@@ -31,7 +32,10 @@ namespace Oraide.Csharp.CodeSymbolGenerationStrategies
 				new Pre20210321RoslynCodeParser(),
 			};
 
-			selectedParser = codeParsers.First(x => x.CanParse(this.openRaFolder));
+			selectedParser = codeParsers.FirstOrDefault(x => x.CanParse(this.openRaFolder));
+			if (selectedParser == null)
+				throw new InvalidOperationException("Unable to load code symbols!");
+
 			LoadedVersion = selectedParser.GetType().Name;
 		}
 
