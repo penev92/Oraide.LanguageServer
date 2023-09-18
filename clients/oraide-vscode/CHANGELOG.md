@@ -2,6 +2,13 @@
 
 All notable changes to the "oraide" extension will be documented in this file.
 
+## 1.0.4 - 2023.09.18
+
+ - Language server:
+    - Added support for more modern C# expressions (for loading code symbols).
+    - Fixed an exception when changing files from a "mod without symbols".
+    - Changed an obscure error message when code symbols can't be loaded.
+
 ## 1.0.3 - 2023.03.21
 
  - Language server:
