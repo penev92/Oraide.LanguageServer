@@ -48,6 +48,9 @@ namespace Oraide.LanguageServer.LanguageServerProtocolHandlers.Workspace
 						TryGetModId(incomingFileUriString, out var modId);
 						var fileUri = new Uri(incomingFileUriString);
 
+						if (!symbolCache.ModSymbols.ContainsKey(modId))
+							continue;
+
 						var modManifest = symbolCache[modId].ModManifest;
 						var filePath = fileUri.AbsolutePath;
 						var fileName = filePath.Split($"mods/{modId}/")[1];

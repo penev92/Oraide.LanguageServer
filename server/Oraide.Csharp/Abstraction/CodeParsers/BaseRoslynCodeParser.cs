@@ -851,6 +851,17 @@ namespace Oraide.Csharp.Abstraction.CodeParsers
 					if (string.IsNullOrWhiteSpace(defaultValue))
 						defaultValue = "(empty)";
 				}
+				else if (valueKind == SyntaxKind.ImplicitObjectCreationExpression)
+				{
+					var objectCreationExpression = (ImplicitObjectCreationExpressionSyntax)declaratorSyntax.Initializer.Value;
+					if (objectCreationExpression.Initializer != null)
+						defaultValue = string.Join(", ", objectCreationExpression.Initializer.Expressions.Select(x => x.ToString()));
+					else if (objectCreationExpression.ArgumentList != null)
+						defaultValue = objectCreationExpression.ArgumentList.Arguments.ToString();
+
+					if (string.IsNullOrWhiteSpace(defaultValue))
+						defaultValue = "(empty)";
+				}
 				else if (valueKind == SyntaxKind.TrueLiteralExpression)
 					defaultValue = bool.TrueString.ToLowerInvariant();
 				else if (valueKind == SyntaxKind.FalseLiteralExpression)
