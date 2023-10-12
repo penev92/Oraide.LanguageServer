@@ -47,6 +47,8 @@ namespace Oraide.Csharp
 				Console.Error.WriteLine($"Loading code symbols from static docs files - version {symbolGenerator.LoadedVersion}.");
 				Console.Error.WriteLine("-------------");
 			}
+			else
+				throw new InvalidOperationException("Unsupported folder type!");
 		}
 
 		public ILookup<string, ClassInfo> GetTraitInfos()

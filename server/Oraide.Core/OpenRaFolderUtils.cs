@@ -25,6 +25,7 @@ namespace Oraide.Core
 			return Directory.EnumerateDirectories(folderPath).Any(IsModFolder);
 		}
 
+		// TODO: This says it combines, but the install folder check was changed!!
 		// Combines IsOpenRaRepositoryFolder, IsModSdkRepositoryFolder and IsOpenRaInstallationFolder.
 		public static bool IsOpenRaFolder(string folderPath)
 		{
@@ -59,7 +60,13 @@ namespace Oraide.Core
 			       IsModsFolder(modsFolder);
 		}
 
+		// Combines IsOpenRaWindowsInstallationFolder and IsOpenRaMacOsInstallationFolder.
 		public static bool IsOpenRaInstallationFolder(string folderPath)
+		{
+			return IsOpenRaWindowsInstallationFolder(folderPath) || IsOpenRaMacOsInstallationFolder(folderPath);
+		}
+
+		public static bool IsOpenRaWindowsInstallationFolder(string folderPath)
 		{
 			var modsFolder = Path.Combine(folderPath, "mods");
 
@@ -68,6 +75,11 @@ namespace Oraide.Core
 			       File.Exists(Path.Combine(folderPath, VersionFile)) &&
 			       Directory.Exists(modsFolder) &&
 			       IsModsFolder(modsFolder);
+		}
+
+		public static bool IsOpenRaMacOsInstallationFolder(string folderPath)
+		{
+
 		}
 
 		public static string GetModId(string filePath)

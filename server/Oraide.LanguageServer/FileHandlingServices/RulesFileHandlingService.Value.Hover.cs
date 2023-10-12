@@ -122,6 +122,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 				return IHoverService.HoverFromHoverInfo(image.ToMarkdownInfoString(), range);
 			}
 
+			// TODO: This will throw an exception if the image name isn't readily available!
 			if (fieldInfo.OtherAttributes.Any(x => x.Name == "SequenceReference"))
 			{
 				var imageName = ResolveSpriteSequenceImageNameForRules(cursorTarget, fieldInfo, mapManifest);
