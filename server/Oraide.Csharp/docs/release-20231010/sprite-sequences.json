@@ -1,0 +1,244 @@
+{
+    "Version": "release-20231010",
+    "SpriteSequenceTypes": [{
+            "Namespace": "OpenRA.Mods.Cnc.Graphics",
+            "Name": "ClassicSpriteSequence",
+            "Description": "A sprite sequence that has the oddities that come with first-generation Westwood titles.",
+            "InheritedTypes": ["DefaultSpriteSequence"],
+            "Properties": [{
+                    "PropertyName": "UseClassicFacings",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Incorporate a compensation factor for the rotational distortion present in the first-generation Westwood games."
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Cnc.Graphics",
+            "Name": "ClassicTilesetSpecificSpriteSequence",
+            "Description": "A sprite sequence that can have tileset-specific variants and has the oddities that come with first-generation Westwood titles.",
+            "InheritedTypes": ["ClassicSpriteSequence", "DefaultSpriteSequence"],
+            "Properties": [{
+                    "PropertyName": "TilesetFilenames",
+                    "DefaultValue": null,
+                    "InternalType": "Dictionary<String, String>",
+                    "UserFriendlyType": "Dictionary with Key: String, Value: String",
+                    "Description": "Dictionary of <tileset name>: filename to override the Filename key."
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Graphics",
+            "Name": "DefaultSpriteSequence",
+            "Description": "Generic sprite sequence implementation, mostly unencumbered with game- or artwork-specific logic.",
+            "InheritedTypes": [],
+            "Properties": [{
+                    "PropertyName": "Filename",
+                    "DefaultValue": null,
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "File name of the sprite to use for this sequence."
+                }, {
+                    "PropertyName": "Start",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Frame index to start from."
+                }, {
+                    "PropertyName": "Length",
+                    "DefaultValue": "1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Number of frames to use. Does not have to be the total amount the sprite sheet has."
+                }, {
+                    "PropertyName": "Stride",
+                    "DefaultValue": "-1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Overrides Length if a different number of frames is defined between facings."
+                }, {
+                    "PropertyName": "Facings",
+                    "DefaultValue": "1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "The number of facings that are provided by sprite frames. Use negative values to rotate counter-clockwise."
+                }, {
+                    "PropertyName": "InterpolatedFacings",
+                    "DefaultValue": null,
+                    "InternalType": "Nullable<Int32>",
+                    "UserFriendlyType": "Integer (optional)",
+                    "Description": "The total number of facings for the sequence. If >Facings, the closest facing sprite will be rotated to match. Use negative values to rotate counter-clockwise."
+                }, {
+                    "PropertyName": "Tick",
+                    "DefaultValue": "40",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Time (in milliseconds at default game speed) to wait until playing the next frame in the animation."
+                }, {
+                    "PropertyName": "ZOffset",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Value controlling the Z-order. A higher values means rendering on top of other sprites at the same position. Use power of 2 values to avoid glitches."
+                }, {
+                    "PropertyName": "ZRamp",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Additional sprite depth Z offset to apply as a function of sprite Y (0: vertical, 1: flat on terrain)"
+                }, {
+                    "PropertyName": "ShadowStart",
+                    "DefaultValue": "-1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "If the shadow is not part of the sprite, but baked into the same sprite sheet at a fixed offset, set this to the frame index where it starts."
+                }, {
+                    "PropertyName": "ShadowZOffset",
+                    "DefaultValue": "-0c5",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Set Z-Offset for the separate shadow. Used by the later Westwood 2.5D titles."
+                }, {
+                    "PropertyName": "Frames",
+                    "DefaultValue": null,
+                    "InternalType": "Int32[]",
+                    "UserFriendlyType": "Collection of Integer",
+                    "Description": "The individual frames to play instead of going through them sequentially from the `Start`."
+                }, {
+                    "PropertyName": "IgnoreWorldTint",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Don't apply terrain lighting or colored overlays."
+                }, {
+                    "PropertyName": "Scale",
+                    "DefaultValue": "1",
+                    "InternalType": "Single",
+                    "UserFriendlyType": "Real Number",
+                    "Description": "Adjusts the rendered size of the sprite"
+                }, {
+                    "PropertyName": "Reverses",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Play the sprite sequence back and forth."
+                }, {
+                    "PropertyName": "Transpose",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Support a frame order where each animation step is split per each direction."
+                }, {
+                    "PropertyName": "FlipX",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Mirror on the X axis."
+                }, {
+                    "PropertyName": "FlipY",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Mirror on the Y axis."
+                }, {
+                    "PropertyName": "Offset",
+                    "DefaultValue": "0,0,0",
+                    "InternalType": "float3",
+                    "UserFriendlyType": "float3",
+                    "Description": "Change the position in-game on X, Y, Z."
+                }, {
+                    "PropertyName": "BlendMode",
+                    "DefaultValue": "Alpha",
+                    "InternalType": "BlendMode",
+                    "UserFriendlyType": "BlendMode (enum)",
+                    "Description": "Apply an OpenGL/Photoshop inspired blend mode."
+                }, {
+                    "PropertyName": "Combine",
+                    "DefaultValue": null,
+                    "InternalType": "MiniYaml",
+                    "UserFriendlyType": "MiniYaml",
+                    "Description": "Create a virtual sprite file by concatenating one or more frames from multiple files, with optional transformations applied. All defined frames will be loaded into memory, even if unused, so use this property with care."
+                }, {
+                    "PropertyName": "Alpha",
+                    "DefaultValue": null,
+                    "InternalType": "Single[]",
+                    "UserFriendlyType": "Collection of Real Number",
+                    "Description": "Sets transparency - use one value to set for all frames or provide a value for each frame."
+                }, {
+                    "PropertyName": "AlphaFade",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Fade the animation from fully opaque on the first frame to fully transparent after the last frame."
+                }, {
+                    "PropertyName": "DepthSprite",
+                    "DefaultValue": null,
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Name of the file containing the depth data sprite."
+                }, {
+                    "PropertyName": "DepthSpriteFrame",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Frame index containing the depth data."
+                }, {
+                    "PropertyName": "DepthSpriteOffset",
+                    "DefaultValue": "0,0",
+                    "InternalType": "float2",
+                    "UserFriendlyType": "2D Real Number",
+                    "Description": "X, Y offset to apply to the depth sprite."
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Graphics",
+            "Name": "TilesetSpecificSpriteSequence",
+            "Description": "A sprite sequence that can have tileset-specific variants.",
+            "InheritedTypes": ["DefaultSpriteSequence"],
+            "Properties": [{
+                    "PropertyName": "TilesetFilenames",
+                    "DefaultValue": null,
+                    "InternalType": "Dictionary<String, String>",
+                    "UserFriendlyType": "Dictionary with Key: String, Value: String",
+                    "Description": "Dictionary of <tileset name>: filename to override the Filename key."
+                }
+            ]
+        }
+    ],
+    "RelatedEnums": [{
+            "Namespace": "OpenRA",
+            "Name": "BlendMode",
+            "Values": [{
+                    "Key": 0,
+                    "Value": "None"
+                }, {
+                    "Key": 1,
+                    "Value": "Alpha"
+                }, {
+                    "Key": 2,
+                    "Value": "Additive"
+                }, {
+                    "Key": 3,
+                    "Value": "Subtractive"
+                }, {
+                    "Key": 4,
+                    "Value": "Multiply"
+                }, {
+                    "Key": 5,
+                    "Value": "Multiplicative"
+                }, {
+                    "Key": 6,
+                    "Value": "DoubleMultiplicative"
+                }, {
+                    "Key": 7,
+                    "Value": "LowAdditive"
+                }, {
+                    "Key": 8,
+                    "Value": "Screen"
+                }, {
+                    "Key": 9,
+                    "Value": "Translucent"
+                }
+            ]
+        }
+    ]
+}
