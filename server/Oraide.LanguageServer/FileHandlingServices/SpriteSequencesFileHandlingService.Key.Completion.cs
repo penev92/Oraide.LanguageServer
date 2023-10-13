@@ -23,13 +23,13 @@ namespace Oraide.LanguageServer.FileHandlingServices
 
 		#region Private methods
 
-		IEnumerable<CompletionItem> HandleKeyCompletionAt0(CursorTarget cursorTarget)
+		IEnumerable<CompletionItem> HandleKeyCompletionAt0(CursorTarget _)
 		{
 			// Get only sprite sequence image definitions. Presumably for reference and for overriding purposes.
 			return spriteSequenceImageNames;
 		}
 
-		IEnumerable<CompletionItem> HandleKeyCompletionAt1(CursorTarget cursorTarget)
+		IEnumerable<CompletionItem> HandleKeyCompletionAt1(CursorTarget _)
 		{
 			// Get only "Inherits" and "Defaults".
 			return new[] { CompletionItems.Inherits, CompletionItems.Defaults };

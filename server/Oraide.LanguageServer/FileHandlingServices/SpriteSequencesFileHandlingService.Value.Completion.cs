@@ -78,7 +78,7 @@ namespace Oraide.LanguageServer.FileHandlingServices
 				}
 			}
 
-			if (fieldInfo.InternalType == "bool")
+			if (fieldInfo.InternalType == "bool" || fieldInfo.InternalType == "Boolean")
 			{
 				return new[] { CompletionItems.True, CompletionItems.False };
 			}

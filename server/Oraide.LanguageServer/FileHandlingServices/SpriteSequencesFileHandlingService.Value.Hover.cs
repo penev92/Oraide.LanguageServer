@@ -56,7 +56,8 @@ namespace Oraide.LanguageServer.FileHandlingServices
 
 		Hover HandleValueHoverAt3(CursorTarget cursorTarget)
 		{
-			if (cursorTarget.TargetNode.ParentNode.Key == "Combine")
+			// This was only valid before the sequence definitions rework that was merged in January 2023.
+			if (cursorTarget.TargetNode.ParentNode.Key == "Combine" && symbolCache.YamlVersion == nameof(MiniYaml.Parsers.Pre202301MiniYamlParser))
 				return HandleSpriteSequenceFileName(cursorTarget);
 
 			return null;

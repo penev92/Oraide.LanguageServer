@@ -2,12 +2,11 @@
 using System.Linq;
 using LspTypes;
 using Oraide.Core.Entities.MiniYaml;
-using Oraide.LanguageServer.Abstractions.FileHandlingServices;
 using Oraide.LanguageServer.Extensions;
 
 namespace Oraide.LanguageServer.FileHandlingServices
 {
-	public partial class SpriteSequencesFileHandlingService : BaseFileHandlingService
+	public partial class SpriteSequencesFileHandlingService
 	{
 		// NOTE: Copied from HandleWeaponsFileKey.
 		protected override IEnumerable<Location> ValueDefinition(CursorTarget cursorTarget)

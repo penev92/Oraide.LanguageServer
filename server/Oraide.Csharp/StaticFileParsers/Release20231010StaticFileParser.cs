@@ -80,9 +80,33 @@ namespace Oraide.Csharp.StaticFileParsers
 
 				return new ClassInfo(name, typeSuffix, x["Description"].ToString(),
 					NoLocation, baseTypes, properties, false);
-			});
+			}).ToList();
 
-			return typeInfos;
+			// The input JSON files don't currently have copies of inherited properties, so need to read the base types.
+			var orderedTypes = new List<ClassInfo>();
+			while (typeInfos.Any())
+			{
+				for (var i = 0; i < typeInfos.Count; i++)
+				{
+					if (typeInfos[i].BaseTypes.Length == 0 || typeInfos[i].BaseTypes.All(x => orderedTypes.Any(y => y.Name == x)))
+					{
+						orderedTypes.Add(typeInfos[i]);
+						typeInfos.RemoveAt(i);
+						break;
+					}
+				}
+			}
+
+			for (var i = 0; i < orderedTypes.Count; i++)
+			{
+				var t = orderedTypes[i];
+				var baseTypeInfos = t.BaseTypes.Select(x => orderedTypes.First(y => y.Name == x));
+				var propertyInfos = t.PropertyInfos.Union(baseTypeInfos.SelectMany(x => x.PropertyInfos));
+				var newInfo = new ClassInfo(t.Name, t.TypeSuffix, t.Description, t.Location, t.BaseTypes, propertyInfos.ToArray(), t.IsAbstract);
+				orderedTypes[i] = newInfo;
+			}
+
+			return orderedTypes;
 		}
 
 		public override IEnumerable<EnumInfo> ParseEnumInfos()
