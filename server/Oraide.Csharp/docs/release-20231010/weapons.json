@@ -1,0 +1,2828 @@
+{
+    "Version": "release-20231010",
+    "WeaponTypes": [{
+            "Namespace": "OpenRA.GameRules",
+            "Name": "Weapon",
+            "Description": "",
+            "InheritedTypes": [],
+            "Properties": [{
+                    "PropertyName": "Range",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The maximum range the weapon can fire.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "FirstBurstTargetOffset",
+                    "DefaultValue": "0,0,0",
+                    "InternalType": "WVec",
+                    "UserFriendlyType": "3D World Vector",
+                    "Description": "First burst is aimed at this offset relative to target position.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "FollowingBurstTargetOffset",
+                    "DefaultValue": "0,0,0",
+                    "InternalType": "WVec",
+                    "UserFriendlyType": "3D World Vector",
+                    "Description": "Each burst after the first lands by this offset away from the previous burst.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Report",
+                    "DefaultValue": "",
+                    "InternalType": "String[]",
+                    "UserFriendlyType": "Collection of String",
+                    "Description": "The sound played each time the weapon is fired.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "StartBurstReport",
+                    "DefaultValue": "",
+                    "InternalType": "String[]",
+                    "UserFriendlyType": "Collection of String",
+                    "Description": "Sound played only on first burst in a salvo.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AfterFireSound",
+                    "DefaultValue": "",
+                    "InternalType": "String[]",
+                    "UserFriendlyType": "Collection of String",
+                    "Description": "The sound played when the weapon is reloaded.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AfterFireSoundDelay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks to play reloading sound.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ReloadDelay",
+                    "DefaultValue": "1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks between reloading ammo magazines.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Burst",
+                    "DefaultValue": "1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Number of shots in a single ammo magazine.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "CanTargetSelf",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this weapon target the attacker itself?",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If weapon is not directly targeting an actor and targeted position is above this altitude, the weapon will ignore terrain target types and only check TargetTypeAir for validity.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "BurstDelays",
+                    "DefaultValue": "5",
+                    "InternalType": "Int32[]",
+                    "UserFriendlyType": "Collection of Integer",
+                    "Description": "Delay in ticks between firing shots from the same ammo magazine. If one entry, it will be used for all bursts. If multiple entries, their number needs to match Burst - 1.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "MinRange",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The minimum range the weapon can fire.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "TargetActorCenter",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Does this weapon aim at the target's center regardless of other targetable offsets?",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Projectile",
+                    "DefaultValue": "",
+                    "InternalType": "IProjectileInfo",
+                    "UserFriendlyType": "Projectile",
+                    "Description": "",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Warheads",
+                    "DefaultValue": "",
+                    "InternalType": "List<IWarhead>",
+                    "UserFriendlyType": "Collection of Warhead",
+                    "Description": "",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Cnc.Projectiles",
+            "Name": "TeslaZap",
+            "Description": "Instant-hit projectile used to create electricity-like effects.",
+            "InheritedTypes": [],
+            "Properties": [{
+                    "PropertyName": "Image",
+                    "DefaultValue": "litning",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "BrightSequence",
+                    "DefaultValue": "bright",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Sprite sequence to play at the center.",
+                    "OtherAttributes": [{
+                            "Name": "SequenceReference",
+                            "Parameters": [{
+                                    "Name": "imageReference",
+                                    "Value": "Image"
+                                }, {
+                                    "Name": "prefix",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "allowNullImage",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "dictionaryReference",
+                                    "Value": "None"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "DimSequence",
+                    "DefaultValue": "dim",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Sprite sequence to play at the borders.",
+                    "OtherAttributes": [{
+                            "Name": "SequenceReference",
+                            "Parameters": [{
+                                    "Name": "imageReference",
+                                    "Value": "Image"
+                                }, {
+                                    "Name": "prefix",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "allowNullImage",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "dictionaryReference",
+                                    "Value": "None"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "Palette",
+                    "DefaultValue": "effect",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "The palette used to draw this electric zap.",
+                    "OtherAttributes": [{
+                            "Name": "PaletteReference",
+                            "Parameters": [{
+                                    "Name": "isPlayerPalette",
+                                    "Value": "False"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "BrightZaps",
+                    "DefaultValue": "1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "How many sprite sequences to play at the center.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DimZaps",
+                    "DefaultValue": "2",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "How many sprite sequences to play at the borders.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Duration",
+                    "DefaultValue": "2",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "How long (in ticks) to play the sprite sequences.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DamageDuration",
+                    "DefaultValue": "1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "How long (in ticks) until applying damage. Can't be longer than `Duration`",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "TrackTarget",
+                    "DefaultValue": "True",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Follow the targeted actor when it moves.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Projectiles",
+            "Name": "AreaBeam",
+            "Description": "Beam projectile that travels in a straight line.",
+            "InheritedTypes": [],
+            "Properties": [{
+                    "PropertyName": "Speed",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist[]",
+                    "UserFriendlyType": "Collection of 1D World Distance",
+                    "Description": "Projectile speed in WDist / tick, two values indicate a randomly picked velocity per beam.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Duration",
+                    "DefaultValue": "10",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "The maximum duration (in ticks) of each beam burst.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DamageInterval",
+                    "DefaultValue": "3",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "The number of ticks between the beam causing warhead impacts in its area of effect.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Width",
+                    "DefaultValue": "0c512",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The width of the beam.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Shape",
+                    "DefaultValue": "Cylindrical",
+                    "InternalType": "BeamRenderableShape",
+                    "UserFriendlyType": "BeamRenderableShape (enum)",
+                    "Description": "The shape of the beam.  Accepts values Cylindrical or Flat.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "BeyondTargetRange",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "How far beyond the target the projectile keeps on travelling.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "MinDistance",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The minimum distance the beam travels.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Falloff",
+                    "DefaultValue": "100, 100",
+                    "InternalType": "Int32[]",
+                    "UserFriendlyType": "Collection of Integer",
+                    "Description": "Damage modifier applied at each range step.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Range",
+                    "DefaultValue": "0c0, 2097151c1023",
+                    "InternalType": "WDist[]",
+                    "UserFriendlyType": "Collection of 1D World Distance",
+                    "Description": "Ranges at which each Falloff step is defined.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Inaccuracy",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The maximum/constant/incremental inaccuracy used in conjunction with the InaccuracyType property.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InaccuracyType",
+                    "DefaultValue": "Maximum",
+                    "InternalType": "InaccuracyType",
+                    "UserFriendlyType": "InaccuracyType (enum)",
+                    "Description": "Controls the way inaccuracy is calculated. Possible values are 'Maximum' - scale from 0 to max with range, 'PerCellIncrement' - scale from 0 with range and 'Absolute' - use set value regardless of range.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Blockable",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this projectile be blocked when hitting actors with an IBlocksProjectiles trait.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "TrackTarget",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Does the beam follow the target.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "RenderBeam",
+                    "DefaultValue": "True",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Should the beam be visually rendered? False = Beam is invisible.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ZOffset",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Equivalent to sequence ZOffset. Controls Z sorting.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Color",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "Color of the beam.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "UsePlayerColor",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Beam color is the player's color.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Projectiles",
+            "Name": "Bullet",
+            "Description": "Projectile that travels in a straight line or arc.",
+            "InheritedTypes": [],
+            "Properties": [{
+                    "PropertyName": "Speed",
+                    "DefaultValue": "0c17",
+                    "InternalType": "WDist[]",
+                    "UserFriendlyType": "Collection of 1D World Distance",
+                    "Description": "Projectile speed in WDist / tick, two values indicate variable velocity.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Inaccuracy",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The maximum/constant/incremental inaccuracy used in conjunction with the InaccuracyType property.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InaccuracyType",
+                    "DefaultValue": "Maximum",
+                    "InternalType": "InaccuracyType",
+                    "UserFriendlyType": "InaccuracyType (enum)",
+                    "Description": "Controls the way inaccuracy is calculated. Possible values are 'Maximum' - scale from 0 to max with range, 'PerCellIncrement' - scale from 0 with range and 'Absolute' - use set value regardless of range.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Image",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Image to display.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Sequences",
+                    "DefaultValue": "idle",
+                    "InternalType": "String[]",
+                    "UserFriendlyType": "Collection of String",
+                    "Description": "Loop a randomly chosen sequence of Image from this list while this projectile is moving.",
+                    "OtherAttributes": [{
+                            "Name": "SequenceReference",
+                            "Parameters": [{
+                                    "Name": "imageReference",
+                                    "Value": "Image"
+                                }, {
+                                    "Name": "prefix",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "allowNullImage",
+                                    "Value": "True"
+                                }, {
+                                    "Name": "dictionaryReference",
+                                    "Value": "None"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "Palette",
+                    "DefaultValue": "effect",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "The palette used to draw this projectile.",
+                    "OtherAttributes": [{
+                            "Name": "PaletteReference",
+                            "Parameters": [{
+                                    "Name": "playerPaletteReferenceSwitch",
+                                    "Value": "IsPlayerPalette"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "IsPlayerPalette",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Palette is a player palette BaseName",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Shadow",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Does this projectile have a shadow?",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ShadowColor",
+                    "DefaultValue": "0000008C",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "Color to draw shadow if Shadow is true.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "TrailImage",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Trail animation.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "TrailSequences",
+                    "DefaultValue": "idle",
+                    "InternalType": "String[]",
+                    "UserFriendlyType": "Collection of String",
+                    "Description": "Loop a randomly chosen sequence of TrailImage from this list while this projectile is moving.",
+                    "OtherAttributes": [{
+                            "Name": "SequenceReference",
+                            "Parameters": [{
+                                    "Name": "imageReference",
+                                    "Value": "TrailImage"
+                                }, {
+                                    "Name": "prefix",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "allowNullImage",
+                                    "Value": "True"
+                                }, {
+                                    "Name": "dictionaryReference",
+                                    "Value": "None"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "TrailInterval",
+                    "DefaultValue": "2",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Interval in ticks between each spawned Trail animation.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "TrailDelay",
+                    "DefaultValue": "1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks until trail animation is spawned.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "TrailPalette",
+                    "DefaultValue": "effect",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Palette used to render the trail sequence.",
+                    "OtherAttributes": [{
+                            "Name": "PaletteReference",
+                            "Parameters": [{
+                                    "Name": "playerPaletteReferenceSwitch",
+                                    "Value": "TrailUsePlayerPalette"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "TrailUsePlayerPalette",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Use the Player Palette to render the trail sequence.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Blockable",
+                    "DefaultValue": "True",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Is this blocked by actors with BlocksProjectiles trait.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Width",
+                    "DefaultValue": "0c1",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Width of projectile (used for finding blocking actors).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "LaunchAngle",
+                    "DefaultValue": "0",
+                    "InternalType": "WAngle[]",
+                    "UserFriendlyType": "Collection of 1D World Angle",
+                    "Description": "Arc in WAngles, two values indicate variable arc.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "BounceCount",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Up to how many times does this bullet bounce when touching ground without hitting a target. 0 implies exploding on contact with the originally targeted position.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "BounceRangeModifier",
+                    "DefaultValue": "60",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Modify distance of each bounce by this percentage of previous distance.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "BounceSound",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Sound to play when the projectile hits the ground, but not the target.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidBounceTerrain",
+                    "DefaultValue": "",
+                    "InternalType": "HashSet<String>",
+                    "UserFriendlyType": "Set of String",
+                    "Description": "Terrain where the projectile explodes instead of bouncing.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidBounceBlockerRelationships",
+                    "DefaultValue": "Enemy, Neutral",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "Trigger the explosion if the projectile touches an actor thats owner has these player relationships.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirburstAltitude",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Altitude above terrain below which to explode. Zero effectively deactivates airburst.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailLength",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "When set, display a line behind the actor. Length is measured in ticks after appearing.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailDelay",
+                    "DefaultValue": "1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Time (in ticks) after which the line should appear. Controls the distance to the actor.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailZOffset",
+                    "DefaultValue": "2047",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Equivalent to sequence ZOffset. Controls Z sorting.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailStartWidth",
+                    "DefaultValue": "0c64",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Thickness of the emitted line at the start of the contrail.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailEndWidth",
+                    "DefaultValue": "",
+                    "InternalType": "Nullable<WDist>",
+                    "UserFriendlyType": "1D World Distance (optional)",
+                    "Description": "Thickness of the emitted line at the end of the contrail. Will default to ContrailStartWidth if left undefined",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailStartColor",
+                    "DefaultValue": "FFFFFF",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "RGB color at the contrail start.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailStartColorUsePlayerColor",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Use player remap color instead of a custom color at the contrail the start.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailStartColorAlpha",
+                    "DefaultValue": "255",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "The alpha value [from 0 to 255] of color at the contrail the start.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailEndColor",
+                    "DefaultValue": "",
+                    "InternalType": "Nullable<Color>",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation) (optional)",
+                    "Description": "RGB color at the contrail end. Will default to ContrailStartColor if left undefined",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailEndColorUsePlayerColor",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Use player remap color instead of a custom color at the contrail end.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailEndColorAlpha",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "The alpha value [from 0 to 255] of color at the contrail end.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Projectiles",
+            "Name": "GravityBomb",
+            "Description": "Projectile with customisable acceleration vector.",
+            "InheritedTypes": [],
+            "Properties": [{
+                    "PropertyName": "Image",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Sequences",
+                    "DefaultValue": "idle",
+                    "InternalType": "String[]",
+                    "UserFriendlyType": "Collection of String",
+                    "Description": "Loop a randomly chosen sequence of Image from this list while falling.",
+                    "OtherAttributes": [{
+                            "Name": "SequenceReference",
+                            "Parameters": [{
+                                    "Name": "imageReference",
+                                    "Value": "Image"
+                                }, {
+                                    "Name": "prefix",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "allowNullImage",
+                                    "Value": "True"
+                                }, {
+                                    "Name": "dictionaryReference",
+                                    "Value": "None"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "OpenSequence",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Sequence to play when launched. Skipped if null or empty.",
+                    "OtherAttributes": [{
+                            "Name": "SequenceReference",
+                            "Parameters": [{
+                                    "Name": "imageReference",
+                                    "Value": "Image"
+                                }, {
+                                    "Name": "prefix",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "allowNullImage",
+                                    "Value": "True"
+                                }, {
+                                    "Name": "dictionaryReference",
+                                    "Value": "None"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "Palette",
+                    "DefaultValue": "effect",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "The palette used to draw this projectile.",
+                    "OtherAttributes": [{
+                            "Name": "PaletteReference",
+                            "Parameters": [{
+                                    "Name": "isPlayerPalette",
+                                    "Value": "False"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "IsPlayerPalette",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Palette is a player palette BaseName",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Shadow",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Does this projectile have a shadow?",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ShadowColor",
+                    "DefaultValue": "0000008C",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "Color to draw shadow if Shadow is true.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Velocity",
+                    "DefaultValue": "0,0,0",
+                    "InternalType": "WVec",
+                    "UserFriendlyType": "3D World Vector",
+                    "Description": "Projectile movement vector per tick (forward, right, up), use negative values for opposite directions.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Acceleration",
+                    "DefaultValue": "0,0,-15",
+                    "InternalType": "WVec",
+                    "UserFriendlyType": "3D World Vector",
+                    "Description": "Value added to Velocity every tick.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Projectiles",
+            "Name": "InstantHit",
+            "Description": "Instant, invisible, usually direct-on-target projectile.",
+            "InheritedTypes": [],
+            "Properties": [{
+                    "PropertyName": "Inaccuracy",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The maximum/constant/incremental inaccuracy used in conjunction with the InaccuracyType property.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InaccuracyType",
+                    "DefaultValue": "Maximum",
+                    "InternalType": "InaccuracyType",
+                    "UserFriendlyType": "InaccuracyType (enum)",
+                    "Description": "Controls the way inaccuracy is calculated. Possible values are 'Maximum' - scale from 0 to max with range, 'PerCellIncrement' - scale from 0 with range and 'Absolute' - use set value regardless of range.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Blockable",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Projectile can be blocked.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Width",
+                    "DefaultValue": "0c1",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The width of the projectile.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "BlockerScanRadius",
+                    "DefaultValue": "-0c1",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Scan radius for actors with projectile-blocking trait. If set to a negative value (default), it will automatically scale to the blocker with the largest health shape. Only set custom values if you know what you're doing.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Projectiles",
+            "Name": "LaserZap",
+            "Description": "Not a sprite, but an engine effect.",
+            "InheritedTypes": [],
+            "Properties": [{
+                    "PropertyName": "Width",
+                    "DefaultValue": "0c86",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The width of the zap.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Shape",
+                    "DefaultValue": "Cylindrical",
+                    "InternalType": "BeamRenderableShape",
+                    "UserFriendlyType": "BeamRenderableShape (enum)",
+                    "Description": "The shape of the beam.  Accepts values Cylindrical or Flat.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ZOffset",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Equivalent to sequence ZOffset. Controls Z sorting.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Duration",
+                    "DefaultValue": "10",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "The maximum duration (in ticks) of the beam's existence.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DamageDuration",
+                    "DefaultValue": "1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Total time-frame in ticks that the beam deals damage every DamageInterval.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DamageInterval",
+                    "DefaultValue": "1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "The number of ticks between the beam causing warhead impacts in its area of effect.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "UsePlayerColor",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Color",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "Color of the beam.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "TrackTarget",
+                    "DefaultValue": "True",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Beam follows the target.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Inaccuracy",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The maximum/constant/incremental inaccuracy used in conjunction with the InaccuracyType property.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InaccuracyType",
+                    "DefaultValue": "Maximum",
+                    "InternalType": "InaccuracyType",
+                    "UserFriendlyType": "InaccuracyType (enum)",
+                    "Description": "Controls the way inaccuracy is calculated. Possible values are 'Maximum' - scale from 0 to max with range, 'PerCellIncrement' - scale from 0 with range and 'Absolute' - use set value regardless of range.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Blockable",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Beam can be blocked.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "SecondaryBeam",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Draw a second beam (for 'glow' effect).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "SecondaryBeamWidth",
+                    "DefaultValue": "0c86",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The width of the zap.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "SecondaryBeamShape",
+                    "DefaultValue": "Cylindrical",
+                    "InternalType": "BeamRenderableShape",
+                    "UserFriendlyType": "BeamRenderableShape (enum)",
+                    "Description": "The shape of the beam.  Accepts values Cylindrical or Flat.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "SecondaryBeamZOffset",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Equivalent to sequence ZOffset. Controls Z sorting.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "SecondaryBeamUsePlayerColor",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "SecondaryBeamColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "Color of the secondary beam.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HitAnim",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Impact animation.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HitAnimSequence",
+                    "DefaultValue": "idle",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Sequence of impact animation to use.",
+                    "OtherAttributes": [{
+                            "Name": "SequenceReference",
+                            "Parameters": [{
+                                    "Name": "imageReference",
+                                    "Value": "HitAnim"
+                                }, {
+                                    "Name": "prefix",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "allowNullImage",
+                                    "Value": "True"
+                                }, {
+                                    "Name": "dictionaryReference",
+                                    "Value": "None"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "HitAnimPalette",
+                    "DefaultValue": "effect",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "",
+                    "OtherAttributes": [{
+                            "Name": "PaletteReference",
+                            "Parameters": [{
+                                    "Name": "isPlayerPalette",
+                                    "Value": "False"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "LaunchEffectImage",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Image containing launch effect sequence.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "LaunchEffectSequence",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Launch effect sequence to play.",
+                    "OtherAttributes": [{
+                            "Name": "SequenceReference",
+                            "Parameters": [{
+                                    "Name": "imageReference",
+                                    "Value": "LaunchEffectImage"
+                                }, {
+                                    "Name": "prefix",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "allowNullImage",
+                                    "Value": "True"
+                                }, {
+                                    "Name": "dictionaryReference",
+                                    "Value": "None"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "LaunchEffectPalette",
+                    "DefaultValue": "effect",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Palette to use for launch effect.",
+                    "OtherAttributes": [{
+                            "Name": "PaletteReference",
+                            "Parameters": [{
+                                    "Name": "isPlayerPalette",
+                                    "Value": "False"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Projectiles",
+            "Name": "Missile",
+            "Description": "Projectile with smart tracking.",
+            "InheritedTypes": [],
+            "Properties": [{
+                    "PropertyName": "Image",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Name of the image containing the projectile sequence.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Sequences",
+                    "DefaultValue": "idle",
+                    "InternalType": "String[]",
+                    "UserFriendlyType": "Collection of String",
+                    "Description": "Loop a randomly chosen sequence of Image from this list while this projectile is moving.",
+                    "OtherAttributes": [{
+                            "Name": "SequenceReference",
+                            "Parameters": [{
+                                    "Name": "imageReference",
+                                    "Value": "Image"
+                                }, {
+                                    "Name": "prefix",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "allowNullImage",
+                                    "Value": "True"
+                                }, {
+                                    "Name": "dictionaryReference",
+                                    "Value": "None"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "Palette",
+                    "DefaultValue": "effect",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Palette used to render the projectile sequence.",
+                    "OtherAttributes": [{
+                            "Name": "PaletteReference",
+                            "Parameters": [{
+                                    "Name": "playerPaletteReferenceSwitch",
+                                    "Value": "IsPlayerPalette"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "IsPlayerPalette",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Palette is a player palette BaseName",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Shadow",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Does this projectile have a shadow?",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ShadowColor",
+                    "DefaultValue": "0000008C",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "Color to draw shadow if Shadow is true.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "MinimumLaunchAngle",
+                    "DefaultValue": "960",
+                    "InternalType": "WAngle",
+                    "UserFriendlyType": "1D World Angle",
+                    "Description": "Minimum vertical launch angle (pitch).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "MaximumLaunchAngle",
+                    "DefaultValue": "128",
+                    "InternalType": "WAngle",
+                    "UserFriendlyType": "1D World Angle",
+                    "Description": "Maximum vertical launch angle (pitch).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "MinimumLaunchSpeed",
+                    "DefaultValue": "-0c1",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Minimum launch speed in WDist / tick. Defaults to Speed if -1.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "MaximumLaunchSpeed",
+                    "DefaultValue": "-0c1",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Maximum launch speed in WDist / tick. Defaults to Speed if -1.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Speed",
+                    "DefaultValue": "0c384",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Maximum projectile speed in WDist / tick",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Acceleration",
+                    "DefaultValue": "0c5",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Projectile acceleration when propulsion activated.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Arm",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "How many ticks before this missile is armed and can explode.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Blockable",
+                    "DefaultValue": "True",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Is the missile blocked by actors with BlocksProjectiles: trait.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "TerrainHeightAware",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Is the missile aware of terrain height levels. Only needed for mods with real, non-visual height levels.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Width",
+                    "DefaultValue": "0c1",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Width of projectile (used for finding blocking actors).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Inaccuracy",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The maximum/constant/incremental inaccuracy used in conjunction with the InaccuracyType property.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InaccuracyType",
+                    "DefaultValue": "Absolute",
+                    "InternalType": "InaccuracyType",
+                    "UserFriendlyType": "InaccuracyType (enum)",
+                    "Description": "Controls the way inaccuracy is calculated. Possible values are 'Maximum' - scale from 0 to max with range, 'PerCellIncrement' - scale from 0 with range and 'Absolute' - use set value regardless of range.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "LockOnInaccuracy",
+                    "DefaultValue": "-0c1",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Inaccuracy override when successfully locked onto target. Defaults to Inaccuracy if negative.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "LockOnProbability",
+                    "DefaultValue": "100",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Probability of locking onto and following target.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HorizontalRateOfTurn",
+                    "DefaultValue": "20",
+                    "InternalType": "WAngle",
+                    "UserFriendlyType": "1D World Angle",
+                    "Description": "Horizontal rate of turn.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "VerticalRateOfTurn",
+                    "DefaultValue": "24",
+                    "InternalType": "WAngle",
+                    "UserFriendlyType": "1D World Angle",
+                    "Description": "Vertical rate of turn.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Gravity",
+                    "DefaultValue": "10",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Gravity applied while in free fall.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "RangeLimit",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Run out of fuel after covering this distance. Zero for defaulting to weapon range. Negative for unlimited fuel.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ExplodeWhenEmpty",
+                    "DefaultValue": "True",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Explode when running out of fuel.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirburstAltitude",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Altitude above terrain below which to explode. Zero effectively deactivates airburst.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "CruiseAltitude",
+                    "DefaultValue": "0c512",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Cruise altitude. Zero means no cruise altitude used.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HomingActivationDelay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Activate homing mechanism after this many ticks.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "TrailImage",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Image that contains the trail animation.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "TrailSequences",
+                    "DefaultValue": "idle",
+                    "InternalType": "String[]",
+                    "UserFriendlyType": "Collection of String",
+                    "Description": "Loop a randomly chosen sequence of TrailImage from this list while this projectile is moving.",
+                    "OtherAttributes": [{
+                            "Name": "SequenceReference",
+                            "Parameters": [{
+                                    "Name": "imageReference",
+                                    "Value": "TrailImage"
+                                }, {
+                                    "Name": "prefix",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "allowNullImage",
+                                    "Value": "True"
+                                }, {
+                                    "Name": "dictionaryReference",
+                                    "Value": "None"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "TrailPalette",
+                    "DefaultValue": "effect",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Palette used to render the trail sequence.",
+                    "OtherAttributes": [{
+                            "Name": "PaletteReference",
+                            "Parameters": [{
+                                    "Name": "playerPaletteReferenceSwitch",
+                                    "Value": "TrailUsePlayerPalette"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "TrailUsePlayerPalette",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Use the Player Palette to render the trail sequence.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "TrailInterval",
+                    "DefaultValue": "2",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Interval in ticks between spawning trail animation.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "TrailWhenDeactivated",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Should trail animation be spawned when the propulsion is not activated.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailLength",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "When set, display a line behind the actor. Length is measured in ticks after appearing.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailDelay",
+                    "DefaultValue": "1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Time (in ticks) after which the line should appear. Controls the distance to the actor.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailZOffset",
+                    "DefaultValue": "2047",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Equivalent to sequence ZOffset. Controls Z sorting.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailStartWidth",
+                    "DefaultValue": "0c64",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Thickness of the emitted line at the start of the contrail.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailEndWidth",
+                    "DefaultValue": "",
+                    "InternalType": "Nullable<WDist>",
+                    "UserFriendlyType": "1D World Distance (optional)",
+                    "Description": "Thickness of the emitted line at the end of the contrail. Will default to ContrailStartWidth if left undefined",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailStartColor",
+                    "DefaultValue": "FFFFFF",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "RGB color at the contrail start.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailStartColorUsePlayerColor",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Use player remap color instead of a custom color at the contrail the start.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailStartColorAlpha",
+                    "DefaultValue": "255",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "The alpha value [from 0 to 255] of color at the contrail the start.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailEndColor",
+                    "DefaultValue": "",
+                    "InternalType": "Nullable<Color>",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation) (optional)",
+                    "Description": "RGB color at the contrail end. Will default to ContrailStartColor if left undefined",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailEndColorUsePlayerColor",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Use player remap color instead of a custom color at the contrail end.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ContrailEndColorAlpha",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "The alpha value [from 0 to 255] of color at the contrail end.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Jammable",
+                    "DefaultValue": "True",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Should missile targeting be thrown off by nearby actors with JamsMissiles.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "JammedDiversionRange",
+                    "DefaultValue": "20",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Range of facings by which jammed missiles can stray from current path.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "BoundToTerrainType",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Explodes when leaving the following terrain type, e.g., Water for torpedoes.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AllowSnapping",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Allow the missile to snap to the target, meaning jumping to the target immediately when the missile enters the radius of the current speed around the target.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "CloseEnough",
+                    "DefaultValue": "0c298",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Explodes when inside this proximity radius to target. Note: If this value is lower than the missile speed, this check might not trigger fast enough, causing the missile to fly past the target.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Projectiles",
+            "Name": "Railgun",
+            "Description": "Laser effect with helix coiling around.",
+            "InheritedTypes": [],
+            "Properties": [{
+                    "PropertyName": "DamageActorsInLine",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Damage all units hit by the beam instead of just the target?",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Inaccuracy",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The maximum/constant/incremental inaccuracy used in conjunction with the InaccuracyType property.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InaccuracyType",
+                    "DefaultValue": "Maximum",
+                    "InternalType": "InaccuracyType",
+                    "UserFriendlyType": "InaccuracyType (enum)",
+                    "Description": "Controls the way inaccuracy is calculated. Possible values are 'Maximum' - scale from 0 to max with range, 'PerCellIncrement' - scale from 0 with range and 'Absolute' - use set value regardless of range.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Blockable",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this projectile be blocked when hitting actors with an IBlocksProjectiles trait.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Duration",
+                    "DefaultValue": "15",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Duration of the beam and helix",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ZOffset",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Equivalent to sequence ZOffset. Controls Z sorting.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "BeamWidth",
+                    "DefaultValue": "0c86",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The width of the main trajectory. (\"beam\").",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "BeamShape",
+                    "DefaultValue": "Cylindrical",
+                    "InternalType": "BeamRenderableShape",
+                    "UserFriendlyType": "BeamRenderableShape (enum)",
+                    "Description": "The shape of the beam.  Accepts values Cylindrical or Flat.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "BeamColor",
+                    "DefaultValue": "FFFFFF80",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "Beam color in (A),R,G,B.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "BeamPlayerColor",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "When true, this will override BeamColor parameter and draw the laser with player color. (Still uses BeamColor's alpha information)",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "BeamAlphaDeltaPerTick",
+                    "DefaultValue": "-8",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Beam alpha gets + this value per tick during drawing; hence negative value makes it fade over time.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HelixThickness",
+                    "DefaultValue": "0c32",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Thickness of the helix",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HelixRadius",
+                    "DefaultValue": "0c64",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The radius of the spiral effect. (WDist)",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HelixPitch",
+                    "DefaultValue": "0c512",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Height of one complete helix turn, measured parallel to the axis of the helix (WDist)",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HelixRadiusDeltaPerTick",
+                    "DefaultValue": "8",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Helix radius gets + this value per tick during drawing",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HelixAlphaDeltaPerTick",
+                    "DefaultValue": "-8",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Helix alpha gets + this value per tick during drawing; hence negative value makes it fade over time.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HelixAngleDeltaPerTick",
+                    "DefaultValue": "16",
+                    "InternalType": "WAngle",
+                    "UserFriendlyType": "1D World Angle",
+                    "Description": "Helix spins by this much over time each tick.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "QuantizationCount",
+                    "DefaultValue": "16",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Draw each cycle of helix with this many quantization steps",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HelixColor",
+                    "DefaultValue": "FFFFFF80",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "Helix color in (A),R,G,B.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HelixPlayerColor",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Draw helix in PlayerColor? Overrides RGB part of the HelixColor. (Still uses HelixColor's alpha information)",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HitAnim",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Impact animation.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "HitAnimSequence",
+                    "DefaultValue": "idle",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Sequence of impact animation to use.",
+                    "OtherAttributes": [{
+                            "Name": "SequenceReference",
+                            "Parameters": [{
+                                    "Name": "imageReference",
+                                    "Value": "HitAnim"
+                                }, {
+                                    "Name": "prefix",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "allowNullImage",
+                                    "Value": "True"
+                                }, {
+                                    "Name": "dictionaryReference",
+                                    "Value": "None"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "HitAnimPalette",
+                    "DefaultValue": "effect",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "",
+                    "OtherAttributes": [{
+                            "Name": "PaletteReference",
+                            "Parameters": [{
+                                    "Name": "isPlayerPalette",
+                                    "Value": "False"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Warheads",
+            "Name": "ChangeOwnerWarhead",
+            "Description": "Interacts with the `TemporaryOwnerManager` trait.",
+            "InheritedTypes": ["Warhead"],
+            "Properties": [{
+                    "PropertyName": "Duration",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Duration of the owner change (in ticks). Set to 0 to make it permanent.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Range",
+                    "DefaultValue": "1c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidRelationships",
+                    "DefaultValue": "Enemy, Neutral, Ally",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "What player relationships are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AffectsParent",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this warhead affect the actor that fired it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Delay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks before applying the warhead effect. 0 = instant (old model).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DebugOverlayColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Warheads",
+            "Name": "CreateEffectWarhead",
+            "Description": "Spawn a sprite with sound.",
+            "InheritedTypes": ["Warhead"],
+            "Properties": [{
+                    "PropertyName": "Explosions",
+                    "DefaultValue": "",
+                    "InternalType": "String[]",
+                    "UserFriendlyType": "Collection of String",
+                    "Description": "List of explosion sequences that can be used.",
+                    "OtherAttributes": [{
+                            "Name": "SequenceReference",
+                            "Parameters": [{
+                                    "Name": "imageReference",
+                                    "Value": "Image"
+                                }, {
+                                    "Name": "prefix",
+                                    "Value": "False"
+                                }, {
+                                    "Name": "allowNullImage",
+                                    "Value": "True"
+                                }, {
+                                    "Name": "dictionaryReference",
+                                    "Value": "None"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "Image",
+                    "DefaultValue": "explosion",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Image containing explosion effect sequence.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ExplosionPalette",
+                    "DefaultValue": "effect",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Palette to use for explosion effect.",
+                    "OtherAttributes": [{
+                            "Name": "PaletteReference",
+                            "Parameters": [{
+                                    "Name": "playerPaletteReferenceSwitch",
+                                    "Value": "UsePlayerPalette"
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    "PropertyName": "UsePlayerPalette",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Remap explosion effect to player color, if art supports it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ForceDisplayAtGroundLevel",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Display explosion effect at ground level, regardless of explosion altitude.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ImpactSounds",
+                    "DefaultValue": "",
+                    "InternalType": "String[]",
+                    "UserFriendlyType": "Collection of String",
+                    "Description": "List of sounds that can be played on impact.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ImpactSoundChance",
+                    "DefaultValue": "100",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Chance of impact sound to play.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ImpactActors",
+                    "DefaultValue": "True",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Whether to consider actors in determining whether the explosion should happen. If false, only terrain will be considered.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Inaccuracy",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "The maximum inaccuracy of the effect spawn position relative to actual impact position.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidRelationships",
+                    "DefaultValue": "Enemy, Neutral, Ally",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "What player relationships are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AffectsParent",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this warhead affect the actor that fired it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Delay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks before applying the warhead effect. 0 = instant (old model).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DebugOverlayColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Warheads",
+            "Name": "CreateResourceWarhead",
+            "Description": "Creates resources in a circle.",
+            "InheritedTypes": ["Warhead"],
+            "Properties": [{
+                    "PropertyName": "Size",
+                    "DefaultValue": "0, 0",
+                    "InternalType": "Int32[]",
+                    "UserFriendlyType": "Collection of Integer",
+                    "Description": "Size of the area. The resources are seeded within this area. Provide 2 values for a ring effect (outer/inner).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AddsResourceType",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Will this splatter resources and which?",
+                    "OtherAttributes": [{
+                            "Name": "Require",
+                            "Parameters": []
+                        }
+                    ]
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidRelationships",
+                    "DefaultValue": "Enemy, Neutral, Ally",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "What player relationships are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AffectsParent",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this warhead affect the actor that fired it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Delay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks before applying the warhead effect. 0 = instant (old model).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DebugOverlayColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Warheads",
+            "Name": "DestroyResourceWarhead",
+            "Description": "Destroys resources in a circle.",
+            "InheritedTypes": ["Warhead"],
+            "Properties": [{
+                    "PropertyName": "Size",
+                    "DefaultValue": "0, 0",
+                    "InternalType": "Int32[]",
+                    "UserFriendlyType": "Collection of Integer",
+                    "Description": "Size of the area. The resources are removed within this area. Provide 2 values for a ring effect (outer/inner).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ResourceAmount",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Amount of resources to be removed. If negative or zero, all resources within the area will be removed.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ResourceTypes",
+                    "DefaultValue": "",
+                    "InternalType": "HashSet<String>",
+                    "UserFriendlyType": "Set of String",
+                    "Description": "Resource types to remove with this warhead. If empty, all resource types will be removed.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidRelationships",
+                    "DefaultValue": "Enemy, Neutral, Ally",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "What player relationships are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AffectsParent",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this warhead affect the actor that fired it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Delay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks before applying the warhead effect. 0 = instant (old model).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DebugOverlayColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Warheads",
+            "Name": "FireClusterWarhead",
+            "Description": "Fires weapons from the point of impact.",
+            "InheritedTypes": ["Warhead"],
+            "Properties": [{
+                    "PropertyName": "Weapon",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Has to be defined in weapons.yaml as well.",
+                    "OtherAttributes": [{
+                            "Name": "WeaponReference",
+                            "Parameters": []
+                        }, {
+                            "Name": "Require",
+                            "Parameters": []
+                        }
+                    ]
+                }, {
+                    "PropertyName": "RandomClusterCount",
+                    "DefaultValue": "-1",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Number of weapons fired at random 'x' cells. Negative values will result in a number equal to 'x' footprint cells fired.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Dimensions",
+                    "DefaultValue": "0,0",
+                    "InternalType": "CVec",
+                    "UserFriendlyType": "2D Cell Vector",
+                    "Description": "Size of the cluster footprint",
+                    "OtherAttributes": [{
+                            "Name": "Require",
+                            "Parameters": []
+                        }
+                    ]
+                }, {
+                    "PropertyName": "Footprint",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Cluster footprint. Cells marked as X will be attacked. Cells marked as x will be attacked randomly until RandomClusterCount is reached.",
+                    "OtherAttributes": [{
+                            "Name": "Require",
+                            "Parameters": []
+                        }
+                    ]
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidRelationships",
+                    "DefaultValue": "Enemy, Neutral, Ally",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "What player relationships are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AffectsParent",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this warhead affect the actor that fired it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Delay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks before applying the warhead effect. 0 = instant (old model).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DebugOverlayColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Warheads",
+            "Name": "FlashPaletteEffectWarhead",
+            "Description": "Used to trigger a FlashPaletteEffect trait on the world actor.",
+            "InheritedTypes": ["Warhead"],
+            "Properties": [{
+                    "PropertyName": "FlashType",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "Corresponds to `Type` from `FlashPaletteEffect` on the world actor.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Duration",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Duration of the flashing, measured in ticks. Set to -1 to default to the `Length` of the `FlashPaletteEffect`.",
+                    "OtherAttributes": [{
+                            "Name": "Require",
+                            "Parameters": []
+                        }
+                    ]
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidRelationships",
+                    "DefaultValue": "Enemy, Neutral, Ally",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "What player relationships are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AffectsParent",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this warhead affect the actor that fired it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Delay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks before applying the warhead effect. 0 = instant (old model).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DebugOverlayColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Warheads",
+            "Name": "GrantExternalConditionWarhead",
+            "Description": "Grant an external condition to hit actors.",
+            "InheritedTypes": ["Warhead"],
+            "Properties": [{
+                    "PropertyName": "Condition",
+                    "DefaultValue": "",
+                    "InternalType": "String",
+                    "UserFriendlyType": "String",
+                    "Description": "The condition to apply. Must be included in the target actor's ExternalConditions list.",
+                    "OtherAttributes": [{
+                            "Name": "Require",
+                            "Parameters": []
+                        }
+                    ]
+                }, {
+                    "PropertyName": "Duration",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Duration of the condition (in ticks). Set to 0 for a permanent condition.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Range",
+                    "DefaultValue": "1c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidRelationships",
+                    "DefaultValue": "Enemy, Neutral, Ally",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "What player relationships are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AffectsParent",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this warhead affect the actor that fired it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Delay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks before applying the warhead effect. 0 = instant (old model).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DebugOverlayColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Warheads",
+            "Name": "HealthPercentageDamageWarhead",
+            "Description": "Apply damage based on the target's health.",
+            "InheritedTypes": ["TargetDamageWarhead", "DamageWarhead", "Warhead"],
+            "Properties": [{
+                    "PropertyName": "Spread",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Damage will be applied to actors in this area. A value of zero means only targeted actor will be damaged.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Damage",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "How much (raw) damage to deal.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DamageTypes",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<DamageType>",
+                    "UserFriendlyType": "Collection of DamageType",
+                    "Description": "Types of damage that this warhead causes. Leave empty for no damage types.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Versus",
+                    "DefaultValue": "",
+                    "InternalType": "Dictionary<String, Int32>",
+                    "UserFriendlyType": "Dictionary with Key: String, Value: Integer",
+                    "Description": "Damage percentage versus each armor type.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidRelationships",
+                    "DefaultValue": "Enemy, Neutral, Ally",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "What player relationships are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AffectsParent",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this warhead affect the actor that fired it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Delay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks before applying the warhead effect. 0 = instant (old model).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DebugOverlayColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Warheads",
+            "Name": "LeaveSmudgeWarhead",
+            "Description": "Creates a smudge in `SmudgeLayer`.",
+            "InheritedTypes": ["Warhead"],
+            "Properties": [{
+                    "PropertyName": "Size",
+                    "DefaultValue": "0, 0",
+                    "InternalType": "Int32[]",
+                    "UserFriendlyType": "Collection of Integer",
+                    "Description": "Size of the area. A smudge will be created in each tile. Provide 2 values for a ring effect (outer/inner).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "SmudgeType",
+                    "DefaultValue": "",
+                    "InternalType": "HashSet<String>",
+                    "UserFriendlyType": "Set of String",
+                    "Description": "Type of smudge to apply to terrain.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Chance",
+                    "DefaultValue": "100",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Percentage chance the smudge is created.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidRelationships",
+                    "DefaultValue": "Enemy, Neutral, Ally",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "What player relationships are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AffectsParent",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this warhead affect the actor that fired it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Delay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks before applying the warhead effect. 0 = instant (old model).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DebugOverlayColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Warheads",
+            "Name": "ShakeScreenWarhead",
+            "Description": "Makes the screen shake.",
+            "InheritedTypes": ["Warhead"],
+            "Properties": [{
+                    "PropertyName": "Duration",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Duration of the shaking.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Intensity",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Shake intensity.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Multiplier",
+                    "DefaultValue": "0,0",
+                    "InternalType": "float2",
+                    "UserFriendlyType": "2D Real Number",
+                    "Description": "Shake multipliers by the X and Y axis, comma-separated.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidRelationships",
+                    "DefaultValue": "Enemy, Neutral, Ally",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "What player relationships are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AffectsParent",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this warhead affect the actor that fired it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Delay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks before applying the warhead effect. 0 = instant (old model).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DebugOverlayColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Warheads",
+            "Name": "SpreadDamageWarhead",
+            "Description": "Apply damage in a specified range.",
+            "InheritedTypes": ["DamageWarhead", "Warhead"],
+            "Properties": [{
+                    "PropertyName": "Spread",
+                    "DefaultValue": "0c43",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Range between falloff steps.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Falloff",
+                    "DefaultValue": "100, 37, 14, 5, 0",
+                    "InternalType": "Int32[]",
+                    "UserFriendlyType": "Collection of Integer",
+                    "Description": "Damage percentage at each range step",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Range",
+                    "DefaultValue": "",
+                    "InternalType": "WDist[]",
+                    "UserFriendlyType": "Collection of 1D World Distance",
+                    "Description": "Ranges at which each Falloff step is defined. Overrides Spread.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DamageCalculationType",
+                    "DefaultValue": "HitShape",
+                    "InternalType": "DamageCalculationType",
+                    "UserFriendlyType": "DamageCalculationType (enum)",
+                    "Description": "Controls the way damage is calculated. Possible values are 'HitShape', 'ClosestTargetablePosition' and 'CenterPosition'.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Damage",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "How much (raw) damage to deal.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DamageTypes",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<DamageType>",
+                    "UserFriendlyType": "Collection of DamageType",
+                    "Description": "Types of damage that this warhead causes. Leave empty for no damage types.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Versus",
+                    "DefaultValue": "",
+                    "InternalType": "Dictionary<String, Int32>",
+                    "UserFriendlyType": "Dictionary with Key: String, Value: Integer",
+                    "Description": "Damage percentage versus each armor type.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidRelationships",
+                    "DefaultValue": "Enemy, Neutral, Ally",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "What player relationships are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AffectsParent",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this warhead affect the actor that fired it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Delay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks before applying the warhead effect. 0 = instant (old model).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DebugOverlayColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Warheads",
+            "Name": "TargetDamageWarhead",
+            "Description": "Apply damage to the targeted actor.",
+            "InheritedTypes": ["DamageWarhead", "Warhead"],
+            "Properties": [{
+                    "PropertyName": "Spread",
+                    "DefaultValue": "0c0",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "Damage will be applied to actors in this area. A value of zero means only targeted actor will be damaged.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Damage",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "How much (raw) damage to deal.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DamageTypes",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<DamageType>",
+                    "UserFriendlyType": "Collection of DamageType",
+                    "Description": "Types of damage that this warhead causes. Leave empty for no damage types.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Versus",
+                    "DefaultValue": "",
+                    "InternalType": "Dictionary<String, Int32>",
+                    "UserFriendlyType": "Dictionary with Key: String, Value: Integer",
+                    "Description": "Damage percentage versus each armor type.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidRelationships",
+                    "DefaultValue": "Enemy, Neutral, Ally",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "What player relationships are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AffectsParent",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this warhead affect the actor that fired it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Delay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks before applying the warhead effect. 0 = instant (old model).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DebugOverlayColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.",
+                    "OtherAttributes": []
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.D2k.Warheads",
+            "Name": "DamagesConcreteWarhead",
+            "Description": "Interacts with the BuildableTerrainLayer trait.",
+            "InheritedTypes": ["Warhead"],
+            "Properties": [{
+                    "PropertyName": "Damage",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "How much damage to deal.",
+                    "OtherAttributes": [{
+                            "Name": "Require",
+                            "Parameters": []
+                        }
+                    ]
+                }, {
+                    "PropertyName": "ValidTargets",
+                    "DefaultValue": "Ground, Water",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "InvalidTargets",
+                    "DefaultValue": "",
+                    "InternalType": "BitSet<TargetableType>",
+                    "UserFriendlyType": "Collection of TargetableType",
+                    "Description": "What types of targets are unaffected. Overrules ValidTargets.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "ValidRelationships",
+                    "DefaultValue": "Enemy, Neutral, Ally",
+                    "InternalType": "PlayerRelationship",
+                    "UserFriendlyType": "PlayerRelationship (enum)",
+                    "Description": "What player relationships are affected.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AffectsParent",
+                    "DefaultValue": "False",
+                    "InternalType": "Boolean",
+                    "UserFriendlyType": "Boolean",
+                    "Description": "Can this warhead affect the actor that fired it.",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "AirThreshold",
+                    "DefaultValue": "0c128",
+                    "InternalType": "WDist",
+                    "UserFriendlyType": "1D World Distance",
+                    "Description": "If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "Delay",
+                    "DefaultValue": "0",
+                    "InternalType": "Int32",
+                    "UserFriendlyType": "Integer",
+                    "Description": "Delay in ticks before applying the warhead effect. 0 = instant (old model).",
+                    "OtherAttributes": []
+                }, {
+                    "PropertyName": "DebugOverlayColor",
+                    "DefaultValue": "FF0000",
+                    "InternalType": "Color",
+                    "UserFriendlyType": "Color (RRGGBB[AA] notation)",
+                    "Description": "The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.",
+                    "OtherAttributes": []
+                }
+            ]
+        }
+    ],
+    "RelatedEnums": [{
+            "Namespace": "OpenRA.Mods.Common.Graphics",
+            "Name": "BeamRenderableShape",
+            "Values": [{
+                    "Key": 0,
+                    "Value": "Cylindrical"
+                }, {
+                    "Key": 1,
+                    "Value": "Flat"
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common.Warheads",
+            "Name": "DamageCalculationType",
+            "Values": [{
+                    "Key": 0,
+                    "Value": "HitShape"
+                }, {
+                    "Key": 1,
+                    "Value": "ClosestTargetablePosition"
+                }, {
+                    "Key": 2,
+                    "Value": "CenterPosition"
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Mods.Common",
+            "Name": "InaccuracyType",
+            "Values": [{
+                    "Key": 0,
+                    "Value": "Maximum"
+                }, {
+                    "Key": 1,
+                    "Value": "PerCellIncrement"
+                }, {
+                    "Key": 2,
+                    "Value": "Absolute"
+                }
+            ]
+        }, {
+            "Namespace": "OpenRA.Traits",
+            "Name": "PlayerRelationship",
+            "Values": [{
+                    "Key": 0,
+                    "Value": "None"
+                }, {
+                    "Key": 1,
+                    "Value": "Enemy"
+                }, {
+                    "Key": 2,
+                    "Value": "Neutral"
+                }, {
+                    "Key": 4,
+                    "Value": "Ally"
+                }
+            ]
+        }
+    ]
+}

@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <None Update="docs/*">
+	  <None Update="docs/**/*">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
   </ItemGroup>

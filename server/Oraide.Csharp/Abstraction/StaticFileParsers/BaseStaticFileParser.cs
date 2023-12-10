@@ -28,30 +28,19 @@ namespace Oraide.Csharp.Abstraction.StaticFileParsers
 			var assemblyLocation = Assembly.GetEntryAssembly().Location;
 			var assemblyFolder = Path.GetDirectoryName(assemblyLocation);
 
-			var traitsFile = Path.Combine(assemblyFolder, "docs", $"{InternalVersionName}-traits.json");
-			var weaponsFile = Path.Combine(assemblyFolder, "docs", $"{InternalVersionName}-weapons.json");
-			var spriteSequencesFile = Path.Combine(assemblyFolder, "docs", $"{InternalVersionName}-sprite-sequences.json");
-			var assetLoadersFile = Path.Combine(assemblyFolder, "docs", $"{InternalVersionName}-asset-loaders.json");
-			var widgetsFile = Path.Combine(assemblyFolder, "docs", $"{InternalVersionName}-widgets.json");
-			var widgetLogicFile = Path.Combine(assemblyFolder, "docs", $"{InternalVersionName}-widget-logic.json");
+			traitsData = TryParseFile("traits");
+			weaponsData = TryParseFile("weapons");
+			spriteSequencesData = TryParseFile("sprite-sequences");
+			assetLoadersData = TryParseFile("asset-loaders");
+			widgetsData = TryParseFile("widgets");
+			widgetLogicData = TryParseFile("widget-logic");
 
-			var traitsText = File.Exists(traitsFile) ? File.ReadAllText(traitsFile) : "";
-			traitsData = JsonConvert.DeserializeObject<JObject>(traitsText);
-
-			var weaponsText = File.Exists(weaponsFile) ? File.ReadAllText(weaponsFile) : "";
-			weaponsData = JsonConvert.DeserializeObject<JObject>(weaponsText);
-
-			var spriteSequencesText = File.Exists(spriteSequencesFile) ? File.ReadAllText(spriteSequencesFile) : "";
-			spriteSequencesData = JsonConvert.DeserializeObject<JObject>(spriteSequencesText);
-
-			var assetLoadersText = File.Exists(assetLoadersFile) ? File.ReadAllText(assetLoadersFile) : "";
-			assetLoadersData = JsonConvert.DeserializeObject<JObject>(assetLoadersText);
-
-			var widgetsText = File.Exists(widgetsFile) ? File.ReadAllText(widgetsFile) : "";
-			widgetsData = JsonConvert.DeserializeObject<JObject>(widgetsText);
-
-			var widgetLogicText = File.Exists(widgetLogicFile) ? File.ReadAllText(widgetLogicFile) : "";
-			widgetLogicData = JsonConvert.DeserializeObject<JObject>(widgetLogicText);
+			JObject TryParseFile(string type)
+			{
+				var filePath = Path.Combine(assemblyFolder, "docs", InternalVersionName, $"{type}.json");
+				var text = File.Exists(filePath) ? File.ReadAllText(filePath) : "";
+				return JsonConvert.DeserializeObject<JObject>(text);
+			}
 		}
 
 		#region IStaticFileParser implementation
