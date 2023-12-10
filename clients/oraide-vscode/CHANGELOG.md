@@ -2,6 +2,12 @@
 
 All notable changes to the "oraide" extension will be documented in this file.
 
+## 1.0.5 - 2023.12.10
+
+ - Language server:
+    - Added support for OpenRA version release-20231010.
+    - Fixed minor issues with SpriteSequence field handling.
+
 ## 1.0.4 - 2023.09.18
 
  - Language server:
